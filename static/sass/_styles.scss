@@ -1,0 +1,1772 @@
+// =============================================================================
+// Anthias Fleet Manager - Custom Styles
+// Matches the Anthias digital signage player UI design
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Google Font Import
+// -----------------------------------------------------------------------------
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+// -----------------------------------------------------------------------------
+// Global / Base
+// -----------------------------------------------------------------------------
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-family-primary;
+  background-color: $body-bg;
+  padding-top: $navbar-height;
+  padding-bottom: $footer-height + 20px;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: rgba($anthias-purple-5, 0.2);
+  color: $anthias-purple-1;
+}
+
+// -----------------------------------------------------------------------------
+// Navbar
+// -----------------------------------------------------------------------------
+.fm-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-fixed;
+  height: $navbar-height;
+  background-color: $anthias-purple-1;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+
+  > .container-fluid {
+    max-width: $content-max-width;
+    margin: 0 auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0;
+    margin-right: 2rem;
+
+    img {
+      height: 50px;
+      width: auto;
+    }
+  }
+
+  .nav-link {
+    color: rgba($white, 0.85);
+    font-weight: $font-weight-medium;
+    padding: 0.5rem 1rem;
+    border-radius: $border-radius;
+    transition: $transition-fast;
+    font-size: $font-size-sm;
+
+    &:hover {
+      color: $white;
+      background-color: rgba($white, 0.08);
+    }
+
+    &.active {
+      color: $anthias-yellow-3;
+      background-color: rgba($anthias-yellow-3, 0.1);
+    }
+
+    .nav-icon {
+      margin-right: 0.4rem;
+      font-size: 1rem;
+      vertical-align: -2px;
+    }
+  }
+
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+
+    .btn-navbar {
+      color: rgba($white, 0.85);
+      background: transparent;
+      border: 1px solid rgba($white, 0.15);
+      padding: 0.375rem 0.75rem;
+      border-radius: $border-radius;
+      font-size: $font-size-sm;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $white;
+        border-color: rgba($white, 0.3);
+        background-color: rgba($white, 0.08);
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Footer
+// -----------------------------------------------------------------------------
+.fm-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-fixed - 1;
+  height: $footer-height;
+  background-color: $anthias-purple-1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: $content-max-width;
+    padding: 0 1.5rem;
+  }
+
+  .footer-text {
+    color: rgba($white, 0.6);
+    font-size: $font-size-sm;
+    margin: 0;
+
+    a {
+      color: $anthias-yellow-3;
+      text-decoration: none;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $anthias-yellow-1;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    a {
+      color: rgba($white, 0.6);
+      font-size: $font-size-sm;
+      text-decoration: none;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $anthias-yellow-3;
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Main Content Container
+// -----------------------------------------------------------------------------
+.fm-content {
+  max-width: $content-max-width;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+// -----------------------------------------------------------------------------
+// Page Header
+// -----------------------------------------------------------------------------
+.fm-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: $font-weight-bold;
+    color: $anthias-purple-1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .page-icon {
+      color: $anthias-purple-5;
+    }
+  }
+
+  .page-subtitle {
+    color: $gray-600;
+    font-size: $font-size-sm;
+    margin: 0.25rem 0 0 0;
+  }
+
+  .page-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Cards - Content Sections
+// -----------------------------------------------------------------------------
+.fm-card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-card;
+  border: none;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow;
+  }
+
+  // Yellow left border accent (Anthias signature style)
+  &.fm-card-accent {
+    border-left: 4px solid $anthias-yellow-3;
+  }
+
+  // Purple left border variant
+  &.fm-card-accent-purple {
+    border-left: 4px solid $anthias-purple-5;
+  }
+
+  .fm-card-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid $gray-200;
+
+    .card-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $anthias-purple-1;
+      margin: 0;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .fm-card-body {
+    padding: 1.25rem;
+  }
+
+  .fm-card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: $gray-100;
+    border-top: 1px solid $gray-200;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Player Cards
+// -----------------------------------------------------------------------------
+.fm-player-card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-card;
+  border: none;
+  transition: $transition-base;
+  overflow: hidden;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  .player-card-header {
+    padding: 1rem 1.25rem;
+    background: $anthias-purple-1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .player-name {
+      color: $white;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-base;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .player-card-body {
+    padding: 1.25rem;
+
+    .player-info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: $font-size-sm;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid $gray-100;
+      }
+
+      .info-label {
+        color: $gray-600;
+        font-weight: $font-weight-medium;
+      }
+
+      .info-value {
+        color: $gray-800;
+        font-weight: $font-weight-normal;
+        text-align: right;
+      }
+    }
+  }
+
+  .player-card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: $gray-100;
+    border-top: 1px solid $gray-200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Status Indicators
+// -----------------------------------------------------------------------------
+.fm-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.status-online {
+      background-color: $status-online;
+      box-shadow: 0 0 6px rgba($status-online, 0.5);
+      animation: pulse-green 2s ease-in-out infinite;
+    }
+
+    &.status-offline {
+      background-color: $status-offline;
+      box-shadow: 0 0 6px rgba($status-offline, 0.3);
+    }
+
+    &.status-unknown {
+      background-color: $status-unknown;
+    }
+  }
+
+  .status-text {
+    &.text-online  { color: $status-online; }
+    &.text-offline { color: $status-offline; }
+    &.text-unknown { color: $status-unknown; }
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 6px rgba($status-online, 0.5); }
+  50%      { box-shadow: 0 0 12px rgba($status-online, 0.8); }
+}
+
+// Status badges (pill-style)
+.fm-badge-online {
+  background-color: rgba($status-online, 0.1);
+  color: $status-online;
+  border: 1px solid rgba($status-online, 0.2);
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  padding: 0.3em 0.7em;
+  border-radius: 50rem;
+}
+
+.fm-badge-offline {
+  background-color: rgba($status-offline, 0.1);
+  color: $status-offline;
+  border: 1px solid rgba($status-offline, 0.2);
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  padding: 0.3em 0.7em;
+  border-radius: 50rem;
+}
+
+// -----------------------------------------------------------------------------
+// Tables
+// -----------------------------------------------------------------------------
+.fm-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead {
+    th {
+      background-color: $anthias-purple-1;
+      color: $white;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.875rem 1rem;
+      border: none;
+      white-space: nowrap;
+
+      &:first-child {
+        border-radius: $border-radius 0 0 0;
+      }
+
+      &:last-child {
+        border-radius: 0 $border-radius 0 0;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: $transition-fast;
+
+      &:hover {
+        background-color: rgba($anthias-purple-5, 0.03);
+      }
+
+      &:not(:last-child) td {
+        border-bottom: 1px solid $gray-100;
+      }
+    }
+
+    td {
+      padding: 0.875rem 1rem;
+      font-size: $font-size-sm;
+      color: $gray-800;
+      border: none;
+      vertical-align: middle;
+    }
+  }
+
+  // Borderless variant
+  &.fm-table-borderless {
+    tbody td {
+      border-bottom: none;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Buttons
+// -----------------------------------------------------------------------------
+
+// Primary button - Yellow (Anthias signature)
+.fm-btn-primary {
+  background: $anthias-yellow-gradient;
+  color: $anthias-purple-1;
+  border: none;
+  font-weight: $font-weight-semibold;
+  padding: 0.5rem 1.25rem;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background: linear-gradient(133.73deg, $anthias-yellow-2, darken($anthias-yellow-2, 5%));
+    color: $anthias-purple-1;
+    box-shadow: 0 4px 12px rgba($anthias-yellow-2, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// Accent button - Purple
+.fm-btn-accent {
+  background-color: $anthias-purple-5;
+  color: $white;
+  border: none;
+  font-weight: $font-weight-semibold;
+  padding: 0.5rem 1.25rem;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background-color: darken($anthias-purple-5, 8%);
+    color: $white;
+    box-shadow: 0 4px 12px rgba($anthias-purple-5, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// Dark button - Purple Dark
+.fm-btn-dark {
+  background-color: $anthias-purple-1;
+  color: $white;
+  border: none;
+  font-weight: $font-weight-semibold;
+  padding: 0.5rem 1.25rem;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background-color: lighten($anthias-purple-1, 8%);
+    color: $white;
+    box-shadow: 0 4px 12px rgba($anthias-purple-1, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Outline button
+.fm-btn-outline {
+  background: transparent;
+  color: $anthias-purple-5;
+  border: 2px solid $anthias-purple-5;
+  font-weight: $font-weight-semibold;
+  padding: 0.4375rem 1.1875rem;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background-color: $anthias-purple-5;
+    color: $white;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Danger outline
+.fm-btn-danger {
+  background: transparent;
+  color: $color-danger;
+  border: 2px solid $color-danger;
+  font-weight: $font-weight-semibold;
+  padding: 0.4375rem 1.1875rem;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background-color: $color-danger;
+    color: $white;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Small button modifier
+.fm-btn-sm {
+  padding: 0.3rem 0.75rem;
+  font-size: $font-size-sm;
+}
+
+// Icon-only button
+.fm-btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $border-radius;
+  border: none;
+  background: transparent;
+  color: $gray-600;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    background-color: $gray-100;
+    color: $anthias-purple-5;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Stats / Metrics Cards
+// -----------------------------------------------------------------------------
+.fm-stat-card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-card;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: $border-radius;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+
+    &.stat-icon-purple {
+      background-color: rgba($anthias-purple-5, 0.1);
+      color: $anthias-purple-5;
+    }
+
+    &.stat-icon-yellow {
+      background: rgba($anthias-yellow-3, 0.15);
+      color: darken($anthias-yellow-2, 15%);
+    }
+
+    &.stat-icon-green {
+      background-color: rgba($status-online, 0.1);
+      color: $status-online;
+    }
+
+    &.stat-icon-red {
+      background-color: rgba($status-offline, 0.1);
+      color: $status-offline;
+    }
+  }
+
+  .stat-content {
+    flex: 1;
+    min-width: 0;
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: $font-weight-bold;
+      color: $anthias-purple-1;
+      line-height: $line-height-tight;
+    }
+
+    .stat-label {
+      font-size: $font-size-sm;
+      color: $gray-600;
+      margin-top: 0.125rem;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Search & Filter Bar
+// -----------------------------------------------------------------------------
+.fm-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  .search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+
+    .search-icon {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-500;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 0.875rem 0.5rem 2.5rem;
+      border: 2px solid $gray-200;
+      border-radius: $border-radius;
+      font-size: $font-size-sm;
+      transition: $transition-fast;
+      background: $white;
+
+      &:focus {
+        outline: none;
+        border-color: $anthias-purple-5;
+        box-shadow: 0 0 0 3px rgba($anthias-purple-5, 0.15);
+      }
+
+      &::placeholder {
+        color: $gray-400;
+      }
+    }
+  }
+
+  .filter-select {
+    padding: 0.5rem 2rem 0.5rem 0.875rem;
+    border: 2px solid $gray-200;
+    border-radius: $border-radius;
+    font-size: $font-size-sm;
+    background: $white;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: $anthias-purple-5;
+      box-shadow: 0 0 0 3px rgba($anthias-purple-5, 0.15);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Empty State
+// -----------------------------------------------------------------------------
+.fm-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: $gray-500;
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: $anthias-purple-4;
+  }
+
+  .empty-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-text {
+    font-size: $font-size-sm;
+    max-width: 400px;
+    margin: 0 auto 1.5rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Loading Spinner
+// -----------------------------------------------------------------------------
+.fm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $gray-200;
+    border-top-color: $anthias-purple-5;
+    border-radius: 50%;
+    animation: fm-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes fm-spin {
+  to { transform: rotate(360deg); }
+}
+
+// -----------------------------------------------------------------------------
+// Toast / Notification
+// -----------------------------------------------------------------------------
+.fm-toast {
+  position: fixed;
+  top: $navbar-height + 16px;
+  right: 1rem;
+  z-index: $z-toast;
+  min-width: 300px;
+  max-width: 420px;
+  background: $white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-lg;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: fm-slide-in 0.3s ease-out;
+
+  &.toast-success {
+    border-left: 4px solid $color-success;
+  }
+
+  &.toast-error {
+    border-left: 4px solid $color-danger;
+  }
+
+  &.toast-info {
+    border-left: 4px solid $anthias-purple-5;
+  }
+
+  .toast-message {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $gray-800;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: $gray-500;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.25rem;
+    line-height: 1;
+
+    &:hover {
+      color: $gray-800;
+    }
+  }
+}
+
+@keyframes fm-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Group Tag / Label
+// -----------------------------------------------------------------------------
+.fm-group-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2em 0.6em;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: 50rem;
+  background-color: rgba($anthias-purple-5, 0.1);
+  color: $anthias-purple-5;
+  white-space: nowrap;
+  transition: $transition-fast;
+
+  &:hover {
+    background-color: rgba($anthias-purple-5, 0.18);
+  }
+
+  .tag-remove {
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 0.75rem;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Responsive Utilities
+// -----------------------------------------------------------------------------
+@media (max-width: 768px) {
+  body {
+    padding-top: 65px;
+  }
+
+  .fm-navbar {
+    height: 65px;
+
+    .navbar-brand {
+      img {
+        height: 36px;
+      }
+    }
+  }
+
+  .fm-content {
+    padding: 1rem;
+  }
+
+  .fm-page-header {
+    .page-title {
+      font-size: 1.35rem;
+    }
+  }
+
+  .fm-footer {
+    height: auto;
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+
+    .footer-links {
+      gap: 0.75rem;
+    }
+  }
+
+  .fm-stat-card {
+    padding: 1rem;
+
+    .stat-content .stat-value {
+      font-size: 1.35rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .fm-search-bar {
+    flex-direction: column;
+
+    .search-input-wrapper {
+      width: 100%;
+    }
+
+    .filter-select {
+      width: 100%;
+    }
+  }
+
+  .fm-table {
+    font-size: $font-size-sm;
+
+    thead th,
+    tbody td {
+      padding: 0.625rem 0.5rem;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SweetAlert2 Theme Overrides
+// -----------------------------------------------------------------------------
+.swal2-popup {
+  border-radius: $border-radius-lg !important;
+  font-family: $font-family-primary !important;
+
+  .swal2-title {
+    color: $anthias-purple-1 !important;
+    font-weight: $font-weight-bold !important;
+  }
+
+  .swal2-confirm {
+    background: $anthias-yellow-gradient !important;
+    color: $anthias-purple-1 !important;
+    font-weight: $font-weight-semibold !important;
+    border: none !important;
+    border-radius: $border-radius !important;
+    padding: 0.5rem 1.5rem !important;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($anthias-yellow-2, 0.4) !important;
+    }
+  }
+
+  .swal2-cancel {
+    background-color: $gray-200 !important;
+    color: $gray-700 !important;
+    font-weight: $font-weight-semibold !important;
+    border: none !important;
+    border-radius: $border-radius !important;
+  }
+
+  .swal2-deny {
+    background-color: $color-danger !important;
+    border-radius: $border-radius !important;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Scrollbar Styles (Webkit)
+// -----------------------------------------------------------------------------
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-400;
+  border-radius: 4px;
+
+  &:hover {
+    background: $gray-500;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Utility Classes
+// -----------------------------------------------------------------------------
+.text-purple       { color: $anthias-purple-5 !important; }
+.text-purple-dark  { color: $anthias-purple-1 !important; }
+.text-yellow       { color: $anthias-yellow-3 !important; }
+.bg-purple         { background-color: $anthias-purple-5 !important; }
+.bg-purple-dark    { background-color: $anthias-purple-1 !important; }
+.bg-yellow         { background: $anthias-yellow-gradient !important; }
+.border-yellow     { border-color: $anthias-yellow-3 !important; }
+.border-purple     { border-color: $anthias-purple-5 !important; }
+
+// -----------------------------------------------------------------------------
+// Schedule Timeline
+// -----------------------------------------------------------------------------
+
+// ── Pill selector ──
+.fm-timeline-pills {
+  display: inline-flex;
+  border-radius: $border-radius;
+  overflow: hidden;
+  border: 1px solid $gray-300;
+}
+
+.fm-timeline-pill {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:not(:last-child) {
+    border-right: 1px solid $gray-300;
+  }
+
+  &:hover {
+    background: rgba($anthias-purple-5, 0.06);
+    color: $anthias-purple-5;
+  }
+
+  &.fm-timeline-pill-active {
+    background: $anthias-purple-5;
+    color: $white;
+  }
+}
+
+// ── Legend ──
+.fm-timeline-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 0.75rem;
+}
+
+.fm-timeline-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: $gray-600;
+  white-space: nowrap;
+}
+
+.fm-timeline-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+// ── Day View ──
+.fm-timeline-day {
+  position: relative;
+}
+
+.fm-timeline-hours {
+  position: relative;
+  height: 18px;
+  margin-bottom: 4px;
+  margin-left: 0;
+
+  span {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.fm-timeline-track {
+  position: relative;
+  height: 40px;
+  background: $gray-100;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+
+.fm-timeline-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+
+.fm-timeline-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &.fm-timeline-bar-default {
+    z-index: 0;
+  }
+
+  &:not(.fm-timeline-bar-default) {
+    z-index: 1;
+  }
+}
+
+.fm-timeline-bar-label {
+  padding: 0 6px;
+  font-size: 0.68rem;
+  font-weight: $font-weight-medium;
+  color: $gray-700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Event markers (triangles above the track) ──
+.fm-timeline-events {
+  position: relative;
+  height: 22px;
+  margin-bottom: 2px;
+}
+
+.fm-timeline-event-marker {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 2;
+
+  &:hover {
+    .fm-timeline-event-label {
+      opacity: 1;
+    }
+    .fm-timeline-event-triangle {
+      filter: brightness(1.2);
+    }
+  }
+}
+
+.fm-timeline-event-triangle {
+  display: block;
+  transition: filter 0.15s;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.fm-timeline-event-label {
+  font-size: 0.6rem;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  margin-bottom: 1px;
+}
+
+.fm-timeline-event-marker-sm {
+  .fm-timeline-event-label {
+    display: none;
+  }
+}
+
+// ── Legend event swatch (triangle shape, pointing down) ──
+.fm-timeline-legend-swatch-event {
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+}
+
+// ── Date navigation ──
+.fm-timeline-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+}
+
+.fm-timeline-cal-icon {
+  font-size: 0.8rem;
+  color: $anthias-purple-5;
+  flex-shrink: 0;
+}
+
+.fm-timeline-date-input {
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: $font-weight-medium;
+  color: $gray-700;
+  background: $white;
+  cursor: pointer;
+  font-family: $font-family-primary;
+  transition: $transition-fast;
+  line-height: 1.4;
+
+  &:hover {
+    border-color: $anthias-purple-5;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $anthias-purple-5;
+    box-shadow: 0 0 0 2px rgba($anthias-purple-5, 0.15);
+  }
+}
+
+.fm-timeline-week-range {
+  font-size: 0.72rem;
+  color: $gray-500;
+  white-space: nowrap;
+}
+
+.fm-timeline-today-btn {
+  background: transparent;
+  border: 1px solid $gray-300;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  cursor: pointer;
+  border-radius: 50rem;
+  transition: $transition-fast;
+
+  &:hover {
+    background: rgba($anthias-purple-5, 0.08);
+    color: $anthias-purple-5;
+    border-color: $anthias-purple-5;
+  }
+}
+
+// ── Current time marker ──
+.fm-timeline-now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.fm-timeline-now-dot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $color-danger;
+}
+
+.fm-timeline-now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: $color-danger;
+}
+
+.fm-timeline-now-sm {
+  .fm-timeline-now-line {
+    width: 1px;
+  }
+}
+
+// ── Tooltip ──
+.fm-timeline-tooltip {
+  position: fixed;
+  z-index: 10000;
+  background: $white;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  white-space: nowrap;
+  color: $gray-800;
+
+  strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  div {
+    color: $gray-600;
+  }
+}
+
+// ── Week View ──
+.fm-timeline-week {
+  position: relative;
+}
+
+.fm-timeline-week-hours {
+  display: flex;
+  align-items: center;
+  height: 16px;
+  margin-bottom: 2px;
+  position: relative;
+  padding-left: 42px;
+
+  span {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.fm-timeline-week-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+
+  &.fm-timeline-week-today {
+    .fm-timeline-week-label {
+      font-weight: $font-weight-bold;
+      color: $anthias-purple-5;
+    }
+    .fm-timeline-week-track {
+      outline: 1px solid rgba($anthias-purple-5, 0.3);
+    }
+  }
+}
+
+.fm-timeline-week-label {
+  width: 36px;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  text-align: right;
+  padding-right: 6px;
+}
+
+.fm-timeline-week-track-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-timeline-week-events {
+  position: relative;
+  height: 8px;
+  margin-bottom: 1px;
+}
+
+.fm-timeline-week-track {
+  position: relative;
+  height: 22px;
+  background: $gray-100;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+// ── Responsive ──
+@media (max-width: 768px) {
+  .fm-timeline-legend {
+    display: none !important;
+  }
+}
+
+// =============================================================================
+// Dark Theme Overrides
+// =============================================================================
+[data-bs-theme="dark"] {
+  // Body
+  body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+  }
+
+  // Page header
+  .fm-page-header {
+    .page-title {
+      color: #f0f0f0;
+    }
+    .page-subtitle {
+      color: #999;
+    }
+  }
+
+  // Cards
+  .fm-card {
+    background: #16213e;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .fm-card-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+
+      .card-title {
+        color: #f0f0f0;
+      }
+    }
+
+    .fm-card-footer {
+      background-color: #0f1a30;
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  // Player cards
+  .fm-player-card {
+    background: #16213e;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+
+    .player-card-body {
+      .player-info-row {
+        &:not(:last-child) {
+          border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+        .info-label { color: #999; }
+        .info-value { color: #ddd; }
+      }
+    }
+
+    .player-card-footer {
+      background-color: #0f1a30;
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  // Stat cards
+  .fm-stat-card {
+    background: #16213e;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+
+    .stat-content {
+      .stat-value { color: #f0f0f0; }
+      .stat-label { color: #999; }
+    }
+  }
+
+  // Bootstrap card override (library cards)
+  .card {
+    background-color: #16213e;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+
+    .card-body {
+      color: #e0e0e0;
+    }
+  }
+
+  // Tables
+  .fm-table {
+    tbody {
+      tr:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+      tr:not(:last-child) td {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+      }
+      td {
+        color: #ddd;
+      }
+    }
+  }
+
+  // Search bar
+  .fm-search-bar {
+    .search-input-wrapper .search-input {
+      background: #16213e;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #e0e0e0;
+
+      &::placeholder { color: #666; }
+      &:focus {
+        border-color: $anthias-purple-5;
+        background: #1a2540;
+      }
+    }
+    .filter-select {
+      background: #16213e;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #e0e0e0;
+    }
+  }
+
+  // Forms
+  .form-control, .form-select {
+    background-color: #1a2540;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e0e0e0;
+
+    &:focus {
+      background-color: #1e2d4a;
+      border-color: $anthias-purple-5;
+      color: #f0f0f0;
+    }
+
+    &::placeholder { color: #666; }
+  }
+
+  .form-label {
+    color: #ccc;
+  }
+
+  .form-text {
+    color: #888;
+  }
+
+  .form-check-label {
+    color: #ccc;
+  }
+
+  // Empty state
+  .fm-empty-state {
+    .empty-title { color: #ccc; }
+  }
+
+  // Toast
+  .fm-toast {
+    background: #16213e;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+    .toast-message { color: #ddd; }
+  }
+
+  // SweetAlert2
+  .swal2-popup {
+    background: #16213e !important;
+    color: #e0e0e0 !important;
+
+    .swal2-title { color: #f0f0f0 !important; }
+    .swal2-html-container { color: #ccc !important; }
+    .swal2-cancel {
+      background-color: #2a3555 !important;
+      color: #ddd !important;
+    }
+  }
+
+  // Scrollbar
+  &::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-track {
+    background: #0f1a30;
+  }
+  &::-webkit-scrollbar-thumb,
+  ::-webkit-scrollbar-thumb {
+    background: #3a4565;
+    &:hover { background: #4a5575; }
+  }
+
+  // Dropzone
+  .border-secondary {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  // Text muted override
+  .text-muted {
+    color: #888 !important;
+  }
+
+  // Modal
+  .modal-content {
+    background-color: #16213e;
+    color: #e0e0e0;
+  }
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  // Badge overrides for dark
+  .badge.bg-secondary {
+    background-color: #3a4565 !important;
+  }
+
+  // Timeline
+  .fm-timeline-pills {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .fm-timeline-pill {
+    color: #999;
+    &:not(:last-child) {
+      border-right-color: rgba(255, 255, 255, 0.15);
+    }
+    &:hover {
+      color: #ccc;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    &.fm-timeline-pill-active {
+      background: $anthias-purple-5;
+      color: $white;
+    }
+  }
+
+  .fm-timeline-legend-item {
+    color: #999;
+  }
+
+  .fm-timeline-track,
+  .fm-timeline-week-track {
+    background: #1a2540;
+  }
+
+  .fm-timeline-gridline {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .fm-timeline-bar-label {
+    color: #ddd;
+  }
+
+  .fm-timeline-tooltip {
+    background: #16213e;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+    div {
+      color: #999;
+    }
+  }
+
+  .fm-timeline-week-label {
+    color: #999;
+  }
+
+  .fm-timeline-week-today {
+    .fm-timeline-week-label {
+      color: lighten($anthias-purple-5, 15%);
+    }
+    .fm-timeline-week-track {
+      outline-color: rgba($anthias-purple-5, 0.4);
+    }
+  }
+
+  .fm-timeline-hours span,
+  .fm-timeline-week-hours span {
+    color: #888;
+  }
+
+  .fm-timeline-event-label {
+    color: #999;
+  }
+
+  .fm-timeline-cal-icon {
+    color: lighten($anthias-purple-5, 15%);
+  }
+
+  .fm-timeline-date-input {
+    background: #1a2540;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ddd;
+    color-scheme: dark;
+
+    &:hover {
+      border-color: $anthias-purple-5;
+    }
+    &:focus {
+      border-color: $anthias-purple-5;
+      background: #1e2d4a;
+    }
+  }
+
+  .fm-timeline-week-range {
+    color: #888;
+  }
+
+  .fm-timeline-today-btn {
+    color: #999;
+    border-color: rgba(255, 255, 255, 0.15);
+    &:hover {
+      color: #ccc;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}

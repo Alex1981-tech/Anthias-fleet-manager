@@ -1,0 +1,16 @@
+node_modules/
+static/dist/
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+*.log
+.DS_Store
+.git/
+.github/
+.vscode/
+*.md
+!requirements.txt
+deploy_files/

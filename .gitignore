@@ -1,0 +1,14 @@
+node_modules/
+static/dist/
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+deploy_files/
+*.log
+.DS_Store
+AUDIT.md
+CLAUDE.md
+PROVISION_PLAN.md

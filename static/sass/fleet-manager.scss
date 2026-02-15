@@ -1,0 +1,22 @@
+// =============================================================================
+// Anthias Fleet Manager - Main SCSS Entry Point
+// =============================================================================
+//
+// Import order matters:
+// 1. Anthias design system variables (colors, typography, spacing, etc.)
+// 2. Bootstrap variable overrides (must come before Bootstrap import)
+// 3. Bootstrap framework
+// 4. Custom Fleet Manager styles (uses both Anthias vars and Bootstrap)
+// =============================================================================
+
+// 1. Anthias Design System Variables
+@import 'variables';
+
+// 2. Bootstrap Variable Overrides
+@import 'bootstrap-variables';
+
+// 3. Bootstrap 5 Framework
+@import '~bootstrap/scss/bootstrap';
+
+// 4. Fleet Manager Custom Styles
+@import 'styles';

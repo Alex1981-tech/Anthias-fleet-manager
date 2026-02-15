@@ -1,0 +1,118 @@
+// =============================================================================
+// Anthias Fleet Manager - Design System Variables
+// Adapted from the Anthias digital signage player UI
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Purple Theme
+// -----------------------------------------------------------------------------
+$anthias-purple-1: #270035;    // Darkest - navbar, footer, primary dark
+$anthias-purple-2: #492955;    // Dark accent - sidebar, hover states
+$anthias-purple-3: #52335D;    // Medium - borders, secondary elements
+$anthias-purple-4: #D4CCD7;    // Light - muted text, disabled states
+$anthias-purple-5: #8819C7;    // Vivid - info badges, links, accents
+
+// -----------------------------------------------------------------------------
+// Yellow Theme
+// -----------------------------------------------------------------------------
+$anthias-yellow-1: #FFF963;    // Lightest - highlights, hover glow
+$anthias-yellow-2: #FFD800;    // Deep - secondary buttons, borders
+$anthias-yellow-3: #FFE11A;    // Primary - main CTA, active states
+$anthias-yellow-4: #FFF3A3;    // Pale - background tints, subtle highlights
+$anthias-yellow-gradient: linear-gradient(133.73deg, $anthias-yellow-1, $anthias-yellow-2);
+
+// -----------------------------------------------------------------------------
+// Neutral / Gray Palette
+// -----------------------------------------------------------------------------
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+
+// -----------------------------------------------------------------------------
+// Semantic Colors
+// -----------------------------------------------------------------------------
+$color-success: #28a745;
+$color-danger:  #dc3545;
+$color-warning: #ffc107;
+$color-info:    $anthias-purple-5;
+
+// Status indicator colors
+$status-online:  #28a745;
+$status-offline: #dc3545;
+$status-unknown: $gray-500;
+
+// -----------------------------------------------------------------------------
+// Typography
+// -----------------------------------------------------------------------------
+$font-family-primary: "Plus Jakarta Sans", Helvetica, Arial, sans-serif;
+$font-family-mono:    "Fira Code", "Cascadia Code", "Consolas", monospace;
+
+$font-size-base:  1rem;      // 16px
+$font-size-sm:    0.875rem;  // 14px
+$font-size-lg:    1.125rem;  // 18px
+$font-size-xl:    1.25rem;   // 20px
+
+$font-weight-light:   300;
+$font-weight-normal:  400;
+$font-weight-medium:  500;
+$font-weight-semibold: 600;
+$font-weight-bold:    700;
+
+$line-height-base:  1.5;
+$line-height-tight: 1.25;
+$line-height-loose: 1.75;
+
+// -----------------------------------------------------------------------------
+// Spacing
+// -----------------------------------------------------------------------------
+$spacer: 1rem;
+
+// -----------------------------------------------------------------------------
+// Layout
+// -----------------------------------------------------------------------------
+$navbar-height:    85px;
+$footer-height:    60px;
+$sidebar-width:    260px;
+$content-max-width: 1400px;
+
+// -----------------------------------------------------------------------------
+// Borders & Radius
+// -----------------------------------------------------------------------------
+$border-radius-sm: 0.25rem;
+$border-radius:    0.375rem;
+$border-radius-lg: 0.5rem;
+$border-radius-xl: 1rem;
+$border-width:     1px;
+
+// -----------------------------------------------------------------------------
+// Shadows
+// -----------------------------------------------------------------------------
+$shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow:      0 2px 8px rgba(39, 0, 53, 0.1);
+$shadow-lg:   0 4px 16px rgba(39, 0, 53, 0.15);
+$shadow-card: 0 2px 12px rgba(39, 0, 53, 0.08);
+
+// -----------------------------------------------------------------------------
+// Transitions
+// -----------------------------------------------------------------------------
+$transition-base:     all 0.2s ease-in-out;
+$transition-fast:     all 0.15s ease-in-out;
+$transition-slow:     all 0.3s ease-in-out;
+
+// -----------------------------------------------------------------------------
+// Z-Index Scale
+// -----------------------------------------------------------------------------
+$z-dropdown:  1000;
+$z-sticky:    1020;
+$z-fixed:     1030;
+$z-offcanvas: 1040;
+$z-modal:     1050;
+$z-popover:   1060;
+$z-tooltip:   1070;
+$z-toast:     1080;

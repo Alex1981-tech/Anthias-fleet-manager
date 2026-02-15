@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Anthias Fleet Manager</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}"/>
+    <link href="{% static 'dist/css/fleet-manager.css' %}" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <script>
+        (function(){var t=localStorage.getItem('fm_theme');if(t==='dark')document.documentElement.setAttribute('data-bs-theme','dark')})();
+    </script>
+    <div id="root"></div>
+    <script src="{% static 'dist/js/fleet-manager.js' %}"></script>
+</body>
+</html>
