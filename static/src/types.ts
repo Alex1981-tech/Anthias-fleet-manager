@@ -140,6 +140,27 @@ export interface ScheduleStatus {
   using_default: boolean
 }
 
+export interface CctvCamera {
+  id: string
+  name: string
+  rtsp_url: string
+  sort_order: number
+}
+
+export interface CctvConfig {
+  id: string
+  name: string
+  display_mode: 'mosaic' | 'rotation'
+  rotation_interval: number
+  resolution: string
+  fps: number
+  username: string
+  has_password: boolean
+  is_active: boolean
+  cameras: CctvCamera[]
+  created_at: string
+}
+
 export interface DeployTask {
   id: string
   name: string

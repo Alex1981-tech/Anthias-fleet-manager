@@ -5,6 +5,7 @@
     "groups": "Групи",
     "content": "Контент",
     "history": "Історія",
+    "cctv": "CCTV",
     "settings": "Налаштування"
   },
   "dashboard": {
@@ -405,7 +406,9 @@
       "darkLightTheme": "Підтримка темної/світлої теми",
       "multiLanguage": "Мультимовна підтримка (EN, UK, FR, DE, PL)",
       "securityHardening": "Підвищення безпеки (10 виправлень)",
-      "autoDeployUpdate": "Авто-деплой через GHCR + Watchtower з інтерфейсом керування оновленнями"
+      "autoDeployUpdate": "Авто-деплой через GHCR + Watchtower з інтерфейсом керування оновленнями",
+      "cctvStreams": "CCTV потоки — управління камерами спостереження з режимами мозаїки та ротації",
+      "historyFilters": "Фільтри дати/часу та назви контенту на сторінці історії"
     }
   },
   "updates": {
@@ -424,6 +427,45 @@
     "updateFailed": "Не вдалося запустити оновлення. Перевірте сервіс Watchtower.",
     "autoUpdate": "Авто-оновлення",
     "autoUpdateDesc": "Автоматично перевіряти та застосовувати оновлення через Watchtower."
+  },
+  "cctv": {
+    "title": "CCTV Потоки",
+    "subtitle": "Керування камерами спостереження та відеопотоками.",
+    "addConfig": "Додати конфігурацію",
+    "editConfig": "Редагувати конфігурацію",
+    "deleteConfig": "Видалити конфігурацію",
+    "cameras": "Камери",
+    "addCamera": "Додати камеру",
+    "cameraName": "Назва камери",
+    "cameraNamePlaceholder": "напр. Вхід, Паркінг",
+    "cameraUrl": "RTSP URL",
+    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
+    "credentials": "Облікові дані",
+    "username": "Логін",
+    "password": "Пароль",
+    "passwordHint": "Залиште порожнім, щоб зберегти поточний",
+    "displayMode": "Режим відображення",
+    "mosaic": "Мозаїка",
+    "rotation": "Ротація",
+    "rotationInterval": "Інтервал ротації",
+    "rotationIntervalSec": "сек",
+    "resolution": "Роздільність",
+    "fps": "FPS",
+    "start": "Запустити",
+    "stop": "Зупинити",
+    "running": "Працює",
+    "stopped": "Зупинено",
+    "copyUrl": "Копіювати URL",
+    "urlCopied": "URL скопійовано",
+    "confirmDelete": "Видалити цю конфігурацію CCTV? Потік буде зупинено.",
+    "streamStarted": "Потік запущено",
+    "streamStopped": "Потік зупинено",
+    "streamFailed": "Не вдалося запустити потік",
+    "noConfigs": "Немає конфігурацій CCTV",
+    "noConfigsDesc": "Додайте конфігурацію, щоб почати трансляцію камер спостереження.",
+    "noCameras": "Додайте хоча б одну камеру",
+    "configName": "Назва конфігурації",
+    "configNamePlaceholder": "напр. Камери офісу"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

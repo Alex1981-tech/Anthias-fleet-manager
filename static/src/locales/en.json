@@ -5,6 +5,7 @@
     "groups": "Groups",
     "content": "Content",
     "history": "History",
+    "cctv": "CCTV",
     "settings": "Settings"
   },
   "dashboard": {
@@ -405,7 +406,9 @@
       "darkLightTheme": "Dark/light theme support",
       "multiLanguage": "Multi-language support (EN, UK, FR, DE, PL)",
       "securityHardening": "Security hardening (10 fixes)",
-      "autoDeployUpdate": "Auto-deploy via GHCR + Watchtower with update management UI"
+      "autoDeployUpdate": "Auto-deploy via GHCR + Watchtower with update management UI",
+      "cctvStreams": "CCTV Streams — surveillance camera management with mosaic/rotation display modes",
+      "historyFilters": "History page datetime and content name filters"
     }
   },
   "updates": {
@@ -424,6 +427,45 @@
     "updateFailed": "Failed to trigger update. Check Watchtower service.",
     "autoUpdate": "Auto-update",
     "autoUpdateDesc": "Automatically check and apply updates via Watchtower."
+  },
+  "cctv": {
+    "title": "CCTV Streams",
+    "subtitle": "Manage surveillance cameras and video streams.",
+    "addConfig": "Add Configuration",
+    "editConfig": "Edit Configuration",
+    "deleteConfig": "Delete Configuration",
+    "cameras": "Cameras",
+    "addCamera": "Add Camera",
+    "cameraName": "Camera Name",
+    "cameraNamePlaceholder": "e.g. Entrance, Parking",
+    "cameraUrl": "RTSP URL",
+    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
+    "credentials": "Credentials",
+    "username": "Username",
+    "password": "Password",
+    "passwordHint": "Leave empty to keep current",
+    "displayMode": "Display Mode",
+    "mosaic": "Mosaic",
+    "rotation": "Rotation",
+    "rotationInterval": "Rotation Interval",
+    "rotationIntervalSec": "sec",
+    "resolution": "Resolution",
+    "fps": "FPS",
+    "start": "Start",
+    "stop": "Stop",
+    "running": "Running",
+    "stopped": "Stopped",
+    "copyUrl": "Copy URL",
+    "urlCopied": "URL copied to clipboard",
+    "confirmDelete": "Delete this CCTV configuration? The stream will be stopped.",
+    "streamStarted": "Stream started",
+    "streamStopped": "Stream stopped",
+    "streamFailed": "Failed to start stream",
+    "noConfigs": "No CCTV configurations",
+    "noConfigsDesc": "Add a configuration to start streaming surveillance cameras.",
+    "noCameras": "Add at least one camera",
+    "configName": "Configuration Name",
+    "configNamePlaceholder": "e.g. Office Cameras"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

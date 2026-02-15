@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config_name }} — CCTV</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+        video, #snapshot { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #snapshot.active { display: block; }
+        video.active { display: block; }
+        #status {
+            position: absolute;
+            bottom: 10px; left: 10px;
+            color: rgba(255,255,255,0.6);
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 10;
+        }
+        #status.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay muted playsinline></video>
+    <img id="snapshot" alt="">
+    <div id="status">...</div>
+
+    <script>
+        var CONFIG_ID = '{{ config_id }}';
+        var DISPLAY_MODE = '{{ display_mode }}';
+        var ROTATION_INTERVAL = {{ rotation_interval }};
+        var CAMERA_COUNT = {{ camera_count }};
+
+        var video = document.getElementById('video');
+        var snapshot = document.getElementById('snapshot');
+        var statusDiv = document.getElementById('status');
+        var hlsPlaying = false;
+        var snapshotMode = false;
+        var snapshotTimer = null;
+        var hideTimer = null;
+
+        function log(msg) { statusDiv.textContent = msg; }
+        function hideStatus() { statusDiv.classList.add('hidden'); }
+
+        var hlsSrc = DISPLAY_MODE === 'mosaic'
+            ? '/media/cctv/' + CONFIG_ID + '/stream.m3u8'
+            : '/media/cctv/' + CONFIG_ID + '/cam_0/stream.m3u8';
+
+        var snapshotSrc = '/media/cctv/' + CONFIG_ID + '/snapshot.jpg';
+
+        // Strategy: try HLS first (for capable browsers), fallback to JPEG snapshot
+        tryHLS();
+
+        function tryHLS() {
+            log('Trying HLS...');
+
+            // Load hls.js
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1';
+            script.onload = function() {
+                if (Hls.isSupported()) {
+                    log('hls.js: MSE OK');
+                    initHLS(hlsSrc);
+                } else {
+                    log('MSE not supported');
+                    startSnapshotMode();
+                }
+            };
+            script.onerror = function() {
+                log('CDN unavailable');
+                startSnapshotMode();
+            };
+            document.head.appendChild(script);
+
+            // If HLS doesn't start playing within 8 seconds, switch to snapshot mode
+            setTimeout(function() {
+                if (!hlsPlaying && !snapshotMode) {
+                    log('HLS timeout');
+                    startSnapshotMode();
+                }
+            }, 8000);
+        }
+
+        function initHLS(src) {
+            var hls = new Hls({
+                liveDurationInfinity: true,
+                liveBackBufferLength: 0,
+                maxBufferLength: 5,
+                maxMaxBufferLength: 10,
+                enableWorker: true,
+                lowLatencyMode: true,
+            });
+
+            hls.loadSource(src);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play().catch(function() {});
+            });
+
+            video.addEventListener('playing', function() {
+                if (!hlsPlaying) {
+                    hlsPlaying = true;
+                    video.classList.add('active');
+                    snapshot.classList.remove('active');
+                    log('HLS OK');
+                    hideTimer = setTimeout(hideStatus, 5000);
+                }
+            });
+
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                        hls.recoverMediaError();
+                    } else {
+                        // Fatal network or other error — fall back to snapshot
+                        if (!snapshotMode) {
+                            log('HLS error: ' + data.details);
+                            startSnapshotMode();
+                        }
+                    }
+                }
+            });
+
+            if (DISPLAY_MODE === 'rotation' && CAMERA_COUNT > 1) {
+                var currentCam = 0;
+                setInterval(function() {
+                    currentCam = (currentCam + 1) % CAMERA_COUNT;
+                    hls.loadSource('/media/cctv/' + CONFIG_ID + '/cam_' + currentCam + '/stream.m3u8');
+                }, ROTATION_INTERVAL * 1000);
+            }
+        }
+
+        function startSnapshotMode() {
+            if (snapshotMode) return;
+            snapshotMode = true;
+            video.classList.remove('active');
+            snapshot.classList.add('active');
+            log('Snapshot mode');
+
+            // Load snapshot with cache-busting
+            function loadSnapshot() {
+                var img = new Image();
+                img.onload = function() {
+                    snapshot.src = img.src;
+                    if (!hideTimer) {
+                        hideTimer = setTimeout(hideStatus, 5000);
+                    }
+                };
+                img.onerror = function() {
+                    // Snapshot not ready yet, retry
+                };
+                img.src = snapshotSrc + '?t=' + Date.now();
+            }
+
+            loadSnapshot();
+            snapshotTimer = setInterval(loadSnapshot, 2000);
+        }
+    </script>
+</body>
+</html>

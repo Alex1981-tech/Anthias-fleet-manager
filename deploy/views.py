@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from django.db.models import Count
 from rest_framework import parsers, serializers, status, viewsets
@@ -52,7 +53,10 @@ class MediaFileViewSet(viewsets.ModelViewSet):
             elif file_type == 'image':
                 generate_image_thumbnail.delay(str(instance.id))
         elif source_url:
-            if not _is_safe_url(source_url):
+            # Allow CCTV player URLs on the same server (local network)
+            parsed = urlparse(source_url)
+            is_cctv_url = parsed.path.startswith('/cctv/')
+            if not is_cctv_url and not _is_safe_url(source_url):
                 raise serializers.ValidationError({'source_url': 'URL points to a private or disallowed network.'})
             name = self.request.data.get('name') or source_url
             instance = serializer.save(

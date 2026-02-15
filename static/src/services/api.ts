@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -345,6 +345,40 @@ export const bulk = {
 
   shutdown(playerIds: string[]): Promise<{ success: boolean }> {
     return apiRequest('POST', '/bulk/shutdown/', { player_ids: playerIds })
+  },
+}
+
+export const cctv = {
+  list(): Promise<CctvConfig[]> {
+    return apiRequest<CctvConfig[]>('GET', '/cctv/')
+  },
+
+  get(id: string): Promise<CctvConfig> {
+    return apiRequest<CctvConfig>('GET', `/cctv/${id}/`)
+  },
+
+  create(data: Record<string, any>): Promise<CctvConfig> {
+    return apiRequest<CctvConfig>('POST', '/cctv/', data)
+  },
+
+  update(id: string, data: Record<string, any>): Promise<CctvConfig> {
+    return apiRequest<CctvConfig>('PUT', `/cctv/${id}/`, data)
+  },
+
+  delete(id: string): Promise<void> {
+    return apiRequest<void>('DELETE', `/cctv/${id}/`)
+  },
+
+  start(id: string): Promise<{ success: boolean; status: string }> {
+    return apiRequest('POST', `/cctv/${id}/start/`)
+  },
+
+  stop(id: string): Promise<{ success: boolean; status: string }> {
+    return apiRequest('POST', `/cctv/${id}/stop/`)
+  },
+
+  status(id: string): Promise<{ status: string; pids: number[] }> {
+    return apiRequest('GET', `/cctv/${id}/status/`)
   },
 }
 

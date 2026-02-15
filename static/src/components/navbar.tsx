@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FaThLarge, FaPhotoVideo, FaHistory, FaCog, FaBars, FaTimes } from 'react-icons/fa'
+import { FaThLarge, FaPhotoVideo, FaHistory, FaCog, FaBars, FaTimes, FaVideo } from 'react-icons/fa'
 import LanguageSwitcher from './language-switcher'
 import { APP_VERSION } from '../changelog'
 import { system } from '@/services/api'
@@ -28,6 +28,7 @@ const Navbar: React.FC = () => {
   const navItems = [
     { to: '/', icon: <FaThLarge className="nav-icon" />, label: t('nav.dashboard'), end: true },
     { to: '/content', icon: <FaPhotoVideo className="nav-icon" />, label: t('nav.content'), end: true },
+    { to: '/cctv', icon: <FaVideo className="nav-icon" />, label: t('nav.cctv'), end: true },
     { to: '/deploy/history', icon: <FaHistory className="nav-icon" />, label: t('nav.history'), end: false },
     { to: '/settings', icon: <FaCog className="nav-icon" />, label: t('nav.settings'), end: false },
   ]

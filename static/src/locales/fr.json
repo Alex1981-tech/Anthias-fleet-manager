@@ -5,6 +5,7 @@
     "groups": "Groupes",
     "content": "Contenu",
     "history": "Historique",
+    "cctv": "CCTV",
     "settings": "Paramètres"
   },
   "dashboard": {
@@ -404,7 +405,9 @@
       "darkLightTheme": "Thème sombre/clair",
       "multiLanguage": "Support multilingue (EN, UK, FR, DE, PL)",
       "securityHardening": "Renforcement de la sécurité (10 corrections)",
-      "autoDeployUpdate": "Déploiement automatique via GHCR + Watchtower avec interface de gestion des mises à jour"
+      "autoDeployUpdate": "Déploiement automatique via GHCR + Watchtower avec interface de gestion des mises à jour",
+      "cctvStreams": "Flux CCTV — gestion des caméras de surveillance avec modes mosaïque et rotation",
+      "historyFilters": "Filtres de date/heure et de nom de contenu sur la page d'historique"
     }
   },
   "updates": {
@@ -423,6 +426,45 @@
     "updateFailed": "Échec du lancement de la mise à jour. Vérifiez le service Watchtower.",
     "autoUpdate": "Mise à jour automatique",
     "autoUpdateDesc": "Vérifier et appliquer automatiquement les mises à jour via Watchtower."
+  },
+  "cctv": {
+    "title": "Flux CCTV",
+    "subtitle": "Gérer les caméras de surveillance et les flux vidéo.",
+    "addConfig": "Ajouter une configuration",
+    "editConfig": "Modifier la configuration",
+    "deleteConfig": "Supprimer la configuration",
+    "cameras": "Caméras",
+    "addCamera": "Ajouter une caméra",
+    "cameraName": "Nom de la caméra",
+    "cameraNamePlaceholder": "ex. Entrée, Parking",
+    "cameraUrl": "URL RTSP",
+    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
+    "credentials": "Identifiants",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "passwordHint": "Laisser vide pour conserver l'actuel",
+    "displayMode": "Mode d'affichage",
+    "mosaic": "Mosaïque",
+    "rotation": "Rotation",
+    "rotationInterval": "Intervalle de rotation",
+    "rotationIntervalSec": "sec",
+    "resolution": "Résolution",
+    "fps": "FPS",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "running": "En cours",
+    "stopped": "Arrêté",
+    "copyUrl": "Copier l'URL",
+    "urlCopied": "URL copiée dans le presse-papiers",
+    "confirmDelete": "Supprimer cette configuration CCTV ? Le flux sera arrêté.",
+    "streamStarted": "Flux démarré",
+    "streamStopped": "Flux arrêté",
+    "streamFailed": "Échec du démarrage du flux",
+    "noConfigs": "Aucune configuration CCTV",
+    "noConfigsDesc": "Ajoutez une configuration pour diffuser les caméras de surveillance.",
+    "noCameras": "Ajoutez au moins une caméra",
+    "configName": "Nom de la configuration",
+    "configNamePlaceholder": "ex. Caméras du bureau"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

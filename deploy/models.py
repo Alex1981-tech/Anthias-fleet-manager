@@ -104,3 +104,41 @@ class DeployTask(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.status})'
+
+
+class CctvConfig(models.Model):
+    DISPLAY_MODE_CHOICES = [
+        ('mosaic', 'Mosaic'),
+        ('rotation', 'Rotation'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    display_mode = models.CharField(max_length=10, choices=DISPLAY_MODE_CHOICES, default='mosaic')
+    rotation_interval = models.IntegerField(default=10)
+    resolution = models.CharField(max_length=20, default='1920x1080')
+    fps = models.IntegerField(default=15)
+    username = models.CharField(max_length=255, blank=True, default='')
+    password = models.CharField(max_length=255, blank=True, default='')
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class CctvCamera(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    config = models.ForeignKey(CctvConfig, on_delete=models.CASCADE, related_name='cameras')
+    name = models.CharField(max_length=255, blank=True, default='')
+    rtsp_url = models.TextField()
+    sort_order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['sort_order']
+
+    def __str__(self):
+        return self.name or self.rtsp_url

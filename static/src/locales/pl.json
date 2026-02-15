@@ -5,6 +5,7 @@
     "groups": "Grupy",
     "content": "Zawartość",
     "history": "Historia",
+    "cctv": "CCTV",
     "settings": "Ustawienia"
   },
   "dashboard": {
@@ -404,7 +405,9 @@
       "darkLightTheme": "Obsługa ciemnego/jasnego motywu",
       "multiLanguage": "Wielojęzyczne wsparcie (EN, UK, FR, DE, PL)",
       "securityHardening": "Wzmocnienie zabezpieczeń (10 poprawek)",
-      "autoDeployUpdate": "Auto-deploy przez GHCR + Watchtower z interfejsem zarządzania aktualizacjami"
+      "autoDeployUpdate": "Auto-deploy przez GHCR + Watchtower z interfejsem zarządzania aktualizacjami",
+      "cctvStreams": "Strumienie CCTV — zarządzanie kamerami monitoringu z trybami mozaiki i rotacji",
+      "historyFilters": "Filtry daty/czasu i nazwy treści na stronie historii"
     }
   },
   "updates": {
@@ -423,6 +426,45 @@
     "updateFailed": "Nie udało się uruchomić aktualizacji. Sprawdź usługę Watchtower.",
     "autoUpdate": "Automatyczna aktualizacja",
     "autoUpdateDesc": "Automatycznie sprawdzaj i stosuj aktualizacje przez Watchtower."
+  },
+  "cctv": {
+    "title": "Strumienie CCTV",
+    "subtitle": "Zarządzaj kamerami monitoringu i strumieniami wideo.",
+    "addConfig": "Dodaj konfigurację",
+    "editConfig": "Edytuj konfigurację",
+    "deleteConfig": "Usuń konfigurację",
+    "cameras": "Kamery",
+    "addCamera": "Dodaj kamerę",
+    "cameraName": "Nazwa kamery",
+    "cameraNamePlaceholder": "np. Wejście, Parking",
+    "cameraUrl": "URL RTSP",
+    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
+    "credentials": "Dane logowania",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło",
+    "passwordHint": "Zostaw puste, aby zachować aktualne",
+    "displayMode": "Tryb wyświetlania",
+    "mosaic": "Mozaika",
+    "rotation": "Rotacja",
+    "rotationInterval": "Interwał rotacji",
+    "rotationIntervalSec": "sek",
+    "resolution": "Rozdzielczość",
+    "fps": "FPS",
+    "start": "Uruchom",
+    "stop": "Zatrzymaj",
+    "running": "Działa",
+    "stopped": "Zatrzymany",
+    "copyUrl": "Kopiuj URL",
+    "urlCopied": "URL skopiowany do schowka",
+    "confirmDelete": "Usunąć tę konfigurację CCTV? Strumień zostanie zatrzymany.",
+    "streamStarted": "Strumień uruchomiony",
+    "streamStopped": "Strumień zatrzymany",
+    "streamFailed": "Nie udało się uruchomić strumienia",
+    "noConfigs": "Brak konfiguracji CCTV",
+    "noConfigsDesc": "Dodaj konfigurację, aby rozpocząć strumieniowanie kamer monitoringu.",
+    "noCameras": "Dodaj co najmniej jedną kamerę",
+    "configName": "Nazwa konfiguracji",
+    "configNamePlaceholder": "np. Kamery biurowe"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"
