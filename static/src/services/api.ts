@@ -380,6 +380,10 @@ export const cctv = {
   status(id: string): Promise<{ status: string; pids: number[] }> {
     return apiRequest('GET', `/cctv/${id}/status/`)
   },
+
+  requestStart(id: string): Promise<{ success: boolean; status: string }> {
+    return apiRequest('POST', `/cctv/${id}/request-start/`)
+  },
 }
 
 export const system = {

@@ -25,8 +25,10 @@ import {
   FaList,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
-import { media as mediaApi, folders as foldersApi, playbackLog } from '@/services/api'
-import type { MediaFile, MediaFolder } from '@/types'
+import { media as mediaApi, folders as foldersApi, playbackLog, cctv as cctvApi } from '@/services/api'
+import { CctvFormContent } from '@/components/cctv/cctv-form-modal'
+import CctvFormModal from '@/components/cctv/cctv-form-modal'
+import type { MediaFile, MediaFolder, CctvConfig } from '@/types'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -71,6 +73,8 @@ function FileTypeIcon({ type }: { type: string }) {
       return <FaVideo />
     case 'web':
       return <FaGlobe />
+    case 'cctv':
+      return <FaVideo />
     default:
       return <FaFile />
   }
@@ -84,6 +88,43 @@ function FilePreview({ file }: { file: MediaFile }) {
     objectFit: 'cover',
     borderRadius: '6px 6px 0 0',
     display: 'block',
+  }
+  if (file.file_type === 'cctv') {
+    return (
+      <div style={{ position: 'relative' }}>
+        {thumbUrl ? (
+          <img src={thumbUrl} alt={file.name} style={thumbStyle} />
+        ) : (
+          <div
+            className="d-flex flex-column align-items-center justify-content-center"
+            style={{
+              width: '100%',
+              aspectRatio: '16/9',
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+              borderRadius: '6px 6px 0 0',
+            }}
+          >
+            <FaVideo style={{ fontSize: '2.5rem', color: '#dc3545', opacity: 0.8 }} />
+          </div>
+        )}
+        <div
+          style={{
+            position: 'absolute',
+            top: '6px',
+            right: '6px',
+            background: 'rgba(220,53,69,0.9)',
+            borderRadius: '4px',
+            padding: '1px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <FaVideo style={{ color: '#fff', fontSize: '0.55rem' }} />
+          <small style={{ color: '#fff', fontSize: '0.6rem', fontWeight: 600 }}>CCTV</small>
+        </div>
+      </div>
+    )
   }
   if (file.file_type === 'image' && file.file) {
     return (
@@ -355,14 +396,16 @@ function AddContentModal({
   onClose,
   onUpload,
   onAddUrl,
+  onCctvCreated,
 }: {
   show: boolean
   onClose: () => void
   onUpload: (files: FileList | null) => void
   onAddUrl: (url: string, name: string) => Promise<void>
+  onCctvCreated: () => void
 }) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<'file' | 'url'>('file')
+  const [activeTab, setActiveTab] = useState<'file' | 'url' | 'cctv'>('file')
   const [dragOver, setDragOver] = useState(false)
   const [urlValue, setUrlValue] = useState('')
   const [urlName, setUrlName] = useState('')
@@ -385,6 +428,19 @@ function AddContentModal({
     }
   }
 
+  const handleCctvSave = async (data: Record<string, any>) => {
+    await cctvApi.create(data)
+    Swal.fire({
+      icon: 'success',
+      title: t('common.success'),
+      text: t('cctv.streamStarted'),
+      timer: 1500,
+      showConfirmButton: false,
+    })
+    onCctvCreated()
+    onClose()
+  }
+
   return (
     <div
       className="modal d-block"
@@ -394,7 +450,7 @@ function AddContentModal({
     >
       <div
         className="modal-dialog modal-dialog-centered"
-        style={{ maxWidth: '500px' }}
+        style={{ maxWidth: '700px' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-content" style={{ borderRadius: '12px', overflow: 'hidden' }}>
@@ -421,6 +477,13 @@ function AddContentModal({
               >
                 <FaGlobe className="me-1" />
                 {t('content.tabUrl')}
+              </button>
+              <button
+                className={`btn btn-link flex-fill py-2 text-decoration-none rounded-0 ${activeTab === 'cctv' ? 'fw-bold border-bottom border-2 border-primary text-primary' : 'text-muted'}`}
+                onClick={() => setActiveTab('cctv')}
+              >
+                <FaVideo className="me-1" />
+                {t('content.tabCctv')}
               </button>
             </div>
 
@@ -458,7 +521,7 @@ function AddContentModal({
                     }}
                   />
                 </>
-              ) : (
+              ) : activeTab === 'url' ? (
                 <form onSubmit={handleUrlSubmit}>
                   <div className="mb-3">
                     <label className="form-label fw-semibold">{t('content.urlLabel')}</label>
@@ -490,6 +553,11 @@ function AddContentModal({
                     {addingUrl ? t('common.loading') : t('content.addUrl')}
                   </button>
                 </form>
+              ) : (
+                <CctvFormContent
+                  onSave={handleCctvSave}
+                  submitLabel={t('content.addCctv')}
+                />
               )}
             </div>
           </div>
@@ -501,7 +569,7 @@ function AddContentModal({
 
 /* ===== Content Page ===== */
 
-type FilterType = 'all' | 'video' | 'image' | 'web'
+type FilterType = 'all' | 'video' | 'image' | 'web' | 'cctv'
 
 const ContentPage: React.FC = () => {
   const { t } = useTranslation()
@@ -513,6 +581,10 @@ const ContentPage: React.FC = () => {
   const [editName, setEditName] = useState('')
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+
+  // CCTV edit modal
+  const [editCctvConfig, setEditCctvConfig] = useState<CctvConfig | null>(null)
+  const [showCctvEditModal, setShowCctvEditModal] = useState(false)
 
   // View mode
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -576,6 +648,7 @@ const ContentPage: React.FC = () => {
       if (e.key === 'Escape') {
         if (previewFile) setPreviewFile(null)
         if (showAddModal) setShowAddModal(false)
+        if (showCctvEditModal) setShowCctvEditModal(false)
       }
     }
     window.addEventListener('keydown', handler)
@@ -740,6 +813,39 @@ const ContentPage: React.FC = () => {
     }
   }
 
+  // --- CCTV edit handler ---
+  const handleCctvEdit = async (file: MediaFile) => {
+    if (!file.cctv_config) {
+      // Fetch config from cctv API using media_file's source_url
+      try {
+        const configs = await cctvApi.list()
+        const config = configs.find((c) => c.media_file_id === file.id)
+        if (config) {
+          setEditCctvConfig(config)
+          setShowCctvEditModal(true)
+        }
+      } catch {
+        Swal.fire({ icon: 'error', title: t('common.error'), text: 'Failed to load CCTV config' })
+      }
+    } else {
+      setEditCctvConfig(file.cctv_config)
+      setShowCctvEditModal(true)
+    }
+  }
+
+  const handleCctvSave = async (data: Record<string, any>) => {
+    if (!editCctvConfig) return
+    try {
+      await cctvApi.update(editCctvConfig.id, data)
+      setShowCctvEditModal(false)
+      setEditCctvConfig(null)
+      loadFiles()
+      Swal.fire({ icon: 'success', title: t('common.success'), timer: 1200, showConfirmButton: false })
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: t('common.error'), text: String(err) })
+    }
+  }
+
   // --- Filtering ---
   const filteredFiles = files.filter((f) => {
     if (activeFilter !== 'all' && f.file_type !== activeFilter) return false
@@ -753,6 +859,7 @@ const ContentPage: React.FC = () => {
     { key: 'video', icon: <FaVideo />, label: t('content.filterVideo') },
     { key: 'image', icon: <FaImage />, label: t('content.filterImage') },
     { key: 'web', icon: <FaGlobe />, label: t('content.filterWeb') },
+    { key: 'cctv', icon: <FaVideo />, label: 'CCTV' },
   ]
 
   return (
@@ -1332,7 +1439,9 @@ const ContentPage: React.FC = () => {
                       )}
                       <div className="d-flex align-items-center gap-1 mt-1" style={{ fontSize: '0.7rem' }}>
                         <FileTypeIcon type={file.file_type} />
-                        {file.file_size > 0 ? (
+                        {file.file_type === 'cctv' ? (
+                          <span className="text-danger fw-semibold">CCTV</span>
+                        ) : file.file_size > 0 ? (
                           <span className="text-muted">{formatFileSize(file.file_size)}</span>
                         ) : file.source_url ? (
                           <span className="text-muted">{getDomain(file.source_url)}</span>
@@ -1357,7 +1466,7 @@ const ContentPage: React.FC = () => {
                         </div>
                       )}
                       <div className="d-flex align-items-center gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
-                        {file.source_url && (
+                        {file.source_url && file.file_type !== 'cctv' && (
                           <a
                             href={file.source_url}
                             target="_blank"
@@ -1368,13 +1477,23 @@ const ContentPage: React.FC = () => {
                             <FaExternalLinkAlt style={{ fontSize: '0.65rem' }} />
                           </a>
                         )}
-                        <button
-                          className="btn btn-sm btn-outline-secondary py-0 px-1"
-                          title={t('content.rename')}
-                          onClick={(e) => handleRenameStart(e, file)}
-                        >
-                          <FaPen style={{ fontSize: '0.65rem' }} />
-                        </button>
+                        {file.file_type === 'cctv' ? (
+                          <button
+                            className="btn btn-sm btn-outline-secondary py-0 px-1"
+                            title={t('common.edit')}
+                            onClick={(e) => { e.stopPropagation(); handleCctvEdit(file) }}
+                          >
+                            <FaPen style={{ fontSize: '0.65rem' }} />
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-sm btn-outline-secondary py-0 px-1"
+                            title={t('content.rename')}
+                            onClick={(e) => handleRenameStart(e, file)}
+                          >
+                            <FaPen style={{ fontSize: '0.65rem' }} />
+                          </button>
+                        )}
                         <button
                           className="btn btn-sm btn-outline-danger py-0 px-1"
                           title={t('common.delete')}
@@ -1407,6 +1526,15 @@ const ContentPage: React.FC = () => {
         onClose={() => setShowAddModal(false)}
         onUpload={handleUpload}
         onAddUrl={handleAddUrl}
+        onCctvCreated={() => { loadFiles(); loadFolders() }}
+      />
+
+      {/* CCTV Edit Modal */}
+      <CctvFormModal
+        show={showCctvEditModal}
+        onClose={() => { setShowCctvEditModal(false); setEditCctvConfig(null) }}
+        onSave={handleCctvSave}
+        config={editCctvConfig}
       />
     </div>
   )

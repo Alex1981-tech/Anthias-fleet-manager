@@ -1,10 +1,13 @@
 import logging
+import threading
 
+from django.utils import timezone
 from rest_framework import serializers, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import CctvCamera, CctvConfig
+from .models import CctvCamera, CctvConfig, MediaFile
 
 logger = logging.getLogger(__name__)
 
@@ -18,23 +21,16 @@ class CctvCameraSerializer(serializers.ModelSerializer):
 
 class CctvConfigSerializer(serializers.ModelSerializer):
     cameras = CctvCameraSerializer(many=True, read_only=True)
+    media_file_id = serializers.UUIDField(source='media_file.id', read_only=True, default=None)
 
     class Meta:
         model = CctvConfig
         fields = [
             'id', 'name', 'display_mode', 'rotation_interval',
-            'resolution', 'fps', 'username', 'password',
-            'is_active', 'cameras', 'created_at',
+            'resolution', 'fps', 'is_active', 'cameras',
+            'media_file_id', 'created_at',
         ]
         read_only_fields = ['id', 'is_active', 'created_at']
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['has_password'] = bool(instance.password)
-        return data
 
 
 class CctvConfigWriteSerializer(serializers.ModelSerializer):
@@ -44,8 +40,7 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
         model = CctvConfig
         fields = [
             'id', 'name', 'display_mode', 'rotation_interval',
-            'resolution', 'fps', 'username', 'password',
-            'cameras',
+            'resolution', 'fps', 'cameras',
         ]
         read_only_fields = ['id']
 
@@ -55,14 +50,21 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
         for i, cam_data in enumerate(cameras_data):
             cam_data['sort_order'] = cam_data.get('sort_order', i)
             CctvCamera.objects.create(config=config, **cam_data)
+
+        # Auto-create linked MediaFile
+        media_file = MediaFile.objects.create(
+            name=config.name,
+            source_url=f'/cctv/{config.id}/',
+            file_type='cctv',
+            file_size=0,
+        )
+        config.media_file = media_file
+        config.save(update_fields=['media_file'])
+
         return config
 
     def update(self, instance, validated_data):
         cameras_data = validated_data.pop('cameras', None)
-
-        # Don't clear password if not provided
-        if 'password' not in validated_data or validated_data['password'] == '':
-            validated_data.pop('password', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -75,13 +77,18 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
                 cam_data['sort_order'] = cam_data.get('sort_order', i)
                 CctvCamera.objects.create(config=instance, **cam_data)
 
+        # Sync name to MediaFile
+        if instance.media_file and 'name' in validated_data:
+            instance.media_file.name = instance.name
+            instance.media_file.save(update_fields=['name'])
+
         return instance
 
 
 @api_view(['GET', 'POST'])
 def cctv_list(request):
     if request.method == 'GET':
-        configs = CctvConfig.objects.prefetch_related('cameras').all()
+        configs = CctvConfig.objects.prefetch_related('cameras').select_related('media_file').all()
         serializer = CctvConfigSerializer(configs, many=True)
         return Response(serializer.data)
 
@@ -97,7 +104,7 @@ def cctv_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def cctv_detail(request, config_id):
     try:
-        config = CctvConfig.objects.prefetch_related('cameras').get(pk=config_id)
+        config = CctvConfig.objects.prefetch_related('cameras').select_related('media_file').get(pk=config_id)
     except CctvConfig.DoesNotExist:
         return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -108,6 +115,9 @@ def cctv_detail(request, config_id):
         if config.is_active:
             from .cctv_service import stop_stream
             stop_stream(str(config.id))
+        # Delete linked MediaFile first
+        if config.media_file:
+            config.media_file.delete()
         config.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -130,11 +140,23 @@ def cctv_start(request, config_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    from .cctv_service import start_stream
+    from .cctv_service import start_stream, update_thumbnail
     try:
         start_stream(str(config.id))
         config.is_active = True
         config.save(update_fields=['is_active'])
+
+        # Update thumbnail after ~5s (snapshot needs time to generate)
+        def _delayed_thumbnail():
+            import time
+            time.sleep(5)
+            try:
+                update_thumbnail(str(config.id))
+            except Exception:
+                logger.debug('Failed to update CCTV thumbnail for %s', config.id)
+
+        threading.Thread(target=_delayed_thumbnail, daemon=True).start()
+
         return Response({'success': True, 'status': 'running'})
     except Exception as e:
         logger.exception('Failed to start CCTV stream %s', config_id)
@@ -168,3 +190,41 @@ def cctv_status(request, config_id):
     from .cctv_service import get_stream_status
     stream_status = get_stream_status(str(config.id))
     return Response(stream_status)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def cctv_request_start(request, config_id):
+    """Public endpoint — player calls this before showing CCTV asset."""
+    try:
+        config = CctvConfig.objects.prefetch_related('cameras').get(pk=config_id)
+    except CctvConfig.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if config.cameras.count() == 0:
+        return Response(
+            {'error': 'No cameras configured'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Update last_requested_at
+    config.last_requested_at = timezone.now()
+    config.save(update_fields=['last_requested_at'])
+
+    from .cctv_service import get_stream_status, start_stream
+    stream_status = get_stream_status(str(config.id))
+
+    if stream_status['status'] == 'running':
+        return Response({'success': True, 'status': 'running'})
+
+    try:
+        start_stream(str(config.id))
+        config.is_active = True
+        config.save(update_fields=['is_active'])
+        return Response({'success': True, 'status': 'starting'})
+    except Exception as e:
+        logger.exception('Failed to start CCTV stream %s via request-start', config_id)
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

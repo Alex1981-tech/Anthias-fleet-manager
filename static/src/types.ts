@@ -52,12 +52,13 @@ export interface MediaFile {
   source_url: string | null
   thumbnail_url: string | null
   thumbnail_file_url: string | null
-  file_type: 'image' | 'video' | 'web' | 'other'
+  file_type: 'image' | 'video' | 'web' | 'cctv' | 'other'
   file_size: number
   processing_status: 'ready' | 'processing' | 'failed'
   url: string
   folder: string | null
   folder_name: string | null
+  cctv_config?: CctvConfig | null
   created_at: string
 }
 
@@ -154,10 +155,9 @@ export interface CctvConfig {
   rotation_interval: number
   resolution: string
   fps: number
-  username: string
-  has_password: boolean
   is_active: boolean
   cameras: CctvCamera[]
+  media_file_id?: string | null
   created_at: string
 }
 

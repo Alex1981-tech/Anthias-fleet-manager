@@ -5,7 +5,6 @@
     "groups": "Gruppen",
     "content": "Inhalte",
     "history": "Verlauf",
-    "cctv": "CCTV",
     "settings": "Einstellungen"
   },
   "dashboard": {
@@ -184,7 +183,11 @@
     "confirmDeleteFolder": "Ordner löschen? Dateien bleiben in der Bibliothek.",
     "totalPlayTime": "Gesamte Wiedergabezeit",
     "viewGrid": "Raster",
-    "viewList": "Liste"
+    "viewList": "Liste",
+    "tabCctv": "CCTV",
+    "addCctv": "CCTV-Stream",
+    "cctvBadge": "CCTV",
+    "filterCctv": "CCTV"
   },
   "assets": {
     "activeAssets": "Aktive Assets",
@@ -407,7 +410,8 @@
       "securityHardening": "Sicherheitshärtung (10 Korrekturen)",
       "autoDeployUpdate": "Auto-Deploy über GHCR + Watchtower mit Update-Verwaltungsoberfläche",
       "cctvStreams": "CCTV-Streams — Überwachungskamera-Verwaltung mit Mosaik- und Rotationsanzeige",
-      "historyFilters": "Datums-/Uhrzeit- und Inhaltsfilter auf der Verlaufsseite"
+      "historyFilters": "Datums-/Uhrzeit- und Inhaltsfilter auf der Verlaufsseite",
+      "cctvContentIntegration": "CCTV-Streams in die Inhaltsseite integriert mit automatischem Start aus dem Player-Zeitplan"
     }
   },
   "updates": {
@@ -438,11 +442,7 @@
     "cameraName": "Kameraname",
     "cameraNamePlaceholder": "z.B. Eingang, Parkplatz",
     "cameraUrl": "RTSP URL",
-    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
-    "credentials": "Zugangsdaten",
-    "username": "Benutzername",
-    "password": "Passwort",
-    "passwordHint": "Leer lassen um aktuelles zu behalten",
+    "cameraUrlPlaceholder": "rtsp://user:pass@192.168.1.100:554/stream1",
     "displayMode": "Anzeigemodus",
     "mosaic": "Mosaik",
     "rotation": "Rotation",

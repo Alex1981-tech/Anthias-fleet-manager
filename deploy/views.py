@@ -24,7 +24,7 @@ class MediaFileViewSet(viewsets.ModelViewSet):
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     def get_queryset(self):
-        qs = MediaFile.objects.select_related('folder').all()
+        qs = MediaFile.objects.select_related('folder').prefetch_related('cctv_config__cameras').all()
         folder = self.request.query_params.get('folder')
         if folder == 'none':
             qs = qs.filter(folder__isnull=True)
@@ -34,6 +34,19 @@ class MediaFileViewSet(viewsets.ModelViewSet):
         if file_type:
             qs = qs.filter(file_type=file_type)
         return qs
+
+    def perform_destroy(self, instance):
+        """Delete MediaFile; if CCTV, stop stream and delete config first."""
+        if instance.file_type == 'cctv':
+            try:
+                cctv_config = instance.cctv_config
+                if cctv_config.is_active:
+                    from .cctv_service import stop_stream
+                    stop_stream(str(cctv_config.id))
+                cctv_config.delete()
+            except Exception:
+                pass  # cctv_config may not exist
+        instance.delete()
 
     def perform_create(self, serializer):
         uploaded_file = self.request.FILES.get('file')

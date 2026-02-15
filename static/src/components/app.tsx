@@ -13,7 +13,6 @@ import DeployProgress from '@/components/deploy/deploy-progress'
 import Settings from '@/components/settings/settings'
 import Login from '@/components/auth/login'
 import ChangelogPage from '@/components/changelog-page'
-import CctvPage from '@/components/cctv/cctv-page'
 
 const App: React.FC = () => {
   const { i18n } = useTranslation()
@@ -32,7 +31,6 @@ const App: React.FC = () => {
           <Route path="/players/:id" element={<PlayerDetail />} />
           <Route path="/groups" element={<GroupList />} />
           <Route path="/content" element={<ContentPage />} />
-          <Route path="/cctv" element={<CctvPage />} />
           <Route path="/deploy/history" element={<DeployHistory />} />
           <Route path="/deploy/:id" element={<DeployProgress />} />
           <Route path="/settings" element={<Settings />} />

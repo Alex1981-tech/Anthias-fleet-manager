@@ -5,9 +5,9 @@ import shutil
 import signal
 import subprocess
 import threading
-from urllib.parse import urlparse, urlunparse
 
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
 
@@ -17,17 +17,6 @@ REDIS_PID_PREFIX = 'cctv_pid_'
 
 def _get_pid_key(config_id: str) -> str:
     return f'{REDIS_PID_PREFIX}{config_id}'
-
-
-def _build_rtsp_url(rtsp_url: str, username: str, password: str) -> str:
-    """Embed credentials into RTSP URL if provided."""
-    if not username:
-        return rtsp_url
-    parsed = urlparse(rtsp_url)
-    netloc = f'{username}:{password}@{parsed.hostname}'
-    if parsed.port:
-        netloc += f':{parsed.port}'
-    return urlunparse(parsed._replace(netloc=netloc))
 
 
 def _calc_grid(n: int) -> tuple[int, int]:
@@ -66,13 +55,12 @@ def build_mosaic_command(config) -> list[str]:
 
     cmd = ['ffmpeg', '-y']
 
-    # Input streams
+    # Input streams — credentials are embedded in RTSP URL directly
     for cam in cameras:
-        url = _build_rtsp_url(cam.rtsp_url, config.username, config.password)
         cmd.extend([
             '-rtsp_transport', 'tcp',
             '-timeout', '5000000',
-            '-i', url,
+            '-i', cam.rtsp_url,
         ])
 
     if n == 1:
@@ -164,13 +152,11 @@ def build_rotation_command(config) -> list[str]:
         cam_dir = os.path.join(output_dir, f'cam_{i}')
         os.makedirs(cam_dir, exist_ok=True)
         cam_output = os.path.join(cam_dir, 'stream.m3u8')
-        url = _build_rtsp_url(cam.rtsp_url, config.username, config.password)
-
         cmd = [
             'ffmpeg', '-y',
             '-rtsp_transport', 'tcp',
             '-timeout', '5000000',
-            '-i', url,
+            '-i', cam.rtsp_url,
             '-vf', f'scale={width}:{height}',
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
@@ -290,3 +276,29 @@ def get_stream_status(config_id: str) -> dict:
     # All processes died — clean up
     cache.delete(_get_pid_key(config_id))
     return {'status': 'stopped', 'pids': []}
+
+
+def update_thumbnail(config_id: str):
+    """Copy snapshot.jpg from ffmpeg output to MediaFile.thumbnail."""
+    from .models import CctvConfig
+
+    snapshot_path = os.path.join(CCTV_MEDIA_DIR, config_id, 'snapshot.jpg')
+    if not os.path.isfile(snapshot_path):
+        return
+
+    try:
+        config = CctvConfig.objects.select_related('media_file').get(pk=config_id)
+    except CctvConfig.DoesNotExist:
+        return
+
+    if not config.media_file:
+        return
+
+    with open(snapshot_path, 'rb') as f:
+        content = f.read()
+
+    # Save snapshot as thumbnail on the MediaFile
+    filename = f'cctv_{config_id[:8]}.jpg'
+    if config.media_file.thumbnail:
+        config.media_file.thumbnail.delete(save=False)
+    config.media_file.thumbnail.save(filename, ContentFile(content), save=True)

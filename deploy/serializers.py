@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from players.models import Player
 
-from .models import DeployTask, MediaFile, MediaFolder
+from .models import CctvCamera, CctvConfig, DeployTask, MediaFile, MediaFolder
 
 
 class MediaFolderSerializer(serializers.ModelSerializer):
@@ -14,14 +14,29 @@ class MediaFolderSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+class _CctvCameraInlineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CctvCamera
+        fields = ['id', 'name', 'rtsp_url', 'sort_order']
+
+
+class _CctvConfigInlineSerializer(serializers.ModelSerializer):
+    cameras = _CctvCameraInlineSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CctvConfig
+        fields = ['id', 'name', 'display_mode', 'rotation_interval', 'resolution', 'fps', 'cameras', 'is_active']
+
+
 class MediaFileSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     thumbnail_file_url = serializers.SerializerMethodField()
     folder_name = serializers.CharField(source='folder.name', read_only=True, default=None)
+    cctv_config = _CctvConfigInlineSerializer(read_only=True, default=None)
 
     class Meta:
         model = MediaFile
-        fields = ['id', 'name', 'file', 'source_url', 'thumbnail_url', 'thumbnail_file_url', 'file_type', 'file_size', 'processing_status', 'url', 'folder', 'folder_name', 'created_at']
+        fields = ['id', 'name', 'file', 'source_url', 'thumbnail_url', 'thumbnail_file_url', 'file_type', 'file_size', 'processing_status', 'url', 'folder', 'folder_name', 'cctv_config', 'created_at']
         read_only_fields = ['id', 'file_type', 'file_size', 'processing_status', 'thumbnail_url', 'created_at']
 
     def get_thumbnail_file_url(self, obj):

@@ -118,9 +118,11 @@ class CctvConfig(models.Model):
     rotation_interval = models.IntegerField(default=10)
     resolution = models.CharField(max_length=20, default='1920x1080')
     fps = models.IntegerField(default=15)
-    username = models.CharField(max_length=255, blank=True, default='')
-    password = models.CharField(max_length=255, blank=True, default='')
+    media_file = models.OneToOneField(
+        MediaFile, null=True, blank=True, on_delete=models.SET_NULL, related_name='cctv_config',
+    )
     is_active = models.BooleanField(default=False)
+    last_requested_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

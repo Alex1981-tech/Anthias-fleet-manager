@@ -5,7 +5,6 @@
     "groups": "Групи",
     "content": "Контент",
     "history": "Історія",
-    "cctv": "CCTV",
     "settings": "Налаштування"
   },
   "dashboard": {
@@ -185,7 +184,11 @@
     "confirmDeleteFolder": "Видалити папку? Файли залишаться в бібліотеці.",
     "totalPlayTime": "Загальний час показу",
     "viewGrid": "Сітка",
-    "viewList": "Список"
+    "viewList": "Список",
+    "tabCctv": "CCTV",
+    "addCctv": "Додати CCTV потік",
+    "cctvBadge": "CCTV",
+    "filterCctv": "CCTV"
   },
   "assets": {
     "activeAssets": "Активні ресурси",
@@ -408,7 +411,8 @@
       "securityHardening": "Підвищення безпеки (10 виправлень)",
       "autoDeployUpdate": "Авто-деплой через GHCR + Watchtower з інтерфейсом керування оновленнями",
       "cctvStreams": "CCTV потоки — управління камерами спостереження з режимами мозаїки та ротації",
-      "historyFilters": "Фільтри дати/часу та назви контенту на сторінці історії"
+      "historyFilters": "Фільтри дати/часу та назви контенту на сторінці історії",
+      "cctvContentIntegration": "CCTV потоки інтегровано на сторінку Контенту з автозапуском за розкладом плеєра"
     }
   },
   "updates": {
@@ -439,11 +443,7 @@
     "cameraName": "Назва камери",
     "cameraNamePlaceholder": "напр. Вхід, Паркінг",
     "cameraUrl": "RTSP URL",
-    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
-    "credentials": "Облікові дані",
-    "username": "Логін",
-    "password": "Пароль",
-    "passwordHint": "Залиште порожнім, щоб зберегти поточний",
+    "cameraUrlPlaceholder": "rtsp://user:pass@192.168.1.100:554/stream1",
     "displayMode": "Режим відображення",
     "mosaic": "Мозаїка",
     "rotation": "Ротація",

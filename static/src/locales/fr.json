@@ -5,7 +5,6 @@
     "groups": "Groupes",
     "content": "Contenu",
     "history": "Historique",
-    "cctv": "CCTV",
     "settings": "Paramètres"
   },
   "dashboard": {
@@ -184,7 +183,11 @@
     "confirmDeleteFolder": "Supprimer le dossier ? Les fichiers resteront dans la bibliothèque.",
     "totalPlayTime": "Durée totale de lecture",
     "viewGrid": "Grille",
-    "viewList": "Liste"
+    "viewList": "Liste",
+    "tabCctv": "CCTV",
+    "addCctv": "Flux CCTV",
+    "cctvBadge": "CCTV",
+    "filterCctv": "CCTV"
   },
   "assets": {
     "activeAssets": "Contenus actifs",
@@ -407,7 +410,8 @@
       "securityHardening": "Renforcement de la sécurité (10 corrections)",
       "autoDeployUpdate": "Déploiement automatique via GHCR + Watchtower avec interface de gestion des mises à jour",
       "cctvStreams": "Flux CCTV — gestion des caméras de surveillance avec modes mosaïque et rotation",
-      "historyFilters": "Filtres de date/heure et de nom de contenu sur la page d'historique"
+      "historyFilters": "Filtres de date/heure et de nom de contenu sur la page d'historique",
+      "cctvContentIntegration": "Flux CCTV intégrés dans la page Contenu avec démarrage automatique depuis le planning du lecteur"
     }
   },
   "updates": {
@@ -438,11 +442,7 @@
     "cameraName": "Nom de la caméra",
     "cameraNamePlaceholder": "ex. Entrée, Parking",
     "cameraUrl": "URL RTSP",
-    "cameraUrlPlaceholder": "rtsp://192.168.1.100:554/stream1",
-    "credentials": "Identifiants",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "passwordHint": "Laisser vide pour conserver l'actuel",
+    "cameraUrlPlaceholder": "rtsp://user:pass@192.168.1.100:554/stream1",
     "displayMode": "Mode d'affichage",
     "mosaic": "Mosaïque",
     "rotation": "Rotation",
