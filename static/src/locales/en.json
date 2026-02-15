@@ -420,7 +420,8 @@
       "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size",
       "reliableUpdates": "Reliable update system — replaced Watchtower with docker compose-based updater, fixed stale version cache after update",
       "cctvLiveView": "Live CCTV stream on player detail page — auto-refreshing snapshot with LIVE badge and keepalive",
-      "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL"
+      "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL",
+      "friendlyUpdateUx": "Friendly update UX — auto-detect version change after update and prompt page reload"
     }
   },
   "updates": {
@@ -438,7 +439,12 @@
     "updateTriggered": "Update triggered. Containers will restart shortly.",
     "updateFailed": "Failed to trigger update. Check Watchtower service.",
     "autoUpdate": "Auto-update",
-    "autoUpdateDesc": "Automatically check and apply updates via Watchtower."
+    "autoUpdateDesc": "Automatically check and apply updates via Watchtower.",
+    "updating": "Updating, please wait...",
+    "updateComplete": "Update complete!",
+    "reloadRequired": "App updated to v{{version}}. Reload to apply.",
+    "reload": "Reload",
+    "updateTimeout": "Update may have completed. Please refresh the page."
   },
   "cctv": {
     "title": "CCTV Streams",

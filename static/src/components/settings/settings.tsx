@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaCog, FaCopy, FaCheck, FaSave, FaSync, FaDownload } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { pushLanguageToPlayers, system } from '@/services/api'
 import { APP_VERSION } from '../../changelog'
+
+const UPDATE_POLL_INTERVAL = 5000 // 5s
+const UPDATE_TIMEOUT = 120000 // 120s
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation()
@@ -29,6 +32,46 @@ const Settings: React.FC = () => {
   const [checking, setChecking] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [autoUpdate, setAutoUpdate] = useState(true)
+
+  // Post-update polling state
+  const [updatePolling, setUpdatePolling] = useState(false)
+  const [updateTimedOut, setUpdateTimedOut] = useState(false)
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) { clearInterval(pollTimerRef.current); pollTimerRef.current = null }
+    if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null }
+  }, [])
+
+  const startUpdatePolling = useCallback(() => {
+    stopPolling()
+    setUpdatePolling(true)
+    setUpdateTimedOut(false)
+
+    // Timeout — after 120s show manual reload
+    timeoutRef.current = setTimeout(() => {
+      stopPolling()
+      setUpdateTimedOut(true)
+    }, UPDATE_TIMEOUT)
+
+    // Poll version every 5s
+    pollTimerRef.current = setInterval(() => {
+      system.getVersion().then((res) => {
+        if (res.version && res.version !== APP_VERSION) {
+          stopPolling()
+          window.location.reload()
+        }
+      }).catch(() => {
+        // Backend still down — keep polling
+      })
+    }, UPDATE_POLL_INTERVAL)
+  }, [stopPolling])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopPolling()
+  }, [stopPolling])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', theme)
@@ -69,23 +112,13 @@ const Settings: React.FC = () => {
       if (result.isConfirmed) {
         setUpdating(true)
         system.triggerUpdate().then(() => {
-          Swal.fire({
-            icon: 'success',
-            title: t('common.success'),
-            text: t('updates.updateTriggered'),
-            timer: 3000,
-            showConfirmButton: false,
-          })
+          setUpdating(false)
+          startUpdatePolling()
         }).catch((err) => {
-          // Network error after trigger likely means containers are restarting — treat as success
+          setUpdating(false)
+          // Network error after trigger likely means containers are restarting
           if (err instanceof TypeError || (err.message && err.message.includes('fetch'))) {
-            Swal.fire({
-              icon: 'success',
-              title: t('common.success'),
-              text: t('updates.updateTriggered'),
-              timer: 3000,
-              showConfirmButton: false,
-            })
+            startUpdatePolling()
           } else {
             Swal.fire({
               icon: 'error',
@@ -93,7 +126,7 @@ const Settings: React.FC = () => {
               text: t('updates.updateFailed'),
             })
           }
-        }).finally(() => setUpdating(false))
+        })
       }
     })
   }
@@ -353,6 +386,32 @@ const Settings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Post-update polling overlay */}
+      {(updatePolling || updateTimedOut) && (
+        <div className="fm-update-overlay">
+          <div className="fm-update-overlay-content">
+            {updatePolling && !updateTimedOut && (
+              <>
+                <div className="spinner" />
+                <p>{t('updates.updating')}</p>
+              </>
+            )}
+            {updateTimedOut && (
+              <>
+                <p>{t('updates.updateTimeout')}</p>
+                <button
+                  className="fm-btn-primary mt-3"
+                  onClick={() => window.location.reload()}
+                >
+                  <FaSync />
+                  {t('updates.reload')}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

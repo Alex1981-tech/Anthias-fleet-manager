@@ -419,7 +419,8 @@
       "cctvStreamFixes": "Poprawki CCTV: automatyczne uruchamianie strumienia przy otwarciu, ping keepalive, przycisk edycji w widoku listy, stabilny rozmiar okna modalnego",
       "reliableUpdates": "Niezawodny system aktualizacji — zastąpienie Watchtower aktualizatorem opartym na docker compose, naprawienie przestarzałej pamięci podręcznej wersji",
       "cctvLiveView": "Strumień CCTV na żywo na stronie odtwarzacza — automatycznie odświeżany snapshot z plakietką LIVE i keepalive",
-      "cctvPolish": "Strumienie CCTV: podgląd na żywo w bibliotece, automatyczny restart przy zmianie konfiguracji, miniatury ze snapshot, deploy z pełnym URL"
+      "cctvPolish": "Strumienie CCTV: podgląd na żywo w bibliotece, automatyczny restart przy zmianie konfiguracji, miniatury ze snapshot, deploy z pełnym URL",
+      "friendlyUpdateUx": "Przyjazny UX aktualizacji — automatyczne wykrywanie zmiany wersji i propozycja przeładowania strony"
     }
   },
   "updates": {
@@ -437,7 +438,12 @@
     "updateTriggered": "Aktualizacja uruchomiona. Kontenery wkrótce się zrestartują.",
     "updateFailed": "Nie udało się uruchomić aktualizacji. Sprawdź usługę Watchtower.",
     "autoUpdate": "Automatyczna aktualizacja",
-    "autoUpdateDesc": "Automatycznie sprawdzaj i stosuj aktualizacje przez Watchtower."
+    "autoUpdateDesc": "Automatycznie sprawdzaj i stosuj aktualizacje przez Watchtower.",
+    "updating": "Aktualizacja w toku, proszę czekać...",
+    "updateComplete": "Aktualizacja zakończona!",
+    "reloadRequired": "Aplikacja zaktualizowana do v{{version}}. Przeładuj, aby zastosować.",
+    "reload": "Przeładuj",
+    "updateTimeout": "Aktualizacja mogła się zakończyć. Odśwież stronę ręcznie."
   },
   "cctv": {
     "title": "Strumienie CCTV",

@@ -419,7 +419,8 @@
       "cctvStreamFixes": "CCTV-Korrekturen: automatischer Stream-Start beim Öffnen, Keepalive-Ping, Bearbeiten-Schaltfläche in Listenansicht, stabile Modalgröße",
       "reliableUpdates": "Zuverlässiges Update-System — Watchtower durch docker compose-basierten Updater ersetzt, veralteten Versions-Cache nach Update behoben",
       "cctvLiveView": "Live-CCTV-Stream auf der Player-Detailseite — automatisch aktualisierter Snapshot mit LIVE-Badge und Keepalive",
-      "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL"
+      "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL",
+      "friendlyUpdateUx": "Benutzerfreundliches Update — automatische Erkennung von Versionsänderungen und Aufforderung zum Neuladen"
     }
   },
   "updates": {
@@ -437,7 +438,12 @@
     "updateTriggered": "Update ausgelöst. Container werden in Kürze neu gestartet.",
     "updateFailed": "Update konnte nicht ausgelöst werden. Überprüfen Sie den Watchtower-Dienst.",
     "autoUpdate": "Auto-Update",
-    "autoUpdateDesc": "Updates automatisch über Watchtower prüfen und anwenden."
+    "autoUpdateDesc": "Updates automatisch über Watchtower prüfen und anwenden.",
+    "updating": "Aktualisierung läuft, bitte warten...",
+    "updateComplete": "Aktualisierung abgeschlossen!",
+    "reloadRequired": "App auf v{{version}} aktualisiert. Neu laden, um anzuwenden.",
+    "reload": "Neu laden",
+    "updateTimeout": "Die Aktualisierung wurde möglicherweise abgeschlossen. Bitte laden Sie die Seite neu."
   },
   "cctv": {
     "title": "CCTV Streams",

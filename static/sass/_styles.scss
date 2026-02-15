@@ -995,6 +995,14 @@ body {
       font-size: 1.35rem;
     }
   }
+
+  .fm-update-banner {
+    top: 65px;
+    flex-wrap: wrap;
+    text-align: center;
+    padding: 0.4rem 1rem;
+    font-size: 0.78rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1687,6 +1695,23 @@ body {
     background-color: #3a4565 !important;
   }
 
+  // Update overlay
+  .fm-update-overlay {
+    .fm-update-overlay-content {
+      background: #16213e;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+      .spinner {
+        border-color: rgba(255, 255, 255, 0.15);
+        border-top-color: $anthias-purple-5;
+      }
+
+      p {
+        color: #f0f0f0;
+      }
+    }
+  }
+
   // Timeline
   .fm-timeline-pills {
     border-color: rgba(255, 255, 255, 0.15);
@@ -1823,6 +1848,93 @@ body {
 @keyframes fm-live-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+// Update banner (shown below navbar when version mismatch detected)
+.fm-update-banner {
+  position: fixed;
+  top: $navbar-height;
+  left: 0;
+  right: 0;
+  z-index: $z-fixed - 1;
+  background-color: $anthias-purple-5;
+  color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem 1.5rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  animation: fm-slide-down 0.3s ease-out;
+
+  .fm-update-banner-btn {
+    background: $white;
+    color: $anthias-purple-5;
+    border: none;
+    font-weight: $font-weight-semibold;
+    padding: 0.25rem 0.75rem;
+    border-radius: $border-radius;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: $transition-fast;
+
+    &:hover {
+      background: $anthias-yellow-3;
+      color: $anthias-purple-1;
+    }
+  }
+}
+
+@keyframes fm-slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Update overlay (shown on settings page during update polling)
+.fm-update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-toast + 10;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .fm-update-overlay-content {
+    background: $white;
+    border-radius: $border-radius-lg;
+    padding: 2.5rem 3rem;
+    text-align: center;
+    box-shadow: $shadow-lg;
+    max-width: 400px;
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid $gray-200;
+      border-top-color: $anthias-purple-5;
+      border-radius: 50%;
+      animation: fm-spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    p {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $anthias-purple-1;
+      margin: 0;
+    }
+  }
 }
 
 // Update indicator dot
