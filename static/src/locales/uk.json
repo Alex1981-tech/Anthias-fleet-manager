@@ -390,6 +390,23 @@
     "noResults": "Нічого не знайдено",
     "all": "Всі"
   },
+  "changelog": {
+    "title": "Журнал змін",
+    "subtitle": "Історія версій та нотатки до релізів.",
+    "changes": {
+      "initialRelease": "Початковий реліз",
+      "dashboard": "Панель керування з моніторингом плеєрів",
+      "contentLibrary": "Бібліотека контенту з папками та фільтрами за типом",
+      "deployContent": "Розгортання контенту на плеєри",
+      "playbackHistory": "Історія відтворення з фільтрами за датою та контентом",
+      "scheduleManagement": "Управління розкладом з візуалізацією на таймлайні",
+      "playerScreenshots": "Скриншоти плеєрів з захопленням кадрів відео",
+      "autoRegistration": "Авто-реєстрація через phone-home",
+      "darkLightTheme": "Підтримка темної/світлої теми",
+      "multiLanguage": "Мультимовна підтримка (EN, UK, FR, DE, PL)",
+      "securityHardening": "Підвищення безпеки (10 виправлень)"
+    }
+  },
   "footer": {
     "copyright": "Anthias Fleet Manager"
   },

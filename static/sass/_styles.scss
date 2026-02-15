@@ -88,6 +88,20 @@ body {
     }
   }
 
+  .fm-version-badge {
+    font-size: 0.7rem;
+    color: rgba($white, 0.5);
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+    margin-right: 1rem;
+    transition: $transition-fast;
+    white-space: nowrap;
+
+    &:hover {
+      color: $anthias-yellow-3;
+    }
+  }
+
   .navbar-actions {
     display: flex;
     align-items: center;
@@ -940,9 +954,15 @@ body {
     height: 65px;
 
     .navbar-brand {
+      margin-right: 0.5rem;
+
       img {
         height: 36px;
       }
+    }
+
+    .fm-version-badge {
+      margin-right: 0.5rem;
     }
   }
 

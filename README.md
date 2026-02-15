@@ -1,6 +1,11 @@
-# Anthias Fleet Manager
+<p align="center">
+  <img src="Logo.svg" alt="Anthias Fleet Manager" width="600">
+</p>
 
-Web-based management dashboard for [Anthias](https://github.com/Screenly/Anthias) digital signage players. Control your entire fleet of Raspberry Pi displays from a single interface.
+<p align="center">
+  Web-based management dashboard for <a href="https://github.com/Screenly/Anthias">Anthias</a> digital signage players.<br>
+  Control your entire fleet of Raspberry Pi displays from a single interface.
+</p>
 
 ![Dashboard](screenshots/dashboard.png)
 

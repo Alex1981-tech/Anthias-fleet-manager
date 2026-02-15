@@ -389,6 +389,23 @@
     "noResults": "Keine Ergebnisse gefunden",
     "all": "Alle"
   },
+  "changelog": {
+    "title": "Änderungsprotokoll",
+    "subtitle": "Versionshistorie und Versionshinweise.",
+    "changes": {
+      "initialRelease": "Erstveröffentlichung",
+      "dashboard": "Dashboard mit Player-Überwachung",
+      "contentLibrary": "Inhaltsbibliothek mit Ordnern und Typfiltern",
+      "deployContent": "Inhalte an Player verteilen",
+      "playbackHistory": "Wiedergabeverlauf mit Datums- und Inhaltsfiltern",
+      "scheduleManagement": "Zeitplanverwaltung mit Zeitleisten-Visualisierung",
+      "playerScreenshots": "Player-Bildschirmfotos mit Video-Frame-Erfassung",
+      "autoRegistration": "Automatische Registrierung via Phone-Home",
+      "darkLightTheme": "Unterstützung für dunkles/helles Design",
+      "multiLanguage": "Mehrsprachige Unterstützung (EN, UK, FR, DE, PL)",
+      "securityHardening": "Sicherheitshärtung (10 Korrekturen)"
+    }
+  },
   "footer": {
     "copyright": "Anthias Fleet Manager"
   },

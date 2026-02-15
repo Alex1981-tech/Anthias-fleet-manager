@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FaThLarge, FaPhotoVideo, FaHistory, FaCog, FaBars, FaTimes } from 'react-icons/fa'
 import LanguageSwitcher from './language-switcher'
+import { APP_VERSION } from '../changelog'
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation()
@@ -23,6 +24,9 @@ const Navbar: React.FC = () => {
       <div className="container-fluid d-flex align-items-center px-3 h-100">
         <NavLink to="/" className="navbar-brand" onClick={closeMenu}>
           <img src="/static/img/logo.svg" alt="Anthias Fleet Manager" />
+        </NavLink>
+        <NavLink to="/changelog" className="fm-version-badge" onClick={closeMenu}>
+          v{APP_VERSION}
         </NavLink>
 
         <button

@@ -390,6 +390,23 @@
     "noResults": "No results found",
     "all": "All"
   },
+  "changelog": {
+    "title": "Changelog",
+    "subtitle": "Version history and release notes.",
+    "changes": {
+      "initialRelease": "Initial release",
+      "dashboard": "Dashboard with player monitoring",
+      "contentLibrary": "Content library with folders and type filters",
+      "deployContent": "Deploy content to players",
+      "playbackHistory": "Playback history with datetime and content filters",
+      "scheduleManagement": "Schedule management with timeline visualization",
+      "playerScreenshots": "Player screenshots with video frame capture",
+      "autoRegistration": "Auto-registration via phone-home",
+      "darkLightTheme": "Dark/light theme support",
+      "multiLanguage": "Multi-language support (EN, UK, FR, DE, PL)",
+      "securityHardening": "Security hardening (10 fixes)"
+    }
+  },
   "footer": {
     "copyright": "Anthias Fleet Manager"
   },
