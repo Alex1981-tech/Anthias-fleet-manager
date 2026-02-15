@@ -168,6 +168,18 @@ PLAYER_REQUEST_TIMEOUT = int(os.environ.get('PLAYER_REQUEST_TIMEOUT', '10'))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# App version (set via Docker build args)
-APP_VERSION = os.environ.get('APP_VERSION', 'dev')
+# App version (set via Docker build args, fallback to changelog.ts)
+APP_VERSION = os.environ.get('APP_VERSION', '').strip()
+if not APP_VERSION or APP_VERSION == 'dev':
+    try:
+        import re as _re
+        _changelog_path = os.path.join(BASE_DIR, 'static', 'src', 'changelog.ts')
+        with open(_changelog_path) as _f:
+            _m = _re.search(r"APP_VERSION\s*=\s*['\"]([^'\"]+)['\"]", _f.read())
+            if _m:
+                APP_VERSION = _m.group(1)
+            else:
+                APP_VERSION = 'dev'
+    except Exception:
+        APP_VERSION = 'dev'
 BUILD_DATE = os.environ.get('BUILD_DATE', 'unknown')
