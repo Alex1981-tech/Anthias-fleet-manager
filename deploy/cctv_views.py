@@ -124,6 +124,27 @@ def cctv_detail(request, config_id):
     serializer = CctvConfigWriteSerializer(config, data=request.data)
     serializer.is_valid(raise_exception=True)
     config = serializer.save()
+
+    # Restart stream if it was running so changes take effect
+    if config.is_active:
+        from .cctv_service import get_stream_status, start_stream, stop_stream, update_thumbnail
+        stream_status = get_stream_status(str(config.id))
+        if stream_status.get('status') == 'running':
+            stop_stream(str(config.id))
+        if config.cameras.count() > 0:
+            try:
+                start_stream(str(config.id))
+                def _delayed_thumb():
+                    import time
+                    time.sleep(5)
+                    try:
+                        update_thumbnail(str(config.id))
+                    except Exception:
+                        pass
+                threading.Thread(target=_delayed_thumb, daemon=True).start()
+            except Exception:
+                logger.warning('Failed to restart CCTV stream %s after update', config.id)
+
     return Response(CctvConfigSerializer(config).data)
 
 
@@ -211,16 +232,32 @@ def cctv_request_start(request, config_id):
     config.last_requested_at = timezone.now()
     config.save(update_fields=['last_requested_at'])
 
-    from .cctv_service import get_stream_status, start_stream
+    from .cctv_service import get_stream_status, start_stream, update_thumbnail
     stream_status = get_stream_status(str(config.id))
 
     if stream_status['status'] == 'running':
+        # Update thumbnail from latest snapshot
+        try:
+            update_thumbnail(str(config.id))
+        except Exception:
+            pass
         return Response({'success': True, 'status': 'running'})
 
     try:
         start_stream(str(config.id))
         config.is_active = True
         config.save(update_fields=['is_active'])
+
+        # Delayed thumbnail update (snapshot needs ~5s to appear)
+        def _delayed_thumb():
+            import time
+            time.sleep(5)
+            try:
+                update_thumbnail(str(config.id))
+            except Exception:
+                pass
+        threading.Thread(target=_delayed_thumb, daemon=True).start()
+
         return Response({'success': True, 'status': 'starting'})
     except Exception as e:
         logger.exception('Failed to start CCTV stream %s via request-start', config_id)

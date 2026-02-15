@@ -291,7 +291,7 @@ function PreviewModal({
       onClick={onClose}
     >
       <div
-        className="modal-dialog modal-lg modal-dialog-centered"
+        className={`modal-dialog modal-dialog-centered ${file.file_type === 'cctv' ? 'modal-xl' : 'modal-lg'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-content" style={{ borderRadius: '12px', overflow: 'hidden' }}>
@@ -303,7 +303,7 @@ function PreviewModal({
               </span>
             </h6>
             <div className="d-flex align-items-center gap-2">
-              {file.source_url && (
+              {file.source_url && file.file_type !== 'cctv' && (
                 <a
                   href={file.source_url}
                   target="_blank"
@@ -355,6 +355,23 @@ function PreviewModal({
                   }}
                 />
               )
+            )}
+            {file.file_type === 'cctv' && file.source_url && (
+              <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', backgroundColor: '#000' }}>
+                <iframe
+                  src={file.source_url}
+                  title={file.name}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                  }}
+                  allow="autoplay"
+                />
+              </div>
             )}
             {file.file_type === 'other' && (
               <div className="text-center text-white p-5">
@@ -1146,21 +1163,30 @@ const ContentPage: React.FC = () => {
                             />
                           </div>
                         ) : file.file_type === 'cctv' ? (
-                          <div
-                            style={{
-                              width: '64px',
-                              aspectRatio: '16/9',
-                              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-                              borderRadius: '4px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                            }}
-                            onClick={() => handleCctvEdit(file)}
-                          >
-                            <FaVideo style={{ fontSize: '1rem', color: '#dc3545' }} />
-                          </div>
+                          file.thumbnail_file_url ? (
+                            <img
+                              src={file.thumbnail_file_url}
+                              alt={file.name}
+                              style={{ width: '64px', aspectRatio: '16/9', objectFit: 'cover', borderRadius: '4px', display: 'block', cursor: 'pointer' }}
+                              onClick={() => handleCctvEdit(file)}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '64px',
+                                aspectRatio: '16/9',
+                                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                              }}
+                              onClick={() => handleCctvEdit(file)}
+                            >
+                              <FaVideo style={{ fontSize: '1rem', color: '#dc3545' }} />
+                            </div>
+                          )
                         ) : (
                           <div
                             style={{

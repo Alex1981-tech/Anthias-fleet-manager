@@ -414,7 +414,8 @@
       "historyFilters": "History page datetime and content name filters",
       "cctvContentIntegration": "CCTV streams integrated into Content page with auto-start from player schedule",
       "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart",
-      "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size"
+      "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size",
+      "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL"
     }
   },
   "updates": {

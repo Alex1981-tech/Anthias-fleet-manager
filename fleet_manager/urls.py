@@ -56,6 +56,10 @@ def auth_status(request):
     return Response({'authenticated': False})
 
 
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+
+
+@xframe_options_sameorigin
 def cctv_player_view(request, config_id):
     from django.utils import timezone
 

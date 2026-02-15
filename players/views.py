@@ -446,9 +446,15 @@ class PlayerViewSet(viewsets.ModelViewSet):
                 data = client.create_asset(asset_data)
             else:
                 # URL-based media — create asset with webpage mimetype
+                uri = media_file.source_url
+                # CCTV: relative URL → build absolute using FM server address
+                if media_file.file_type == 'cctv' and uri.startswith('/'):
+                    scheme = request.scheme
+                    host = request.get_host()
+                    uri = f'{scheme}://{host}{uri}'
                 asset_data = {
                     'name': name,
-                    'uri': media_file.source_url,
+                    'uri': uri,
                     'mimetype': 'webpage',
                     'is_enabled': True,
                     'nocache': False,

@@ -228,8 +228,9 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
     if (mt === 'video' && mf?.url) {
       return <video src={mf.url} muted playsInline preload="metadata" style={{ ...thumbStyle, background: '#000' }} />
     }
-    if (mf?.thumbnail_url) {
-      return <img src={mf.thumbnail_url} alt="" style={thumbStyle} />
+    const thumbSrc = mf?.thumbnail_file_url || mf?.thumbnail_url
+    if (thumbSrc) {
+      return <img src={thumbSrc} alt="" style={thumbStyle} />
     }
     return (
       <div
@@ -529,8 +530,8 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
                     justifyContent: 'center',
                   }}
                 >
-                  {mf && mf.thumbnail_url ? (
-                    <img src={mf.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {mf && (mf.thumbnail_file_url || mf.thumbnail_url) ? (
+                    <img src={mf.thumbnail_file_url || mf.thumbnail_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <>
                       <FaGlobe style={{ fontSize: '2rem', color: '#0d6efd', marginBottom: '8px' }} />
@@ -1196,8 +1197,9 @@ const AddItemModal = ({
     if (mt === 'video' && mf?.url) {
       return <video src={mf.url} muted playsInline preload="metadata" style={{ ...cardThumbStyle, background: '#000' }} />
     }
-    if (mf?.thumbnail_url) {
-      return <img src={mf.thumbnail_url} alt="" style={cardThumbStyle} />
+    const cardThumb = mf?.thumbnail_file_url || mf?.thumbnail_url
+    if (cardThumb) {
+      return <img src={cardThumb} alt="" style={cardThumbStyle} />
     }
     return (
       <div
@@ -1216,8 +1218,8 @@ const AddItemModal = ({
     if (file.file_type === 'image' && file.url) {
       return <img src={file.url} alt="" style={cardThumbStyle} />
     }
-    if (file.thumbnail_url) {
-      return <img src={file.thumbnail_url} alt="" style={cardThumbStyle} />
+    if (file.thumbnail_file_url || file.thumbnail_url) {
+      return <img src={file.thumbnail_file_url || file.thumbnail_url!} alt="" style={cardThumbStyle} />
     }
     return (
       <div

@@ -31,6 +31,16 @@ Visual timeline shows the full schedule at a glance.
 
 ![Schedule](screenshots/schedule.png)
 
+### CCTV Surveillance
+Add RTSP camera streams directly from the Content page. Fleet Manager converts RTSP feeds into a browser-viewable mosaic or rotating view using ffmpeg (HLS + JPEG snapshot). Streams auto-start when a player needs them and auto-stop after 5 minutes of inactivity.
+
+- **Mosaic mode** — all cameras on a single grid
+- **Rotation mode** — cameras switch one by one at a set interval
+- **Live preview** — watch the stream right from the content library
+- **Player integration** — deploy as a web asset; the player requests stream start automatically
+
+![CCTV](screenshots/cctv.png)
+
 ### Remote Deploy
 Push content to one or multiple players simultaneously. Track deployment progress in real time.
 
