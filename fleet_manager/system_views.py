@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import threading
 
@@ -15,6 +14,7 @@ GITHUB_REPO = 'Alex1981-tech/Anthias-fleet-manager'
 UPDATE_CHECK_CACHE_KEY = 'system:latest_version'
 UPDATE_CHECK_CACHE_TTL = 300  # 5 minutes
 AUTO_UPDATE_CACHE_KEY = 'system:auto_update'
+UPDATER_CONTAINER = 'anthias-fleet-manager-updater-1'
 
 
 def _parse_version(version_str):
@@ -85,6 +85,14 @@ def system_update_check(request):
     if not force:
         cached = cache.get(UPDATE_CHECK_CACHE_KEY)
         if cached is not None:
+            # Recalculate update_available with current version
+            # (cache may have been set by a previous container version)
+            cached['current_version'] = settings.APP_VERSION
+            if cached.get('latest_version'):
+                cached['update_available'] = (
+                    _parse_version(cached['latest_version'])
+                    > _parse_version(settings.APP_VERSION)
+                )
             return Response(cached)
 
     current = settings.APP_VERSION
@@ -113,44 +121,53 @@ def system_update_check(request):
     return Response(result)
 
 
-def _trigger_watchtower():
-    """Fire-and-forget Watchtower update trigger in background thread."""
-    token = os.environ.get('WATCHTOWER_HTTP_API_TOKEN', 'fm-watchtower-2026')
+def _get_docker_client():
+    """Get Docker SDK client connected via mounted socket."""
+    import docker
+    return docker.from_env()
+
+
+def _trigger_compose_update():
+    """Pull new images and recreate services via docker compose in updater sidecar."""
     try:
-        requests.get(
-            'http://watchtower:8080/v1/update',
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=60,
+        client = _get_docker_client()
+        updater = client.containers.get(UPDATER_CONTAINER)
+        cmd = (
+            'docker compose pull web celery-worker celery-transcode celery-beat && '
+            'docker compose up -d --no-deps web celery-worker celery-transcode celery-beat'
         )
-    except Exception:
-        pass  # container may be killed mid-request
+        updater.exec_run(['sh', '-c', cmd], workdir='/project', detach=True)
+    except Exception as e:
+        logger.error('Compose update failed: %s', e)
 
 
 @api_view(['POST'])
 def system_update(request):
-    """Trigger Watchtower update via HTTP API.
+    """Trigger update via docker compose in updater sidecar.
 
-    Sends response immediately, then triggers Watchtower in background.
-    This prevents the response from being lost when Watchtower restarts
+    Sends response immediately, then triggers compose pull + up in background.
+    This prevents the response from being lost when compose recreates
     this container during the update.
     """
-    token = os.environ.get('WATCHTOWER_HTTP_API_TOKEN', 'fm-watchtower-2026')
-    # Quick health check — can we reach Watchtower at all?
     try:
-        resp = requests.head(
-            'http://watchtower:8080/',
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=5,
-        )
-    except requests.RequestException:
+        client = _get_docker_client()
+        updater = client.containers.get(UPDATER_CONTAINER)
+        if updater.status != 'running':
+            return Response(
+                {'success': False, 'message': 'Updater service is not running'},
+                status=503,
+            )
+    except Exception:
         return Response(
-            {'success': False, 'message': 'Cannot reach Watchtower service'},
+            {'success': False, 'message': 'Cannot reach updater service'},
             status=503,
         )
 
-    # Watchtower is reachable — trigger update in background so response
-    # reaches the client before this container gets restarted.
-    threading.Thread(target=_trigger_watchtower, daemon=True).start()
+    # Clear update cache so the check refreshes after container restart
+    cache.delete(UPDATE_CHECK_CACHE_KEY)
+
+    # Trigger in background so response reaches client before container restart
+    threading.Thread(target=_trigger_compose_update, daemon=True).start()
     return Response({'success': True, 'message': 'Update triggered'})
 
 

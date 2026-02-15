@@ -165,6 +165,18 @@ docker compose up -d
 
 Fleet Manager communicates with Anthias players via their HTTP API (`/api/v2/*`). Players can optionally phone home to register automatically.
 
+## Changelog
+
+See the full version history in the app at **Settings > Changelog**, or view the [GitHub Releases](https://github.com/Alex1981-tech/Anthias-fleet-manager/releases).
+
+| Version | Date | Highlights |
+|---------|------|------------|
+| 1.4.0 | 2026-02-15 | CCTV live preview, snapshot thumbnails, player deploy with full URL |
+| 1.3.0 | 2026-02-15 | CCTV streams integrated into Content page, auto-start from player |
+| 1.2.0 | 2026-02-15 | CCTV surveillance (mosaic/rotation), history page filters |
+| 1.1.0 | 2026-02-15 | Auto-deploy via GHCR + Watchtower, update management UI |
+| 1.0.0 | 2026-02-15 | Initial release — dashboard, content library, deploy, schedule, screenshots, i18n |
+
 ## License
 
 [MIT](LICENSE)

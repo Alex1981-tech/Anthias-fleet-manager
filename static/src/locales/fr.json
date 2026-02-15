@@ -414,6 +414,7 @@
       "cctvContentIntegration": "Flux CCTV intégrés dans la page Contenu avec démarrage automatique depuis le planning du lecteur",
       "updateReliability": "Fiabilité de la mise à jour automatique améliorée — le déclenchement ne échoue plus lors du redémarrage des conteneurs",
       "cctvStreamFixes": "Corrections CCTV : démarrage automatique du flux à l'ouverture, ping keepalive, bouton d'édition en vue liste, taille modale stable",
+      "reliableUpdates": "Système de mise à jour fiable — remplacement de Watchtower par un updater basé sur docker compose, correction du cache de version obsolète",
       "cctvPolish": "Flux CCTV : aperçu en direct dans la bibliothèque, redémarrage automatique lors de la modification, miniatures snapshot, déploiement avec URL complète"
     }
   },

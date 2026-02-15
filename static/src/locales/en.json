@@ -415,6 +415,7 @@
       "cctvContentIntegration": "CCTV streams integrated into Content page with auto-start from player schedule",
       "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart",
       "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size",
+      "reliableUpdates": "Reliable update system — replaced Watchtower with docker compose-based updater, fixed stale version cache after update",
       "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL"
     }
   },

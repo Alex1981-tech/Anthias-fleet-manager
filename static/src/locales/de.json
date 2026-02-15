@@ -414,6 +414,7 @@
       "cctvContentIntegration": "CCTV-Streams in die Inhaltsseite integriert mit automatischem Start aus dem Player-Zeitplan",
       "updateReliability": "Verbesserte Zuverlässigkeit der automatischen Aktualisierung — Update-Auslösung schlägt nicht mehr fehl, wenn Container neu gestartet werden",
       "cctvStreamFixes": "CCTV-Korrekturen: automatischer Stream-Start beim Öffnen, Keepalive-Ping, Bearbeiten-Schaltfläche in Listenansicht, stabile Modalgröße",
+      "reliableUpdates": "Zuverlässiges Update-System — Watchtower durch docker compose-basierten Updater ersetzt, veralteten Versions-Cache nach Update behoben",
       "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL"
     }
   },
