@@ -116,21 +116,6 @@ The player will appear in Fleet Manager within 30 seconds.
 2. Enter the player's URL (e.g., `http://192.168.1.10`)
 3. Enter credentials if the player has authentication enabled
 
-## Screenshots
-
-> **Note:** Replace the placeholder images above with actual screenshots.
-> Place your screenshots in a `screenshots/` directory:
->
-> ```
-> screenshots/
-> ├── dashboard.png
-> ├── players.png
-> ├── content.png
-> ├── schedule.png
-> ├── history.png
-> └── dark-mode.png
-> ```
-
 ## Development
 
 ### Frontend
