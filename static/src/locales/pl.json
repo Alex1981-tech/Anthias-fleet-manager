@@ -53,7 +53,10 @@
     "throttleUnderVoltage": "Niskie napięcie!",
     "throttleThrottled": "Dławienie",
     "throttleFreqCap": "Ograniczenie częstotliwości",
-    "throttlePastIssue": "wykryto"
+    "throttlePastIssue": "wykryto",
+    "liveView": "Na żywo",
+    "liveViewStop": "Zrzut ekranu",
+    "liveBadge": "LIVE"
   },
   "groups": {
     "title": "Grupy",
@@ -415,6 +418,7 @@
       "updateReliability": "Poprawiona niezawodność automatycznej aktualizacji — wyzwalanie aktualizacji nie kończy się błędem podczas restartu kontenerów",
       "cctvStreamFixes": "Poprawki CCTV: automatyczne uruchamianie strumienia przy otwarciu, ping keepalive, przycisk edycji w widoku listy, stabilny rozmiar okna modalnego",
       "reliableUpdates": "Niezawodny system aktualizacji — zastąpienie Watchtower aktualizatorem opartym na docker compose, naprawienie przestarzałej pamięci podręcznej wersji",
+      "cctvLiveView": "Strumień CCTV na żywo na stronie odtwarzacza — automatycznie odświeżany snapshot z plakietką LIVE i keepalive",
       "cctvPolish": "Strumienie CCTV: podgląd na żywo w bibliotece, automatyczny restart przy zmianie konfiguracji, miniatury ze snapshot, deploy z pełnym URL"
     }
   },

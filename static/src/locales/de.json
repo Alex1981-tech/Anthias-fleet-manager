@@ -53,7 +53,10 @@
     "throttleUnderVoltage": "Unterspannung!",
     "throttleThrottled": "Gedrosselt",
     "throttleFreqCap": "Frequenz begrenzt",
-    "throttlePastIssue": "wurde erkannt"
+    "throttlePastIssue": "wurde erkannt",
+    "liveView": "Live-Ansicht",
+    "liveViewStop": "Screenshot",
+    "liveBadge": "LIVE"
   },
   "groups": {
     "title": "Gruppen",
@@ -415,6 +418,7 @@
       "updateReliability": "Verbesserte Zuverlässigkeit der automatischen Aktualisierung — Update-Auslösung schlägt nicht mehr fehl, wenn Container neu gestartet werden",
       "cctvStreamFixes": "CCTV-Korrekturen: automatischer Stream-Start beim Öffnen, Keepalive-Ping, Bearbeiten-Schaltfläche in Listenansicht, stabile Modalgröße",
       "reliableUpdates": "Zuverlässiges Update-System — Watchtower durch docker compose-basierten Updater ersetzt, veralteten Versions-Cache nach Update behoben",
+      "cctvLiveView": "Live-CCTV-Stream auf der Player-Detailseite — automatisch aktualisierter Snapshot mit LIVE-Badge und Keepalive",
       "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL"
     }
   },

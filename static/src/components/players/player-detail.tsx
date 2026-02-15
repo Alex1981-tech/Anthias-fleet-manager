@@ -39,7 +39,7 @@ import {
   FaExclamationTriangle,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
-import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi } from '@/services/api'
+import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
 import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder } from '@/types'
 import { PlayerSchedule } from './player-schedule'
@@ -156,6 +156,11 @@ const PlayerDetail: React.FC = () => {
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null)
   const [screenshotLoading, setScreenshotLoading] = useState(false)
   const [screenshotFullscreen, setScreenshotFullscreen] = useState(false)
+
+  // CCTV live view state
+  const [cctvConfigId, setCctvConfigId] = useState<string | null>(null)
+  const [liveViewEnabled, setLiveViewEnabled] = useState(false)
+  const [liveSnapshotUrl, setLiveSnapshotUrl] = useState<string>('')
 
   // Edit modal state
   const [editAsset, setEditAsset] = useState<PlayerAsset | null>(null)
@@ -394,6 +399,45 @@ const PlayerDetail: React.FC = () => {
       setScheduleEnabled(s.schedule_enabled)
     }).catch(() => {})
   }, [id, player])
+
+  // Detect CCTV asset from player's asset list
+  useEffect(() => {
+    const cctvAsset = assets.find(a => a.uri?.includes('/cctv/'))
+    if (cctvAsset) {
+      const match = cctvAsset.uri.match(/\/cctv\/([a-f0-9-]+)/)
+      if (match) {
+        setCctvConfigId(match[1])
+        setLiveViewEnabled(true)
+        return
+      }
+    }
+    setCctvConfigId(null)
+    setLiveViewEnabled(false)
+  }, [assets])
+
+  // CCTV snapshot auto-refresh (every 2s)
+  useEffect(() => {
+    if (!cctvConfigId || !liveViewEnabled) {
+      setLiveSnapshotUrl('')
+      return
+    }
+    const updateSnapshot = () => {
+      setLiveSnapshotUrl(`/media/cctv/${cctvConfigId}/snapshot.jpg?t=${Date.now()}`)
+    }
+    updateSnapshot()
+    const intervalId = setInterval(updateSnapshot, 2000)
+    return () => clearInterval(intervalId)
+  }, [cctvConfigId, liveViewEnabled])
+
+  // CCTV keepalive (ping request-start every 60s)
+  useEffect(() => {
+    if (!cctvConfigId || !liveViewEnabled) return
+    cctvApi.requestStart(cctvConfigId).catch(() => {})
+    const intervalId = setInterval(() => {
+      cctvApi.requestStart(cctvConfigId).catch(() => {})
+    }, 60000)
+    return () => clearInterval(intervalId)
+  }, [cctvConfigId, liveViewEnabled])
 
   // Close preview modal on Escape
   useEffect(() => {
@@ -1025,9 +1069,42 @@ const PlayerDetail: React.FC = () => {
         </div>
         <div className="fm-card-body">
           <div className="row g-3">
-            {/* Screenshot column */}
+            {/* Screenshot / CCTV live column */}
             <div className="col-lg-5 col-md-6">
-              {screenshotUrl ? (
+              {liveViewEnabled && liveSnapshotUrl ? (
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={liveSnapshotUrl}
+                    alt="CCTV live"
+                    style={{
+                      width: '100%',
+                      maxHeight: '260px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    }}
+                    onClick={() => setScreenshotFullscreen(true)}
+                  />
+                  <span className="fm-live-badge">{t('players.liveBadge')}</span>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '6px',
+                      right: '6px',
+                      background: 'rgba(0,0,0,0.5)',
+                      borderRadius: '6px',
+                      padding: '4px 6px',
+                      cursor: 'pointer',
+                      color: '#fff',
+                      fontSize: '12px',
+                    }}
+                    onClick={() => setScreenshotFullscreen(true)}
+                  >
+                    <FaExpand />
+                  </div>
+                </div>
+              ) : screenshotUrl ? (
                 <div style={{ position: 'relative' }}>
                   <img
                     src={screenshotUrl}
@@ -1114,6 +1191,16 @@ const PlayerDetail: React.FC = () => {
                   <FaForward className="me-1" />
                   {t('assets.next')}
                 </button>
+                {cctvConfigId && (
+                  <button
+                    className={`fm-btn-sm ${liveViewEnabled ? 'fm-btn-outline' : 'fm-btn-dark'}`}
+                    onClick={() => setLiveViewEnabled(prev => !prev)}
+                    title={liveViewEnabled ? t('players.liveViewStop') : t('players.liveView')}
+                  >
+                    <FaVideo className="me-1" />
+                    {liveViewEnabled ? t('players.liveViewStop') : t('players.liveView')}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1304,8 +1391,8 @@ const PlayerDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Fullscreen screenshot modal */}
-      {screenshotFullscreen && screenshotUrl && (
+      {/* Fullscreen screenshot / CCTV modal */}
+      {screenshotFullscreen && (liveViewEnabled ? liveSnapshotUrl : screenshotUrl) && (
         <div
           style={{
             position: 'fixed',
@@ -1319,9 +1406,14 @@ const PlayerDetail: React.FC = () => {
           }}
           onClick={() => setScreenshotFullscreen(false)}
         >
+          {liveViewEnabled && liveSnapshotUrl && (
+            <span className="fm-live-badge" style={{ position: 'fixed', top: '16px', left: '16px' }}>
+              {t('players.liveBadge')}
+            </span>
+          )}
           <img
-            src={screenshotUrl}
-            alt="Player screenshot fullscreen"
+            src={liveViewEnabled ? liveSnapshotUrl : screenshotUrl!}
+            alt={liveViewEnabled ? 'CCTV live fullscreen' : 'Player screenshot fullscreen'}
             style={{
               maxWidth: '95vw',
               maxHeight: '95vh',

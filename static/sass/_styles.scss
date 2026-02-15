@@ -1791,6 +1791,40 @@ body {
   }
 }
 
+// Live CCTV badge
+.fm-live-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba($color-danger, 0.9);
+  color: $white;
+  font-size: 0.7rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  z-index: 2;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: $white;
+    animation: fm-live-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes fm-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 // Update indicator dot
 .fm-update-dot {
   display: inline-block;

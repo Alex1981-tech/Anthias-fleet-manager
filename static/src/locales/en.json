@@ -53,7 +53,10 @@
     "throttleUnderVoltage": "Under-voltage!",
     "throttleThrottled": "Throttled",
     "throttleFreqCap": "Freq capped",
-    "throttlePastIssue": "was detected"
+    "throttlePastIssue": "was detected",
+    "liveView": "Live View",
+    "liveViewStop": "Screenshot",
+    "liveBadge": "LIVE"
   },
   "groups": {
     "title": "Groups",
@@ -416,6 +419,7 @@
       "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart",
       "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size",
       "reliableUpdates": "Reliable update system — replaced Watchtower with docker compose-based updater, fixed stale version cache after update",
+      "cctvLiveView": "Live CCTV stream on player detail page — auto-refreshing snapshot with LIVE badge and keepalive",
       "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL"
     }
   },
