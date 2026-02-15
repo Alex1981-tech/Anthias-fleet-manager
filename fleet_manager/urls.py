@@ -57,8 +57,20 @@ def auth_status(request):
 
 
 def cctv_player_view(request, config_id):
+    from django.utils import timezone
+
+    from deploy.cctv_service import get_stream_status, start_stream
     from deploy.models import CctvConfig
     config = get_object_or_404(CctvConfig, pk=config_id)
+    # Track that someone is watching — prevents Celery auto-stop
+    CctvConfig.objects.filter(pk=config.pk).update(last_requested_at=timezone.now())
+    # Auto-start stream when page is opened
+    status = get_stream_status(str(config.id))
+    if status.get('status') != 'running':
+        try:
+            start_stream(str(config.id))
+        except Exception:
+            pass
     return render(request, 'cctv_player.html', {
         'config_id': str(config.id),
         'config_name': config.name,

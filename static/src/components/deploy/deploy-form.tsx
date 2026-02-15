@@ -487,7 +487,7 @@ function AddContentModal({
               </button>
             </div>
 
-            <div className="p-3">
+            <div className="p-3" style={{ minHeight: '320px', maxHeight: '65vh', overflowY: 'auto' }}>
               {activeTab === 'file' ? (
                 <>
                   <div
@@ -1145,6 +1145,22 @@ const ContentPage: React.FC = () => {
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                             />
                           </div>
+                        ) : file.file_type === 'cctv' ? (
+                          <div
+                            style={{
+                              width: '64px',
+                              aspectRatio: '16/9',
+                              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => handleCctvEdit(file)}
+                          >
+                            <FaVideo style={{ fontSize: '1rem', color: '#dc3545' }} />
+                          </div>
                         ) : (
                           <div
                             style={{
@@ -1257,13 +1273,23 @@ const ContentPage: React.FC = () => {
                           ) : (
                             <span style={{ width: '26px' }} />
                           )}
-                          <button
-                            className="btn btn-sm btn-outline-secondary py-0 px-1"
-                            title={t('content.rename')}
-                            onClick={(e) => handleRenameStart(e, file)}
-                          >
-                            <FaPen style={{ fontSize: '0.65rem' }} />
-                          </button>
+                          {file.file_type === 'cctv' ? (
+                            <button
+                              className="btn btn-sm btn-outline-secondary py-0 px-1"
+                              title={t('common.edit')}
+                              onClick={(e) => { e.stopPropagation(); handleCctvEdit(file) }}
+                            >
+                              <FaPen style={{ fontSize: '0.65rem' }} />
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-sm btn-outline-secondary py-0 px-1"
+                              title={t('content.rename')}
+                              onClick={(e) => handleRenameStart(e, file)}
+                            >
+                              <FaPen style={{ fontSize: '0.65rem' }} />
+                            </button>
+                          )}
                           <button
                             className="btn btn-sm btn-outline-danger py-0 px-1"
                             title={t('common.delete')}

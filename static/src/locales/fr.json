@@ -412,7 +412,8 @@
       "cctvStreams": "Flux CCTV — gestion des caméras de surveillance avec modes mosaïque et rotation",
       "historyFilters": "Filtres de date/heure et de nom de contenu sur la page d'historique",
       "cctvContentIntegration": "Flux CCTV intégrés dans la page Contenu avec démarrage automatique depuis le planning du lecteur",
-      "updateReliability": "Fiabilité de la mise à jour automatique améliorée — le déclenchement ne échoue plus lors du redémarrage des conteneurs"
+      "updateReliability": "Fiabilité de la mise à jour automatique améliorée — le déclenchement ne échoue plus lors du redémarrage des conteneurs",
+      "cctvStreamFixes": "Corrections CCTV : démarrage automatique du flux à l'ouverture, ping keepalive, bouton d'édition en vue liste, taille modale stable"
     }
   },
   "updates": {

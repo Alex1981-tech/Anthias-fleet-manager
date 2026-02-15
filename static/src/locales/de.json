@@ -412,7 +412,8 @@
       "cctvStreams": "CCTV-Streams — Überwachungskamera-Verwaltung mit Mosaik- und Rotationsanzeige",
       "historyFilters": "Datums-/Uhrzeit- und Inhaltsfilter auf der Verlaufsseite",
       "cctvContentIntegration": "CCTV-Streams in die Inhaltsseite integriert mit automatischem Start aus dem Player-Zeitplan",
-      "updateReliability": "Verbesserte Zuverlässigkeit der automatischen Aktualisierung — Update-Auslösung schlägt nicht mehr fehl, wenn Container neu gestartet werden"
+      "updateReliability": "Verbesserte Zuverlässigkeit der automatischen Aktualisierung — Update-Auslösung schlägt nicht mehr fehl, wenn Container neu gestartet werden",
+      "cctvStreamFixes": "CCTV-Korrekturen: automatischer Stream-Start beim Öffnen, Keepalive-Ping, Bearbeiten-Schaltfläche in Listenansicht, stabile Modalgröße"
     }
   },
   "updates": {

@@ -49,6 +49,14 @@
 
         var snapshotSrc = '/media/cctv/' + CONFIG_ID + '/snapshot.jpg';
 
+        // Keepalive: ping FM every 60s so Celery knows someone is watching
+        (function keepalive() {
+            var url = '/api/cctv/' + CONFIG_ID + '/request-start/';
+            setInterval(function() {
+                fetch(url, { method: 'POST' }).catch(function() {});
+            }, 60000);
+        })();
+
         // Strategy: try HLS first (for capable browsers), fallback to JPEG snapshot
         tryHLS();
 

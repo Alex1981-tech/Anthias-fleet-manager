@@ -413,7 +413,8 @@
       "cctvStreams": "CCTV Streams — surveillance camera management with mosaic/rotation display modes",
       "historyFilters": "History page datetime and content name filters",
       "cctvContentIntegration": "CCTV streams integrated into Content page with auto-start from player schedule",
-      "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart"
+      "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart",
+      "cctvStreamFixes": "CCTV stream fixes: auto-start on page open, keepalive ping, list view edit button, stable modal size"
     }
   },
   "updates": {
