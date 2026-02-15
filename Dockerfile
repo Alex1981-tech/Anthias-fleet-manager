@@ -16,8 +16,13 @@ RUN npm run build
 # Stage 2: Python application
 FROM python:3.12-slim
 
+ARG APP_VERSION=dev
+ARG BUILD_DATE=unknown
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    APP_VERSION=${APP_VERSION} \
+    BUILD_DATE=${BUILD_DATE}
 
 WORKDIR /app
 

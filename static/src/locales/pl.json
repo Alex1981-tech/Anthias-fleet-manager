@@ -403,8 +403,26 @@
       "autoRegistration": "Automatyczna rejestracja przez phone-home",
       "darkLightTheme": "Obsługa ciemnego/jasnego motywu",
       "multiLanguage": "Wielojęzyczne wsparcie (EN, UK, FR, DE, PL)",
-      "securityHardening": "Wzmocnienie zabezpieczeń (10 poprawek)"
+      "securityHardening": "Wzmocnienie zabezpieczeń (10 poprawek)",
+      "autoDeployUpdate": "Auto-deploy przez GHCR + Watchtower z interfejsem zarządzania aktualizacjami"
     }
+  },
+  "updates": {
+    "title": "Aktualizacje",
+    "currentVersion": "Bieżąca wersja",
+    "buildDate": "Data kompilacji",
+    "newVersion": "Dostępna nowa wersja",
+    "releaseNotes": "Informacje o wydaniu",
+    "checkNow": "Sprawdź teraz",
+    "updateNow": "Aktualizuj teraz",
+    "upToDate": "Używasz najnowszej wersji",
+    "checkFailed": "Nie udało się sprawdzić aktualizacji",
+    "confirmUpdate": "Zaktualizować Fleet Manager?",
+    "confirmUpdateDesc": "Aplikacja zostanie zaktualizowana, a kontenery zostaną ponownie uruchomione. Może to potrwać kilka minut.",
+    "updateTriggered": "Aktualizacja uruchomiona. Kontenery wkrótce się zrestartują.",
+    "updateFailed": "Nie udało się uruchomić aktualizacji. Sprawdź usługę Watchtower.",
+    "autoUpdate": "Automatyczna aktualizacja",
+    "autoUpdateDesc": "Automatycznie sprawdzaj i stosuj aktualizacje przez Watchtower."
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

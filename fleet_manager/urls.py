@@ -10,6 +10,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from fleet_manager.system_views import (
+    system_settings,
+    system_update,
+    system_update_check,
+    system_version,
+)
+
 import json
 
 
@@ -53,6 +60,10 @@ urlpatterns = [
     path('api/auth/login/', auth_login),
     path('api/auth/logout/', auth_logout),
     path('api/auth/status/', auth_status),
+    path('api/system/version/', system_version),
+    path('api/system/update-check/', system_update_check),
+    path('api/system/update/', system_update),
+    path('api/system/settings/', system_settings),
     path('api/', include('players.urls')),
     path('api/', include('deploy.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

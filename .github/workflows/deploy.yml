@@ -1,23 +1,55 @@
-name: Deploy to Server
+name: Build and Push to GHCR
 
 on:
   push:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from changelog.ts
+        id: version
+        run: |
+          VERSION=$(grep -oP "APP_VERSION = '\K[^']+" static/src/changelog.ts || echo "0.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          script: |
-            cd ${{ secrets.PROJECT_PATH || '/home/serv/anthias-fleet-manager' }}
-            git pull origin main
-            docker compose build --no-cache
-            docker compose up -d
-            docker image prune -f
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=sha,prefix=
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=${{ steps.version.outputs.build_date }}

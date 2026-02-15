@@ -24,8 +24,11 @@ services:
       retries: 5
 
   web:
+    image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
     build: .
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment: &app-env
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
@@ -39,6 +42,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:9000}
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-fm-watchtower-2026}
     depends_on:
       db:
         condition: service_healthy
@@ -62,9 +66,12 @@ services:
       - web
 
   celery-worker:
+    image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
     build: .
     restart: unless-stopped
     command: celery -A fleet_manager worker -l info --concurrency=4 -Q celery
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment: *app-env
     depends_on:
       db:
@@ -76,9 +83,12 @@ services:
       - media_files:/app/media
 
   celery-transcode:
+    image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
     build: .
     restart: unless-stopped
     command: celery -A fleet_manager worker -l info --concurrency=1 -Q transcode
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment: *app-env
     depends_on:
       db:
@@ -90,15 +100,33 @@ services:
       - media_files:/app/media
 
   celery-beat:
+    image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
     build: .
     restart: unless-stopped
     command: celery -A fleet_manager beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment: *app-env
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    command: --interval ${WATCHTOWER_POLL_INTERVAL:-300}
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_ROLLING_RESTART: "true"
+      WATCHTOWER_HTTP_API_UPDATE: "true"
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-fm-watchtower-2026}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   postgres_data:

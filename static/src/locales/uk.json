@@ -404,8 +404,26 @@
       "autoRegistration": "Авто-реєстрація через phone-home",
       "darkLightTheme": "Підтримка темної/світлої теми",
       "multiLanguage": "Мультимовна підтримка (EN, UK, FR, DE, PL)",
-      "securityHardening": "Підвищення безпеки (10 виправлень)"
+      "securityHardening": "Підвищення безпеки (10 виправлень)",
+      "autoDeployUpdate": "Авто-деплой через GHCR + Watchtower з інтерфейсом керування оновленнями"
     }
+  },
+  "updates": {
+    "title": "Оновлення",
+    "currentVersion": "Поточна версія",
+    "buildDate": "Дата збірки",
+    "newVersion": "Доступна нова версія",
+    "releaseNotes": "Примітки до випуску",
+    "checkNow": "Перевірити",
+    "updateNow": "Оновити зараз",
+    "upToDate": "Встановлено останню версію",
+    "checkFailed": "Не вдалося перевірити оновлення",
+    "confirmUpdate": "Оновити Fleet Manager?",
+    "confirmUpdateDesc": "Додаток буде оновлено і контейнери перезапустяться. Це може зайняти кілька хвилин.",
+    "updateTriggered": "Оновлення запущено. Контейнери незабаром перезапустяться.",
+    "updateFailed": "Не вдалося запустити оновлення. Перевірте сервіс Watchtower.",
+    "autoUpdate": "Авто-оновлення",
+    "autoUpdateDesc": "Автоматично перевіряти та застосовувати оновлення через Watchtower."
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

@@ -1,13 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FaThLarge, FaPhotoVideo, FaHistory, FaCog, FaBars, FaTimes } from 'react-icons/fa'
 import LanguageSwitcher from './language-switcher'
 import { APP_VERSION } from '../changelog'
+import { system } from '@/services/api'
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+
+  useEffect(() => {
+    const check = () => {
+      system.checkForUpdate().then((res) => {
+        setUpdateAvailable(res.update_available)
+      }).catch(() => {})
+    }
+    check()
+    const interval = setInterval(check, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const toggleMenu = () => setIsOpen(!isOpen)
   const closeMenu = () => setIsOpen(false)
@@ -27,6 +40,7 @@ const Navbar: React.FC = () => {
         </NavLink>
         <NavLink to="/changelog" className="fm-version-badge" onClick={closeMenu}>
           v{APP_VERSION}
+          {updateAvailable && <span className="fm-update-dot" title={t('updates.newVersion')} />}
         </NavLink>
 
         <button

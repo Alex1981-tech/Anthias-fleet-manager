@@ -167,3 +167,7 @@ PLAYER_POLL_INTERVAL = int(os.environ.get('PLAYER_POLL_INTERVAL', '60'))
 PLAYER_REQUEST_TIMEOUT = int(os.environ.get('PLAYER_REQUEST_TIMEOUT', '10'))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# App version (set via Docker build args)
+APP_VERSION = os.environ.get('APP_VERSION', 'dev')
+BUILD_DATE = os.environ.get('BUILD_DATE', 'unknown')

@@ -404,8 +404,26 @@
       "autoRegistration": "Auto-registration via phone-home",
       "darkLightTheme": "Dark/light theme support",
       "multiLanguage": "Multi-language support (EN, UK, FR, DE, PL)",
-      "securityHardening": "Security hardening (10 fixes)"
+      "securityHardening": "Security hardening (10 fixes)",
+      "autoDeployUpdate": "Auto-deploy via GHCR + Watchtower with update management UI"
     }
+  },
+  "updates": {
+    "title": "Updates",
+    "currentVersion": "Current version",
+    "buildDate": "Build date",
+    "newVersion": "New version available",
+    "releaseNotes": "Release notes",
+    "checkNow": "Check now",
+    "updateNow": "Update now",
+    "upToDate": "You are running the latest version",
+    "checkFailed": "Failed to check for updates",
+    "confirmUpdate": "Update Fleet Manager?",
+    "confirmUpdateDesc": "The application will be updated and containers will restart. This may take a few minutes.",
+    "updateTriggered": "Update triggered. Containers will restart shortly.",
+    "updateFailed": "Failed to trigger update. Check Watchtower service.",
+    "autoUpdate": "Auto-update",
+    "autoUpdateDesc": "Automatically check and apply updates via Watchtower."
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

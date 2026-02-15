@@ -347,3 +347,33 @@ export const bulk = {
     return apiRequest('POST', '/bulk/shutdown/', { player_ids: playerIds })
   },
 }
+
+export const system = {
+  getVersion(): Promise<{ version: string; build_date: string }> {
+    return apiRequest('GET', '/system/version/')
+  },
+
+  checkForUpdate(force?: boolean): Promise<{
+    current_version: string
+    latest_version: string | null
+    update_available: boolean
+    release_url?: string
+    published_at?: string
+    error?: string
+  }> {
+    const qs = force ? '?force=1' : ''
+    return apiRequest('GET', `/system/update-check/${qs}`)
+  },
+
+  triggerUpdate(): Promise<{ success: boolean; message: string }> {
+    return apiRequest('POST', '/system/update/')
+  },
+
+  getSettings(): Promise<{ auto_update: boolean }> {
+    return apiRequest('GET', '/system/settings/')
+  },
+
+  updateSettings(data: { auto_update: boolean }): Promise<{ auto_update: boolean }> {
+    return apiRequest('PATCH', '/system/settings/', data)
+  },
+}
