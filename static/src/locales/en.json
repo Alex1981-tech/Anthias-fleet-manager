@@ -412,7 +412,8 @@
       "autoDeployUpdate": "Auto-deploy via GHCR + Watchtower with update management UI",
       "cctvStreams": "CCTV Streams — surveillance camera management with mosaic/rotation display modes",
       "historyFilters": "History page datetime and content name filters",
-      "cctvContentIntegration": "CCTV streams integrated into Content page with auto-start from player schedule"
+      "cctvContentIntegration": "CCTV streams integrated into Content page with auto-start from player schedule",
+      "updateReliability": "Improved auto-update reliability — update trigger no longer fails when containers restart"
     }
   },
   "updates": {

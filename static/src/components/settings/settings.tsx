@@ -76,12 +76,23 @@ const Settings: React.FC = () => {
             timer: 3000,
             showConfirmButton: false,
           })
-        }).catch(() => {
-          Swal.fire({
-            icon: 'error',
-            title: t('common.error'),
-            text: t('updates.updateFailed'),
-          })
+        }).catch((err) => {
+          // Network error after trigger likely means containers are restarting — treat as success
+          if (err instanceof TypeError || (err.message && err.message.includes('fetch'))) {
+            Swal.fire({
+              icon: 'success',
+              title: t('common.success'),
+              text: t('updates.updateTriggered'),
+              timer: 3000,
+              showConfirmButton: false,
+            })
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: t('common.error'),
+              text: t('updates.updateFailed'),
+            })
+          }
         }).finally(() => setUpdating(false))
       }
     })

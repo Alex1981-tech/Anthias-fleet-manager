@@ -411,7 +411,8 @@
       "autoDeployUpdate": "Auto-Deploy über GHCR + Watchtower mit Update-Verwaltungsoberfläche",
       "cctvStreams": "CCTV-Streams — Überwachungskamera-Verwaltung mit Mosaik- und Rotationsanzeige",
       "historyFilters": "Datums-/Uhrzeit- und Inhaltsfilter auf der Verlaufsseite",
-      "cctvContentIntegration": "CCTV-Streams in die Inhaltsseite integriert mit automatischem Start aus dem Player-Zeitplan"
+      "cctvContentIntegration": "CCTV-Streams in die Inhaltsseite integriert mit automatischem Start aus dem Player-Zeitplan",
+      "updateReliability": "Verbesserte Zuverlässigkeit der automatischen Aktualisierung — Update-Auslösung schlägt nicht mehr fehl, wenn Container neu gestartet werden"
     }
   },
   "updates": {

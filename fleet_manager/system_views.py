@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import threading
 
 import requests
 from django.conf import settings
@@ -112,28 +113,45 @@ def system_update_check(request):
     return Response(result)
 
 
-@api_view(['POST'])
-def system_update(request):
-    """Trigger Watchtower update via HTTP API."""
+def _trigger_watchtower():
+    """Fire-and-forget Watchtower update trigger in background thread."""
     token = os.environ.get('WATCHTOWER_HTTP_API_TOKEN', 'fm-watchtower-2026')
     try:
-        resp = requests.get(
+        requests.get(
             'http://watchtower:8080/v1/update',
             headers={'Authorization': f'Bearer {token}'},
-            timeout=30,
+            timeout=60,
         )
-        if resp.status_code == 200:
-            return Response({'success': True, 'message': 'Update triggered'})
-        return Response(
-            {'success': False, 'message': f'Watchtower returned {resp.status_code}'},
-            status=502,
+    except Exception:
+        pass  # container may be killed mid-request
+
+
+@api_view(['POST'])
+def system_update(request):
+    """Trigger Watchtower update via HTTP API.
+
+    Sends response immediately, then triggers Watchtower in background.
+    This prevents the response from being lost when Watchtower restarts
+    this container during the update.
+    """
+    token = os.environ.get('WATCHTOWER_HTTP_API_TOKEN', 'fm-watchtower-2026')
+    # Quick health check — can we reach Watchtower at all?
+    try:
+        resp = requests.head(
+            'http://watchtower:8080/',
+            headers={'Authorization': f'Bearer {token}'},
+            timeout=5,
         )
-    except requests.RequestException as e:
-        logger.warning('Watchtower update trigger failed: %s', e)
+    except requests.RequestException:
         return Response(
             {'success': False, 'message': 'Cannot reach Watchtower service'},
             status=503,
         )
+
+    # Watchtower is reachable — trigger update in background so response
+    # reaches the client before this container gets restarted.
+    threading.Thread(target=_trigger_watchtower, daemon=True).start()
+    return Response({'success': True, 'message': 'Update triggered'})
 
 
 @api_view(['GET', 'PATCH'])
