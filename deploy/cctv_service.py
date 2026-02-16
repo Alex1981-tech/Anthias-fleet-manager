@@ -113,11 +113,11 @@ def build_mosaic_command(config) -> list[str]:
         '-hls_flags', 'delete_segments+append_list',
         '-hls_segment_filename', os.path.join(output_dir, 'seg_%03d.ts'),
         output_path,
-        # Output 2: JPEG snapshot (updated every 2 seconds)
+        # Output 2: JPEG snapshot (updated every 0.5 seconds)
         '-map', '[snap]',
         '-c:v', 'mjpeg',
         '-q:v', '5',
-        '-r', '0.5',
+        '-r', '2',
         '-update', '1',
         '-f', 'image2',
         snapshot_path,

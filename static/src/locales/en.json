@@ -456,7 +456,8 @@
       "provisionFixes": "Provisioning fixes — Docker group permission fix, VLC framebuffer output, viewer TTY allocation",
       "multiFileUploadFix": "Fix multi-file upload — files now upload correctly and appear immediately",
       "slotLibraryFix": "Fix adding content from library to schedule slot",
-      "tailscaleAutoDetect": "Auto-detect Tailscale VPN IP from player URL"
+      "tailscaleAutoDetect": "Auto-detect Tailscale VPN IP from player URL",
+      "cctvSnapshotRate": "CCTV stream refresh rate increased to 2 fps (every 0.5s)"
     }
   },
   "updates": {
