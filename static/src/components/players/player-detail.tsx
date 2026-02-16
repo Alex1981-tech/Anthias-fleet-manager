@@ -400,20 +400,40 @@ const PlayerDetail: React.FC = () => {
     }).catch(() => {})
   }, [id, player])
 
-  // Detect CCTV asset from player's asset list
+  // Detect CCTV asset and auto-enable live view only when stream is running
   useEffect(() => {
     const cctvAsset = assets.find(a => a.uri?.includes('/cctv/'))
     if (cctvAsset) {
       const match = cctvAsset.uri.match(/\/cctv\/([a-f0-9-]+)/)
       if (match) {
-        setCctvConfigId(match[1])
-        setLiveViewEnabled(true)
+        const configId = match[1]
+        setCctvConfigId(configId)
+        // Check if stream is actually running before enabling live view
+        cctvApi.status(configId).then(res => {
+          setLiveViewEnabled(res.status === 'running')
+        }).catch(() => {
+          setLiveViewEnabled(false)
+        })
         return
       }
     }
     setCctvConfigId(null)
     setLiveViewEnabled(false)
   }, [assets])
+
+  // Periodically re-check CCTV stream status (every 30s)
+  useEffect(() => {
+    if (!cctvConfigId) return
+    const checkStatus = () => {
+      cctvApi.status(cctvConfigId).then(res => {
+        setLiveViewEnabled(res.status === 'running')
+      }).catch(() => {
+        setLiveViewEnabled(false)
+      })
+    }
+    const intervalId = setInterval(checkStatus, 30000)
+    return () => clearInterval(intervalId)
+  }, [cctvConfigId])
 
   // CCTV snapshot auto-refresh (every 2s)
   useEffect(() => {
@@ -1191,16 +1211,6 @@ const PlayerDetail: React.FC = () => {
                   <FaForward className="me-1" />
                   {t('assets.next')}
                 </button>
-                {cctvConfigId && (
-                  <button
-                    className={`fm-btn-sm ${liveViewEnabled ? 'fm-btn-outline' : 'fm-btn-dark'}`}
-                    onClick={() => setLiveViewEnabled(prev => !prev)}
-                    title={liveViewEnabled ? t('players.liveViewStop') : t('players.liveView')}
-                  >
-                    <FaVideo className="me-1" />
-                    {liveViewEnabled ? t('players.liveViewStop') : t('players.liveView')}
-                  </button>
-                )}
               </div>
             </div>
 

@@ -420,7 +420,8 @@
       "reliableUpdates": "Niezawodny system aktualizacji — zastąpienie Watchtower aktualizatorem opartym na docker compose, naprawienie przestarzałej pamięci podręcznej wersji",
       "cctvLiveView": "Strumień CCTV na żywo na stronie odtwarzacza — automatycznie odświeżany snapshot z plakietką LIVE i keepalive",
       "cctvPolish": "Strumienie CCTV: podgląd na żywo w bibliotece, automatyczny restart przy zmianie konfiguracji, miniatury ze snapshot, deploy z pełnym URL",
-      "friendlyUpdateUx": "Przyjazny UX aktualizacji — automatyczne wykrywanie zmiany wersji i propozycja przeładowania strony"
+      "friendlyUpdateUx": "Przyjazny UX aktualizacji — automatyczne wykrywanie zmiany wersji i propozycja przeładowania strony",
+      "cctvLiveViewFix": "Naprawa CCTV — transmisja na żywo tylko gdy strumień jest aktywny, usunięto przycisk ręcznego przełączania"
     }
   },
   "updates": {

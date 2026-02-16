@@ -420,7 +420,8 @@
       "reliableUpdates": "Zuverlässiges Update-System — Watchtower durch docker compose-basierten Updater ersetzt, veralteten Versions-Cache nach Update behoben",
       "cctvLiveView": "Live-CCTV-Stream auf der Player-Detailseite — automatisch aktualisierter Snapshot mit LIVE-Badge und Keepalive",
       "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL",
-      "friendlyUpdateUx": "Benutzerfreundliches Update — automatische Erkennung von Versionsänderungen und Aufforderung zum Neuladen"
+      "friendlyUpdateUx": "Benutzerfreundliches Update — automatische Erkennung von Versionsänderungen und Aufforderung zum Neuladen",
+      "cctvLiveViewFix": "CCTV-Fix — Live-Stream nur wenn aktiv, manuelle Umschalttaste entfernt"
     }
   },
   "updates": {

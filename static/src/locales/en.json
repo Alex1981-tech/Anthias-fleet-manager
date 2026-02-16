@@ -421,7 +421,8 @@
       "reliableUpdates": "Reliable update system — replaced Watchtower with docker compose-based updater, fixed stale version cache after update",
       "cctvLiveView": "Live CCTV stream on player detail page — auto-refreshing snapshot with LIVE badge and keepalive",
       "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL",
-      "friendlyUpdateUx": "Friendly update UX — auto-detect version change after update and prompt page reload"
+      "friendlyUpdateUx": "Friendly update UX — auto-detect version change after update and prompt page reload",
+      "cctvLiveViewFix": "CCTV live view fix — show live stream only when CCTV is actively running, removed manual toggle button"
     }
   },
   "updates": {

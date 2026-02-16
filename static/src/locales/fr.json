@@ -420,7 +420,8 @@
       "reliableUpdates": "Système de mise à jour fiable — remplacement de Watchtower par un updater basé sur docker compose, correction du cache de version obsolète",
       "cctvLiveView": "Flux CCTV en direct sur la page du lecteur — snapshot auto-actualisé avec badge LIVE et keepalive",
       "cctvPolish": "Flux CCTV : aperçu en direct dans la bibliothèque, redémarrage automatique lors de la modification, miniatures snapshot, déploiement avec URL complète",
-      "friendlyUpdateUx": "UX de mise à jour conviviale — détection automatique du changement de version et rechargement de la page"
+      "friendlyUpdateUx": "UX de mise à jour conviviale — détection automatique du changement de version et rechargement de la page",
+      "cctvLiveViewFix": "Correction CCTV — flux en direct uniquement quand le stream est actif, bouton de basculement manuel supprimé"
     }
   },
   "updates": {
