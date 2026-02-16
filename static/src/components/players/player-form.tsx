@@ -12,9 +12,10 @@ interface PlayerFormProps {
   groups: Group[]
   onClose: () => void
   onSaved: () => void
+  embedded?: boolean
 }
 
-const PlayerForm: React.FC<PlayerFormProps> = ({ player, groups, onClose, onSaved }) => {
+const PlayerForm: React.FC<PlayerFormProps> = ({ player, groups, onClose, onSaved, embedded }) => {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const isEditing = player !== null
@@ -98,6 +99,120 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, groups, onClose, onSave
     }
   }
 
+  const formContent = (
+    <form onSubmit={handleSubmit}>
+      <div className="modal-body">
+        <div className="mb-3">
+          <label className="form-label fw-semibold">
+            {t('players.name')}
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="Lobby Screen 1"
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">
+            {t('players.url')}
+          </label>
+          <input
+            type="url"
+            className="form-control"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+            placeholder="http://192.168.1.10"
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">
+            {t('players.group')}
+          </label>
+          <select
+            className="form-select"
+            value={groupId}
+            onChange={(e) => setGroupId(e.target.value)}
+          >
+            <option value="">{t('players.noGroup')}</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">
+            {t('players.username')}
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="admin"
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">
+            {t('players.password')}
+          </label>
+          <input
+            type="password"
+            className="form-control"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={isEditing ? '(unchanged)' : ''}
+          />
+        </div>
+      </div>
+
+      <div className="modal-footer d-flex justify-content-between">
+        <div>
+          {isEditing && (
+            <button
+              type="button"
+              className="fm-btn-outline fm-btn-sm"
+              onClick={handleTestConnection}
+              disabled={testing}
+            >
+              <FaPlug />
+              {testing ? t('common.loading') : t('players.testConnection')}
+            </button>
+          )}
+        </div>
+        <div className="d-flex gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="submit"
+            className="fm-btn-primary"
+            disabled={saving}
+          >
+            {saving ? t('common.loading') : t('common.save')}
+          </button>
+        </div>
+      </div>
+    </form>
+  )
+
+  if (embedded) {
+    return formContent
+  }
+
   return (
     <div
       className="modal d-block"
@@ -121,113 +236,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, groups, onClose, onSave
               aria-label={t('common.close')}
             />
           </div>
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  {t('players.name')}
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="Lobby Screen 1"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  {t('players.url')}
-                </label>
-                <input
-                  type="url"
-                  className="form-control"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  required
-                  placeholder="http://192.168.1.10"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  {t('players.group')}
-                </label>
-                <select
-                  className="form-select"
-                  value={groupId}
-                  onChange={(e) => setGroupId(e.target.value)}
-                >
-                  <option value="">{t('players.noGroup')}</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  {t('players.username')}
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  {t('players.password')}
-                </label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isEditing ? '(unchanged)' : ''}
-                />
-              </div>
-            </div>
-
-            <div className="modal-footer d-flex justify-content-between">
-              <div>
-                {isEditing && (
-                  <button
-                    type="button"
-                    className="fm-btn-outline fm-btn-sm"
-                    onClick={handleTestConnection}
-                    disabled={testing}
-                  >
-                    <FaPlug />
-                    {testing ? t('common.loading') : t('players.testConnection')}
-                  </button>
-                )}
-              </div>
-              <div className="d-flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={onClose}
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="fm-btn-primary"
-                  disabled={saving}
-                >
-                  {saving ? t('common.loading') : t('common.save')}
-                </button>
-              </div>
-            </div>
-          </form>
+          {formContent}
         </div>
       </div>
     </div>

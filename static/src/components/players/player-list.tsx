@@ -12,7 +12,7 @@ import Swal from 'sweetalert2'
 import { useAppDispatch, useAppSelector } from '@/store/index'
 import { fetchPlayers, deletePlayer } from '@/store/playersSlice'
 import { fetchGroups } from '@/store/groupsSlice'
-import PlayerForm from './player-form'
+import AddPlayerModal from './add-player-modal'
 import type { Player } from '@/types'
 
 const PlayerList: React.FC = () => {
@@ -238,8 +238,8 @@ const PlayerList: React.FC = () => {
       )}
 
       {showForm && (
-        <PlayerForm
-          player={editingPlayer}
+        <AddPlayerModal
+          editingPlayer={editingPlayer}
           groups={groups}
           onClose={handleFormClose}
           onSaved={handleFormSaved}

@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, PlayerUpdateCheckResult, ProvisionTask } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -150,6 +150,14 @@ export const players = {
       if (!res.ok) throw new Error('Screenshot failed')
       return res.blob()
     }).then((blob) => URL.createObjectURL(blob))
+  },
+
+  updateCheck(id: string): Promise<PlayerUpdateCheckResult> {
+    return apiRequest<PlayerUpdateCheckResult>('GET', `/players/${id}/update-check/`)
+  },
+
+  triggerUpdate(id: string): Promise<{ success: boolean }> {
+    return apiRequest<{ success: boolean }>('POST', `/players/${id}/update/`)
   },
 }
 
@@ -387,6 +395,20 @@ export const cctv = {
 
   requestStart(id: string): Promise<{ success: boolean; status: string }> {
     return apiRequest('POST', `/cctv/${id}/request-start/`)
+  },
+}
+
+export const provision = {
+  create(data: { ip_address: string; ssh_user?: string; ssh_password: string; ssh_port?: number; player_name?: string }): Promise<ProvisionTask> {
+    return apiRequest<ProvisionTask>('POST', '/provision/', data)
+  },
+
+  get(taskId: string): Promise<ProvisionTask> {
+    return apiRequest<ProvisionTask>('GET', `/provision/${taskId}/`)
+  },
+
+  retry(taskId: string, sshPassword: string): Promise<ProvisionTask> {
+    return apiRequest<ProvisionTask>('POST', `/provision/${taskId}/retry/`, { ssh_password: sshPassword })
   },
 }
 

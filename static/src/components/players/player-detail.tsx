@@ -37,11 +37,13 @@ import {
   FaTachometerAlt,
   FaBolt,
   FaExclamationTriangle,
+  FaDownload,
+  FaCheckCircle,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
-import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot } from '@/types'
+import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult } from '@/types'
 import { PlayerSchedule } from './player-schedule'
 import { ScheduleTimeline } from './schedule-timeline'
 
@@ -205,6 +207,12 @@ const PlayerDetail: React.FC = () => {
   // Schedule slots for timeline
   const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([])
   const handleSlotsLoaded = useCallback((slots: ScheduleSlot[]) => setScheduleSlots(slots), [])
+
+  // Player update state
+  const [updateChecking, setUpdateChecking] = useState(false)
+  const [updateAvailable, setUpdateAvailable] = useState<boolean | null>(null)
+  const [latestSha, setLatestSha] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   // Player settings modal state
   const [showSettingsModal, setShowSettingsModal] = useState(false)
@@ -516,6 +524,62 @@ const PlayerDetail: React.FC = () => {
       } catch {
         Swal.fire({ icon: 'error', title: t('common.error') })
       }
+    }
+  }
+
+  const handleUpdateCheck = useCallback(async (silent = false) => {
+    if (!id) return
+    setUpdateChecking(true)
+    try {
+      const result = await playersApi.updateCheck(id)
+      setUpdateAvailable(result.update_available)
+      setLatestSha(result.latest_sha)
+    } catch {
+      if (!silent) {
+        setUpdateAvailable(null)
+      }
+    } finally {
+      setUpdateChecking(false)
+    }
+  }, [id])
+
+  // Auto-check for updates when player info is loaded and player is online
+  useEffect(() => {
+    if (info?.anthias_version && player?.is_online) {
+      handleUpdateCheck(true)
+    }
+  }, [info?.anthias_version, player?.is_online, handleUpdateCheck])
+
+  const handleUpdate = async () => {
+    if (!id) return
+    const confirm = await Swal.fire({
+      icon: 'question',
+      title: t('players.updatePlayer'),
+      text: t('players.updateConfirm'),
+      showCancelButton: true,
+      confirmButtonText: t('players.updatePlayer'),
+      cancelButtonText: t('common.cancel'),
+    })
+    if (!confirm.isConfirmed) return
+    setUpdating(true)
+    try {
+      const result = await playersApi.triggerUpdate(id)
+      if (result.success) {
+        setUpdateAvailable(false)
+        Swal.fire({
+          icon: 'success',
+          title: t('players.updatePlayer'),
+          text: t('players.updateTriggered'),
+          timer: 4000,
+          showConfirmButton: false,
+        })
+      } else {
+        Swal.fire({ icon: 'error', title: t('players.updateFailed'), text: t('players.updateFailed') })
+      }
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: t('players.updateFailed'), text: String(err) })
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -1276,15 +1340,46 @@ const PlayerDetail: React.FC = () => {
                 </div>
               ) : info ? (
                 <div className="row flex-grow-1 align-content-center" style={{ fontSize: '0.9rem', rowGap: '14px' }}>
-                  {info.anthias_version && (
+                  {info.anthias_version && (() => {
+                    const ver = info.anthias_version
+                    const parts = ver.split('@')
+                    const label = parts[0] // "v1.0.0" or "main"
+                    const sha = parts[1] || ''
+                    const isRelease = label.startsWith('v')
+                    return (
                     <div className="col-sm-6">
                       <div className="d-flex align-items-center gap-2">
                         <FaDesktop className="text-purple" style={{ fontSize: '14px', flexShrink: 0 }} />
                         <span className="fw-semibold">Version:</span>
-                        <span className="text-muted text-truncate">{info.anthias_version}</span>
+                        {isRelease ? (
+                          <span className="badge bg-primary" title={sha ? `SHA: ${sha}` : undefined}>{label}</span>
+                        ) : (
+                          <span className="text-muted text-truncate" style={{ maxWidth: '120px' }}>{ver}</span>
+                        )}
+                        {updateAvailable === true && (
+                          <button
+                            className="btn btn-sm btn-warning d-inline-flex align-items-center gap-1 py-0 px-2"
+                            style={{ fontSize: '0.75rem' }}
+                            onClick={handleUpdate}
+                            disabled={updating}
+                          >
+                            {updating ? (
+                              <span className="spinner-border spinner-border-sm" style={{ width: '0.7rem', height: '0.7rem' }} />
+                            ) : (
+                              <FaDownload style={{ fontSize: '0.65rem' }} />
+                            )}
+                            {updating ? t('players.updating') : t('players.updatePlayer')}
+                          </button>
+                        )}
+                        {updateAvailable === false && (
+                          <FaCheckCircle className="text-success" style={{ fontSize: '12px' }} title={t('players.upToDate')} />
+                        )}
+                        {updateAvailable === null && player?.is_online && updateChecking && (
+                          <span className="spinner-border spinner-border-sm text-muted" style={{ width: '0.7rem', height: '0.7rem' }} />
+                        )}
                       </div>
                     </div>
-                  )}
+                    )})()}
 
                   {info.device_model && (
                     <div className="col-sm-6">

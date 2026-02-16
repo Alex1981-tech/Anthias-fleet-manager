@@ -1,0 +1,492 @@
+import logging
+import time
+import uuid
+from string import Template
+
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
+
+class ProvisionTask(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('running', 'Running'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ip_address = models.GenericIPAddressField()
+    ssh_user = models.CharField(max_length=100, default='pi')
+    ssh_port = models.IntegerField(default=22)
+    player_name = models.CharField(max_length=200, blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    current_step = models.IntegerField(default=0)
+    total_steps = models.IntegerField(default=11)
+    steps = models.JSONField(default=list)
+    error_message = models.CharField(max_length=1000, blank=True, default='')
+    log_output = models.TextField(blank=True, default='')
+    player = models.ForeignKey(
+        'Player', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='provision_tasks',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Provision {self.ip_address} [{self.status}]'
+
+
+def _update_step(task, step_num, name, status, message=''):
+    """Update a step in the task's steps JSONField."""
+    entry = {
+        'step': step_num,
+        'name': name,
+        'status': status,
+        'message': message,
+        'timestamp': timezone.now().isoformat(),
+    }
+    steps = list(task.steps)
+    # Replace existing step or append
+    found = False
+    for i, s in enumerate(steps):
+        if s.get('step') == step_num:
+            steps[i] = entry
+            found = True
+            break
+    if not found:
+        steps.append(entry)
+    task.steps = steps
+    task.current_step = step_num
+    task.updated_at = timezone.now()
+    task.save(update_fields=['steps', 'current_step', 'updated_at'])
+
+
+def _append_log(task, text):
+    """Append text to task log output."""
+    task.log_output += text + '\n'
+    task.save(update_fields=['log_output'])
+
+
+def _ssh_run(ssh, cmd, sudo_password=None, timeout=30, check=True):
+    """Execute command via SSH, return (stdout, stderr, exit_code)."""
+    if sudo_password and cmd.strip().startswith('sudo '):
+        # Use stdin for sudo password
+        cmd_to_run = f'echo {_shell_quote(sudo_password)} | sudo -S bash -c {_shell_quote(cmd[5:])}'
+    else:
+        cmd_to_run = cmd
+
+    stdin, stdout, stderr = ssh.exec_command(cmd_to_run, timeout=timeout)
+    exit_code = stdout.channel.recv_exit_status()
+    out = stdout.read().decode('utf-8', errors='replace')
+    err = stderr.read().decode('utf-8', errors='replace')
+
+    if check and exit_code != 0:
+        raise RuntimeError(f'Command failed (exit {exit_code}): {err or out}')
+
+    return out, err, exit_code
+
+
+def _shell_quote(s):
+    """Simple shell quoting."""
+    return "'" + s.replace("'", "'\\''") + "'"
+
+
+def _render_compose(ip_address, ssh_user, watchtower_token):
+    """Render docker-compose template with variables."""
+    import os
+    template_path = os.path.join(
+        settings.BASE_DIR, 'provision', 'templates', 'docker-compose-player.yml'
+    )
+    with open(template_path) as f:
+        template = Template(f.read())
+    return template.safe_substitute(
+        PI_IP=ip_address,
+        PI_USER=ssh_user,
+        WATCHTOWER_TOKEN=watchtower_token,
+    )
+
+
+try:
+    from celery import shared_task
+
+    @shared_task(bind=True, max_retries=0, time_limit=1800, soft_time_limit=1700)
+    def provision_player(self, task_id, ssh_password, fm_server_url=''):
+        """Provision a new Anthias player on a Raspberry Pi via SSH."""
+        import paramiko
+
+        task = ProvisionTask.objects.get(id=task_id)
+        task.status = 'running'
+        task.save(update_fields=['status'])
+
+        ssh = None
+        sftp = None
+
+        try:
+            # Step 1: SSH Connect
+            _update_step(task, 1, 'ssh_connect', 'running', 'Connecting via SSH...')
+            _append_log(task, f'[Step 1] Connecting to {task.ip_address}:{task.ssh_port}...')
+
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            try:
+                ssh.connect(
+                    hostname=task.ip_address,
+                    port=task.ssh_port,
+                    username=task.ssh_user,
+                    password=ssh_password,
+                    timeout=15,
+                    look_for_keys=False,
+                    allow_agent=False,
+                )
+            except Exception as e:
+                raise RuntimeError(f'SSH connection failed: {e}')
+
+            out, _, _ = _ssh_run(ssh, 'uname -m', timeout=10)
+            arch = out.strip()
+            _append_log(task, f'Connected. Architecture: {arch}')
+            if arch not in ('aarch64', 'armv7l'):
+                raise RuntimeError(f'Unsupported architecture: {arch}. Expected aarch64 or armv7l.')
+            _update_step(task, 1, 'ssh_connect', 'success', f'Connected ({arch})')
+
+            # Step 2: Prerequisites check
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 2, 'prerequisites', 'running', 'Checking disk space...')
+            _append_log(task, '[Step 2] Checking prerequisites...')
+
+            out, _, _ = _ssh_run(ssh, 'df -BG / | tail -1', timeout=30)
+            _append_log(task, f'Disk: {out.strip()}')
+
+            # Check internet (try curl docker, fallback to ping)
+            _, _, rc = _ssh_run(ssh, 'curl -sf --max-time 10 https://download.docker.com > /dev/null 2>&1', timeout=15, check=False)
+            if rc != 0:
+                _, _, rc2 = _ssh_run(ssh, 'ping -c 1 -W 5 8.8.8.8 > /dev/null 2>&1', timeout=10, check=False)
+                if rc2 != 0:
+                    raise RuntimeError('No internet connection. Check network settings.')
+                _append_log(task, 'Internet: available (ping ok, curl to docker.com failed)')
+            else:
+                _append_log(task, 'Internet: available')
+            _update_step(task, 2, 'prerequisites', 'success', 'Prerequisites OK')
+
+            # Step 3: Install Docker
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 3, 'install_docker', 'running', 'Installing Docker...')
+            _append_log(task, '[Step 3] Installing Docker...')
+
+            _, _, rc = _ssh_run(ssh, 'command -v docker', timeout=10, check=False)
+            if rc == 0:
+                _append_log(task, 'Docker already installed, skipping.')
+                # Also ensure docker compose plugin
+                _, _, rc2 = _ssh_run(ssh, 'docker compose version', timeout=10, check=False)
+                if rc2 != 0:
+                    _append_log(task, 'Installing docker-compose-plugin...')
+                    _ssh_run(ssh, 'sudo apt-get update -qq && sudo apt-get install -y -qq docker-compose-plugin',
+                             sudo_password=ssh_password, timeout=120)
+            else:
+                _append_log(task, 'Installing Docker via get.docker.com...')
+                _ssh_run(
+                    ssh,
+                    'curl -fsSL https://get.docker.com | sh',
+                    timeout=300,
+                )
+                _append_log(task, 'Adding user to docker group...')
+                _ssh_run(ssh, f'sudo usermod -aG docker {task.ssh_user}',
+                         sudo_password=ssh_password, timeout=10)
+
+            out, _, _ = _ssh_run(ssh, 'docker --version', timeout=10)
+            _append_log(task, f'Docker: {out.strip()}')
+            _update_step(task, 3, 'install_docker', 'success', 'Docker installed')
+
+            # Step 4: Create directories
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 4, 'create_dirs', 'running', 'Creating directories...')
+            _append_log(task, '[Step 4] Creating directories...')
+
+            home = f'/home/{task.ssh_user}'
+            _ssh_run(ssh, f'mkdir -p {home}/screenly {home}/.screenly {home}/screenly_assets', timeout=10)
+            _append_log(task, 'Directories created.')
+            _update_step(task, 4, 'create_dirs', 'success', 'Directories created')
+
+            # Step 5: Upload docker-compose.yml
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 5, 'upload_compose', 'running', 'Uploading docker-compose.yml...')
+            _append_log(task, '[Step 5] Uploading docker-compose.yml...')
+
+            watchtower_token = 'anthias-player-update'
+            compose_content = _render_compose(task.ip_address, task.ssh_user, watchtower_token)
+            sftp = ssh.open_sftp()
+            compose_path = f'{home}/screenly/docker-compose.yml'
+            with sftp.file(compose_path, 'w') as f:
+                f.write(compose_content)
+            _append_log(task, f'Uploaded {compose_path}')
+            _update_step(task, 5, 'upload_compose', 'success', 'docker-compose.yml uploaded')
+
+            # Step 6: Upload configs
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 6, 'upload_configs', 'running', 'Uploading configs...')
+            _append_log(task, '[Step 6] Uploading configuration files...')
+
+            # .asoundrc for HDMI audio
+            asoundrc = (
+                'pcm.!default {\n'
+                '  type hw\n'
+                '  card 0\n'
+                '}\n'
+                'ctl.!default {\n'
+                '  type hw\n'
+                '  card 0\n'
+                '}\n'
+            )
+            with sftp.file(f'{home}/.asoundrc', 'w') as f:
+                f.write(asoundrc)
+            _append_log(task, 'Uploaded .asoundrc')
+
+            # screenly.conf (minimal defaults)
+            screenly_conf = (
+                '[viewer]\n'
+                'player_name =\n'
+                'show_splash = no\n'
+                'audio_output = hdmi\n'
+                'shuffle_playlist = no\n'
+                'default_duration = 10\n'
+                'default_streaming_duration = 300\n'
+                'use_24_hour_clock = yes\n'
+                'date_format = YYYY/MM/DD\n'
+                'debug_logging = no\n'
+                'verify_ssl = no\n'
+            )
+            with sftp.file(f'{home}/.screenly/screenly.conf', 'w') as f:
+                f.write(screenly_conf)
+            _append_log(task, 'Uploaded screenly.conf')
+            _update_step(task, 6, 'upload_configs', 'success', 'Configs uploaded')
+
+            # Step 7: Docker pull
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 7, 'docker_pull', 'running', 'Pulling Docker images...')
+            _append_log(task, '[Step 7] Pulling Docker images (this may take a while)...')
+
+            out, err, _ = _ssh_run(
+                ssh,
+                f'cd {home}/screenly && docker compose pull 2>&1',
+                timeout=900,
+            )
+            _append_log(task, out[-2000:] if len(out) > 2000 else out)
+            _update_step(task, 7, 'docker_pull', 'success', 'Images pulled')
+
+            # Step 8: Docker up
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 8, 'docker_up', 'running', 'Starting containers...')
+            _append_log(task, '[Step 8] Starting containers...')
+
+            out, err, _ = _ssh_run(
+                ssh,
+                f'cd {home}/screenly && docker compose up -d 2>&1',
+                timeout=120,
+            )
+            _append_log(task, out[-1000:] if len(out) > 1000 else out)
+            _update_step(task, 8, 'docker_up', 'success', 'Containers started')
+
+            # Step 9: Wait for player to be ready
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 9, 'wait_ready', 'running', 'Waiting for player API...')
+            _append_log(task, '[Step 9] Waiting for player to be ready...')
+
+            ready = False
+            for attempt in range(24):
+                time.sleep(5)
+                _, _, rc = _ssh_run(
+                    ssh,
+                    'curl -sf --max-time 5 http://localhost/api/v2/info > /dev/null 2>&1',
+                    timeout=10,
+                    check=False,
+                )
+                if rc == 0:
+                    ready = True
+                    _append_log(task, f'Player API ready (attempt {attempt + 1})')
+                    break
+                _append_log(task, f'Attempt {attempt + 1}/24: not ready yet...')
+
+            if not ready:
+                raise RuntimeError('Player API did not become ready within 2 minutes.')
+            _update_step(task, 9, 'wait_ready', 'success', 'Player is ready')
+
+            # Step 10: Install phone-home timer
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 10, 'phonehome', 'running', 'Installing phone-home...')
+            _append_log(task, '[Step 10] Installing phone-home timer...')
+
+            if fm_server_url:
+                # Get register token from settings
+                register_token = getattr(settings, 'PLAYER_REGISTER_TOKEN', '')
+
+                phonehome_script = f'''#!/bin/bash
+# Anthias phone-home script
+FM_URL="{fm_server_url}"
+TOKEN="{register_token}"
+MY_IP=$(hostname -I | awk '{{print $1}}')
+HOSTNAME=$(hostname)
+
+curl -sf -X POST "$FM_URL/api/players/register/" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $TOKEN" \\
+  -d '{{"url": "http://'$MY_IP'", "name": "'$HOSTNAME'"}}'
+'''
+                _ssh_run(ssh, f'sudo mkdir -p /usr/local/bin', sudo_password=ssh_password, timeout=10)
+                with sftp.file(f'{home}/anthias-phonehome.sh', 'w') as f:
+                    f.write(phonehome_script)
+                _ssh_run(ssh, f'sudo mv {home}/anthias-phonehome.sh /usr/local/bin/anthias-phonehome.sh',
+                         sudo_password=ssh_password, timeout=10)
+                _ssh_run(ssh, 'sudo chmod +x /usr/local/bin/anthias-phonehome.sh',
+                         sudo_password=ssh_password, timeout=10)
+
+                # systemd service
+                service_unit = '''[Unit]
+Description=Anthias Phone Home
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/anthias-phonehome.sh
+'''
+                with sftp.file(f'{home}/anthias-phonehome.service', 'w') as f:
+                    f.write(service_unit)
+                _ssh_run(ssh, f'sudo mv {home}/anthias-phonehome.service /etc/systemd/system/',
+                         sudo_password=ssh_password, timeout=10)
+
+                # systemd timer
+                timer_unit = '''[Unit]
+Description=Anthias Phone Home Timer
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=5min
+Unit=anthias-phonehome.service
+
+[Install]
+WantedBy=timers.target
+'''
+                with sftp.file(f'{home}/anthias-phonehome.timer', 'w') as f:
+                    f.write(timer_unit)
+                _ssh_run(ssh, f'sudo mv {home}/anthias-phonehome.timer /etc/systemd/system/',
+                         sudo_password=ssh_password, timeout=10)
+
+                _ssh_run(ssh, 'sudo systemctl daemon-reload && sudo systemctl enable --now anthias-phonehome.timer',
+                         sudo_password=ssh_password, timeout=15)
+                _append_log(task, 'Phone-home timer installed and started.')
+            else:
+                _append_log(task, 'No FM server URL provided, skipping phone-home.')
+
+            _update_step(task, 10, 'phonehome', 'success', 'Phone-home installed')
+
+            # Step 11: Silent boot (non-fatal)
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 11, 'silent_boot', 'running', 'Configuring silent boot...')
+            _append_log(task, '[Step 11] Configuring silent boot (non-fatal)...')
+
+            try:
+                silent_boot_script = '''#!/bin/bash
+set -e
+FLAG="$HOME/.screenly/.silent-boot-done"
+[ -f "$FLAG" ] && exit 0
+
+# Disable rainbow splash
+sudo bash -c 'grep -q "disable_splash" /boot/firmware/config.txt 2>/dev/null || echo "disable_splash=1" >> /boot/firmware/config.txt'
+# Hide kernel text
+sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then sed -i "s/console=tty1/console=tty3/" /boot/firmware/cmdline.txt; fi'
+sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then grep -q "quiet" /boot/firmware/cmdline.txt || sed -i "s/$/ quiet loglevel=0 logo.nologo vt.global_cursor_default=0/" /boot/firmware/cmdline.txt; fi'
+
+touch "$FLAG"
+'''
+                with sftp.file(f'{home}/setup-silent-boot.sh', 'w') as f:
+                    f.write(silent_boot_script)
+                _ssh_run(ssh, f'chmod +x {home}/setup-silent-boot.sh && bash {home}/setup-silent-boot.sh',
+                         timeout=30, check=False)
+                _append_log(task, 'Silent boot configured (reboot required to take effect).')
+                _update_step(task, 11, 'silent_boot', 'success', 'Silent boot configured')
+            except Exception as e:
+                _append_log(task, f'Silent boot setup failed (non-fatal): {e}')
+                _update_step(task, 11, 'silent_boot', 'skipped', f'Non-fatal: {e}')
+
+            # All done — create Player record
+            from .models import Player
+            player_name = task.player_name or f'Player {task.ip_address}'
+            player_url = f'http://{task.ip_address}'
+
+            player, created = Player.objects.get_or_create(
+                url=player_url,
+                defaults={
+                    'name': player_name,
+                    'is_online': True,
+                    'last_seen': timezone.now(),
+                },
+            )
+            if not created:
+                player.name = player_name
+                player.is_online = True
+                player.last_seen = timezone.now()
+                player.save(update_fields=['name', 'is_online', 'last_seen'])
+
+            task.player = player
+            task.status = 'success'
+            task.save(update_fields=['player', 'status'])
+            _append_log(task, f'Provisioning complete! Player "{player.name}" added.')
+
+        except Exception as e:
+            logger.exception('Provisioning failed for task %s', task_id)
+            task = ProvisionTask.objects.get(id=task_id)
+            task.status = 'failed'
+            task.error_message = str(e)[:1000]
+            task.save(update_fields=['status', 'error_message'])
+            _append_log(task, f'ERROR: {e}')
+
+            # Mark current step as failed
+            if task.steps:
+                last_step = task.steps[-1]
+                if last_step.get('status') == 'running':
+                    _update_step(
+                        task, last_step['step'], last_step['name'],
+                        'failed', str(e)[:200],
+                    )
+
+        finally:
+            if sftp:
+                try:
+                    sftp.close()
+                except Exception:
+                    pass
+            if ssh:
+                try:
+                    ssh.close()
+                except Exception:
+                    pass
+
+except ImportError:
+    # Celery not available (e.g., during migrations)
+    pass

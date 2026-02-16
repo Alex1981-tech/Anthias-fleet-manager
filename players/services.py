@@ -235,3 +235,8 @@ class AnthiasAPIClient:
         )
         return response.json()
 
+    def trigger_update(self):
+        """POST /api/v2/update - Trigger Watchtower update on the player."""
+        response = self._request('POST', '/api/v2/update')
+        return response.json()
+

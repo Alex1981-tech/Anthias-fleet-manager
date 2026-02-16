@@ -161,6 +161,15 @@ export interface CctvConfig {
   created_at: string
 }
 
+export interface PlayerUpdateCheckResult {
+  current_version: string
+  current_sha: string
+  latest_sha: string
+  latest_version: string
+  update_available: boolean
+  error?: string
+}
+
 export interface DeployTask {
   id: string
   name: string
@@ -169,4 +178,30 @@ export interface DeployTask {
   status: 'pending' | 'running' | 'completed' | 'failed'
   progress: Record<string, { status: string; name: string; error?: string }>
   created_at: string
+}
+
+export interface ProvisionStep {
+  step: number
+  name: string
+  status: 'pending' | 'running' | 'success' | 'failed' | 'skipped'
+  message: string
+  timestamp: string
+}
+
+export interface ProvisionTask {
+  id: string
+  ip_address: string
+  ssh_user: string
+  ssh_port: number
+  player_name: string
+  status: 'pending' | 'running' | 'success' | 'failed'
+  current_step: number
+  total_steps: number
+  steps: ProvisionStep[]
+  error_message: string
+  log_output: string
+  player_id: string | null
+  player_name_result: string | null
+  created_at: string
+  updated_at: string
 }

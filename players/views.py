@@ -1,7 +1,9 @@
 import logging
 from datetime import timedelta
 
+import requests as http_requests
 from django.conf import settings
+from django.core.cache import cache
 from django.db import IntegrityError
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
@@ -17,6 +19,64 @@ from .serializers import GroupSerializer, PlaybackLogSerializer, PlayerListSeria
 from .services import AnthiasAPIClient, PlayerConnectionError
 
 logger = logging.getLogger(__name__)
+
+PLAYER_VERSION_CACHE_KEY = 'player:latest_version'
+PLAYER_VERSION_CACHE_TTL = 300  # 5 minutes
+PLAYER_GHCR_REPO = 'alex1981-tech/anthias-server'
+
+
+def _get_latest_player_version():
+    """Query GHCR OCI registry for the latest player SHA tag. Cached 5 min.
+
+    Uses the anonymous token endpoint + tags/list API which works
+    without authentication for public/org-visible packages.
+    """
+    cached = cache.get(PLAYER_VERSION_CACHE_KEY)
+    if cached:
+        return cached
+
+    image_name = PLAYER_GHCR_REPO  # alex1981-tech/anthias-server
+    try:
+        # Step 1: get anonymous bearer token
+        token_resp = http_requests.get(
+            f'https://ghcr.io/token?scope=repository:{image_name}:pull',
+            timeout=10,
+        )
+        if token_resp.status_code != 200:
+            return {'sha': '', 'error': f'Token endpoint returned {token_resp.status_code}'}
+        token = token_resp.json().get('token', '')
+
+        # Step 2: list tags
+        tags_resp = http_requests.get(
+            f'https://ghcr.io/v2/{image_name}/tags/list',
+            headers={'Authorization': f'Bearer {token}'},
+            timeout=10,
+        )
+        if tags_resp.status_code != 200:
+            return {'sha': '', 'error': f'Tags API returned {tags_resp.status_code}'}
+
+        tags = tags_resp.json().get('tags', [])
+        # Collect SHA tags and version tags
+        latest_sha = ''
+        latest_version = ''
+        for tag in tags:
+            if not tag.endswith('-pi4-64') or 'latest' in tag:
+                continue
+            name = tag.replace('-pi4-64', '')
+            if name.startswith('v') and '.' in name:
+                if not latest_version:
+                    latest_version = name  # e.g. "v1.0.0"
+            elif not latest_sha:
+                latest_sha = name  # e.g. "abc1234"
+
+        if latest_sha or latest_version:
+            result = {'sha': latest_sha, 'version': latest_version}
+            cache.set(PLAYER_VERSION_CACHE_KEY, result, PLAYER_VERSION_CACHE_TTL)
+            return result
+        return {'sha': '', 'version': '', 'error': 'No tags found'}
+    except Exception as e:
+        logger.warning('Failed to check GHCR for player version: %s', e)
+        return {'sha': '', 'error': str(e)}
 
 
 def _format_player_error(exc):
@@ -667,7 +727,6 @@ class PlayerViewSet(viewsets.ModelViewSet):
     def asset_content(self, request, pk=None, asset_id=None):
         """Proxy asset content from the player (images, videos)."""
         import mimetypes
-        import requests as http_requests
 
         player = self.get_object()
         client = self._get_client(player)
@@ -706,6 +765,64 @@ class PlayerViewSet(viewsets.ModelViewSet):
         except Exception:
             return Response(
                 {'error': 'Content unavailable'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+
+    # ── Player Update actions ──
+
+    @action(detail=True, methods=['get'], url_path='update-check')
+    def update_check(self, request, pk=None):
+        """Check if a player update is available by comparing SHAs."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            info = client.get_info()
+            _update_player_status(player, True, info)
+        except PlayerConnectionError as exc:
+            _update_player_status(player, False)
+            return Response(
+                {'error': str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        current_version = info.get('anthias_version', 'unknown')
+        # Parse "v1.0.0@c313f81" → version="v1.0.0", sha="c313f81"
+        parts = current_version.split('@')
+        current_ver_label = parts[0] if len(parts) > 1 else ''
+        current_sha = parts[-1] if '@' in current_version else ''
+
+        latest = _get_latest_player_version()
+        latest_sha = latest.get('sha', '')
+        latest_version = latest.get('version', '')
+
+        # Compare by version first (e.g. v1.0.0 == v1.0.0 → up to date)
+        # Fall back to SHA comparison only when no version tags available
+        if current_ver_label and latest_version:
+            update_available = current_ver_label != latest_version
+        else:
+            update_available = bool(current_sha and latest_sha and current_sha != latest_sha)
+
+        return Response({
+            'current_version': current_version,
+            'current_sha': current_sha,
+            'latest_sha': latest_sha,
+            'latest_version': latest_version,
+            'update_available': update_available,
+            'error': latest.get('error'),
+        })
+
+    @action(detail=True, methods=['post'], url_path='update')
+    def trigger_update(self, request, pk=None):
+        """Trigger Watchtower update on the player."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            result = client.trigger_update()
+            return Response(result)
+        except PlayerConnectionError as exc:
+            return Response(
+                {'error': str(exc)},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
