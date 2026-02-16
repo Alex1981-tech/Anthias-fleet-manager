@@ -136,6 +136,7 @@
     "fileDeleted": "Файл видалено",
     "fileRenamed": "Файл перейменовано",
     "fileUploaded": "Файл успішно завантажено",
+    "filesUploaded": "файлів успішно завантажено",
     "sourceType": "Джерело контенту",
     "fromLibrary": "З бібліотеки",
     "fromUrl": "За URL",

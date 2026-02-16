@@ -136,6 +136,7 @@
     "fileDeleted": "File deleted",
     "fileRenamed": "File renamed",
     "fileUploaded": "File uploaded successfully",
+    "filesUploaded": "files uploaded successfully",
     "sourceType": "Content Source",
     "fromLibrary": "From Library",
     "fromUrl": "From URL",

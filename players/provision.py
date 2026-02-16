@@ -1,4 +1,5 @@
 import logging
+import socket
 import time
 import uuid
 from string import Template
@@ -76,7 +77,11 @@ def _append_log(task, text):
 
 
 def _ssh_run(ssh, cmd, sudo_password=None, timeout=30, check=True):
-    """Execute command via SSH, return (stdout, stderr, exit_code)."""
+    """Execute command via SSH, return (stdout, stderr, exit_code).
+
+    Uses channel.settimeout() to prevent indefinite blocking on
+    recv_exit_status() — a known Paramiko issue with long-running commands.
+    """
     if sudo_password and cmd.strip().startswith('sudo '):
         # Use stdin for sudo password
         cmd_to_run = f'echo {_shell_quote(sudo_password)} | sudo -S bash -c {_shell_quote(cmd[5:])}'
@@ -84,7 +89,16 @@ def _ssh_run(ssh, cmd, sudo_password=None, timeout=30, check=True):
         cmd_to_run = cmd
 
     stdin, stdout, stderr = ssh.exec_command(cmd_to_run, timeout=timeout)
-    exit_code = stdout.channel.recv_exit_status()
+    # Set channel timeout so recv_exit_status doesn't block forever
+    channel = stdout.channel
+    channel.settimeout(timeout)
+    try:
+        exit_code = channel.recv_exit_status()
+    except socket.timeout:
+        # Force close the channel on timeout
+        channel.close()
+        raise RuntimeError(f'SSH command timed out after {timeout}s: {cmd[:100]}')
+
     out = stdout.read().decode('utf-8', errors='replace')
     err = stderr.read().decode('utf-8', errors='replace')
 
@@ -99,7 +113,7 @@ def _shell_quote(s):
     return "'" + s.replace("'", "'\\''") + "'"
 
 
-def _render_compose(ip_address, ssh_user, watchtower_token):
+def _render_compose(ip_address, ssh_user, watchtower_token, mac_address=''):
     """Render docker-compose template with variables."""
     import os
     template_path = os.path.join(
@@ -111,6 +125,7 @@ def _render_compose(ip_address, ssh_user, watchtower_token):
         PI_IP=ip_address,
         PI_USER=ssh_user,
         WATCHTOWER_TOKEN=watchtower_token,
+        MAC_ADDRESS=mac_address,
     )
 
 
@@ -130,24 +145,95 @@ try:
         sftp = None
 
         try:
-            # Step 1: SSH Connect
+            # Step 1: SSH Connect (with retry)
             _update_step(task, 1, 'ssh_connect', 'running', 'Connecting via SSH...')
             _append_log(task, f'[Step 1] Connecting to {task.ip_address}:{task.ssh_port}...')
 
+            # Pre-check: TCP connect to SSH port
+            def _check_port(host, port, timeout=3):
+                try:
+                    s = socket.create_connection((host, port), timeout=timeout)
+                    s.close()
+                    return True
+                except (socket.timeout, ConnectionRefusedError, OSError):
+                    return False
+
+            if not _check_port(task.ip_address, task.ssh_port):
+                _append_log(task, f'Port {task.ssh_port} on {task.ip_address} is not open. Waiting for host to come online...')
+                _update_step(task, 1, 'ssh_connect', 'running', 'Waiting for host to come online...')
+                # Wait up to 60s for SSH port to open
+                port_ok = False
+                for wait_i in range(12):
+                    time.sleep(5)
+                    if _check_port(task.ip_address, task.ssh_port):
+                        port_ok = True
+                        _append_log(task, f'SSH port is open after ~{(wait_i + 1) * 5}s')
+                        break
+                if not port_ok:
+                    raise RuntimeError(
+                        f'Host {task.ip_address}:{task.ssh_port} is unreachable. '
+                        'Check that the device is powered on, connected to the network, and SSH is enabled.'
+                    )
+
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            try:
-                ssh.connect(
-                    hostname=task.ip_address,
-                    port=task.ssh_port,
-                    username=task.ssh_user,
-                    password=ssh_password,
-                    timeout=15,
-                    look_for_keys=False,
-                    allow_agent=False,
-                )
-            except Exception as e:
-                raise RuntimeError(f'SSH connection failed: {e}')
+
+            # SSH connect with retry (device may still be booting)
+            max_ssh_attempts = 5
+            ssh_delays = [5, 10, 15, 20, 25]  # backoff delays
+            last_error = None
+            for attempt in range(1, max_ssh_attempts + 1):
+                try:
+                    ssh.connect(
+                        hostname=task.ip_address,
+                        port=task.ssh_port,
+                        username=task.ssh_user,
+                        password=ssh_password,
+                        timeout=15,
+                        look_for_keys=False,
+                        allow_agent=False,
+                    )
+                    last_error = None
+                    break
+                except paramiko.AuthenticationException as e:
+                    # Auth errors won't fix themselves — fail immediately
+                    raise RuntimeError(
+                        f'SSH authentication failed for user "{task.ssh_user}". '
+                        'Check username and password.'
+                    ) from e
+                except (socket.timeout, TimeoutError, OSError, paramiko.SSHException) as e:
+                    last_error = e
+                    if attempt < max_ssh_attempts:
+                        delay = ssh_delays[attempt - 1]
+                        _append_log(
+                            task,
+                            f'SSH attempt {attempt}/{max_ssh_attempts} failed: {e}. '
+                            f'Retrying in {delay}s...',
+                        )
+                        _update_step(
+                            task, 1, 'ssh_connect', 'running',
+                            f'SSH retry {attempt}/{max_ssh_attempts}...',
+                        )
+                        time.sleep(delay)
+                except Exception as e:
+                    raise RuntimeError(f'SSH connection failed: {e}') from e
+
+            if last_error is not None:
+                # Classify the final error
+                if isinstance(last_error, (socket.timeout, TimeoutError)):
+                    raise RuntimeError(
+                        f'SSH connection timed out after {max_ssh_attempts} attempts. '
+                        'The device may still be booting or SSH service is not running.'
+                    ) from last_error
+                elif isinstance(last_error, ConnectionRefusedError):
+                    raise RuntimeError(
+                        f'SSH connection refused on port {task.ssh_port}. '
+                        'SSH server may not be enabled on the device.'
+                    ) from last_error
+                else:
+                    raise RuntimeError(
+                        f'SSH connection failed after {max_ssh_attempts} attempts: {last_error}'
+                    ) from last_error
 
             out, _, _ = _ssh_run(ssh, 'uname -m', timeout=10)
             arch = out.strip()
@@ -216,17 +302,26 @@ try:
                     sftp.close()
                     sftp = None
                 ssh.close()
+                time.sleep(2)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(
-                    hostname=task.ip_address,
-                    port=task.ssh_port,
-                    username=task.ssh_user,
-                    password=ssh_password,
-                    timeout=15,
-                    look_for_keys=False,
-                    allow_agent=False,
-                )
+                for attempt in range(1, 4):
+                    try:
+                        ssh.connect(
+                            hostname=task.ip_address,
+                            port=task.ssh_port,
+                            username=task.ssh_user,
+                            password=ssh_password,
+                            timeout=15,
+                            look_for_keys=False,
+                            allow_agent=False,
+                        )
+                        break
+                    except Exception as e:
+                        if attempt == 3:
+                            raise RuntimeError(f'SSH reconnect failed after docker install: {e}') from e
+                        _append_log(task, f'SSH reconnect attempt {attempt}/3 failed: {e}. Retrying in 5s...')
+                        time.sleep(5)
                 _append_log(task, 'SSH reconnected.')
 
             _update_step(task, 3, 'install_docker', 'success', 'Docker installed')
@@ -239,7 +334,7 @@ try:
             _append_log(task, '[Step 4] Creating directories...')
 
             home = f'/home/{task.ssh_user}'
-            _ssh_run(ssh, f'mkdir -p {home}/screenly {home}/.screenly {home}/screenly_assets', timeout=10)
+            _ssh_run(ssh, f'mkdir -p {home}/screenly/viewer {home}/.screenly {home}/screenly_assets', timeout=10)
             _append_log(task, 'Directories created.')
             _update_step(task, 4, 'create_dirs', 'success', 'Directories created')
 
@@ -251,7 +346,17 @@ try:
             _append_log(task, '[Step 5] Uploading docker-compose.yml...')
 
             watchtower_token = 'anthias-player-update'
-            compose_content = _render_compose(task.ip_address, task.ssh_user, watchtower_token)
+            # Read host MAC address for passing to container
+            host_mac, _, _ = _ssh_run(
+                ssh,
+                "cat /sys/class/net/eth0/address 2>/dev/null || "
+                "cat /sys/class/net/end0/address 2>/dev/null || "
+                "cat /sys/class/net/wlan0/address 2>/dev/null || "
+                "echo ''",
+                timeout=5, check=False,
+            )
+            host_mac = host_mac.strip()
+            compose_content = _render_compose(task.ip_address, task.ssh_user, watchtower_token, host_mac)
             sftp = ssh.open_sftp()
             compose_path = f'{home}/screenly/docker-compose.yml'
             with sftp.file(compose_path, 'w') as f:
@@ -298,22 +403,57 @@ try:
             with sftp.file(f'{home}/.screenly/screenly.conf', 'w') as f:
                 f.write(screenly_conf)
             _append_log(task, 'Uploaded screenly.conf')
+
+            # media_player.py (bind-mounted into viewer container)
+            import os
+            media_player_src = os.path.join(
+                settings.BASE_DIR, 'provision', 'templates', 'media_player.py'
+            )
+            if os.path.exists(media_player_src):
+                with open(media_player_src, 'r') as src:
+                    mp_content = src.read()
+                with sftp.file(f'{home}/screenly/viewer/media_player.py', 'w') as f:
+                    f.write(mp_content)
+                _append_log(task, 'Uploaded viewer/media_player.py')
+            else:
+                _append_log(task, 'WARNING: media_player.py template not found, skipping')
+
             _update_step(task, 6, 'upload_configs', 'success', 'Configs uploaded')
 
-            # Step 7: Docker pull
+            # Step 7: Docker pull (one image at a time for reliability + progress)
             task = ProvisionTask.objects.get(id=task_id)
             if task.status == 'failed':
                 return
             _update_step(task, 7, 'docker_pull', 'running', 'Pulling Docker images...')
             _append_log(task, '[Step 7] Pulling Docker images (this may take a while)...')
 
-            out, err, _ = _ssh_run(
-                ssh,
-                f'cd {home}/screenly && docker compose pull 2>&1',
-                timeout=900,
-            )
-            _append_log(task, out[-2000:] if len(out) > 2000 else out)
-            _update_step(task, 7, 'docker_pull', 'success', 'Images pulled')
+            # Pull images one-by-one instead of `docker compose pull` which can hang
+            images = [
+                ('redis', 'ghcr.io/alex1981-tech/anthias-redis:latest-pi4-64'),
+                ('watchtower', 'containrrr/watchtower:latest'),
+                ('nginx', 'ghcr.io/alex1981-tech/anthias-nginx:latest-pi4-64'),
+                ('websocket', 'ghcr.io/alex1981-tech/anthias-websocket:latest-pi4-64'),
+                ('server', 'ghcr.io/alex1981-tech/anthias-server:latest-pi4-64'),
+                ('celery', 'ghcr.io/alex1981-tech/anthias-celery:latest-pi4-64'),
+                ('viewer', 'ghcr.io/alex1981-tech/anthias-viewer:latest-pi4-64'),
+            ]
+            for idx, (name, image) in enumerate(images, 1):
+                task = ProvisionTask.objects.get(id=task_id)
+                if task.status == 'failed':
+                    return
+                _update_step(task, 7, 'docker_pull', 'running',
+                             f'Pulling {name} ({idx}/{len(images)})...')
+                _append_log(task, f'  Pulling {name} ({idx}/{len(images)}): {image}')
+                out, err, _ = _ssh_run(
+                    ssh,
+                    f'docker pull {image} 2>&1',
+                    timeout=600,
+                )
+                # Log last 500 chars of output (digest/status)
+                short_out = out.strip().split('\n')[-1] if out.strip() else ''
+                _append_log(task, f'  -> {short_out}')
+
+            _update_step(task, 7, 'docker_pull', 'success', f'All {len(images)} images pulled')
 
             # Step 8: Docker up
             task = ProvisionTask.objects.get(id=task_id)
@@ -498,17 +638,24 @@ FLAG="$HOME/.screenly/.silent-boot-done"
 
 # Disable rainbow splash
 sudo bash -c 'grep -q "disable_splash" /boot/firmware/config.txt 2>/dev/null || echo "disable_splash=1" >> /boot/firmware/config.txt'
-# Hide kernel text
+# Hide kernel text, redirect console to tty3
 sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then sed -i "s/console=tty1/console=tty3/" /boot/firmware/cmdline.txt; fi'
-sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then grep -q "quiet" /boot/firmware/cmdline.txt || sed -i "s/$/ quiet loglevel=0 logo.nologo vt.global_cursor_default=0/" /boot/firmware/cmdline.txt; fi'
+sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then grep -q "quiet" /boot/firmware/cmdline.txt || sed -i "s/$/ quiet loglevel=0 logo.nologo vt.global_cursor_default=0 consoleblank=0/" /boot/firmware/cmdline.txt; fi'
+# Disable login prompt on tty1
+sudo systemctl disable getty@tty1.service 2>/dev/null || true
 
 touch "$FLAG"
 '''
                 with sftp.file(f'{home}/setup-silent-boot.sh', 'w') as f:
                     f.write(silent_boot_script)
                 _ssh_run(ssh, f'chmod +x {home}/setup-silent-boot.sh && bash {home}/setup-silent-boot.sh',
-                         timeout=30, check=False)
-                _append_log(task, 'Silent boot configured (reboot required to take effect).')
+                         sudo_password=ssh_password, timeout=30, check=False)
+                # Disable cursor immediately (kernel param takes effect after reboot)
+                _ssh_run(ssh, 'sudo bash -c "echo 0 > /sys/class/graphics/fbcon/cursor_blink; '
+                         'setterm -cursor off > /dev/tty1 2>/dev/null; '
+                         'setterm -cursor off > /dev/tty0 2>/dev/null" || true',
+                         sudo_password=ssh_password, timeout=10, check=False)
+                _append_log(task, 'Silent boot configured + cursor hidden.')
                 _update_step(task, 12, 'silent_boot', 'success', 'Silent boot configured')
             except Exception as e:
                 _append_log(task, f'Silent boot setup failed (non-fatal): {e}')

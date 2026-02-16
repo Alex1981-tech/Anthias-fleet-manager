@@ -13,6 +13,7 @@ services:
       - HOME=/data
       - DEVICE_TYPE=pi4
       - WATCHTOWER_TOKEN=$WATCHTOWER_TOKEN
+      - MAC_ADDRESS=$MAC_ADDRESS
     devices:
       - /dev/vchiq:/dev/vchiq
       - /dev/fb0:/dev/fb0
@@ -24,6 +25,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - /sys/class/graphics:/sys/class/graphics:ro
+      - /sys/class/net:/sys/class/net:ro
     depends_on:
       - redis
 
@@ -48,6 +50,8 @@ services:
   anthias-viewer:
     image: ghcr.io/alex1981-tech/anthias-viewer:latest-pi4-64
     restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     privileged: true
     tty: true
     stdin_open: true
@@ -70,6 +74,7 @@ services:
       - /home/$PI_USER/screenly_assets:/data/screenly_assets
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - /home/$PI_USER/screenly/viewer/media_player.py:/usr/src/app/viewer/media_player.py:ro
     depends_on:
       - anthias-server
       - anthias-websocket

@@ -56,7 +56,7 @@ def _get_latest_player_version():
             return {'sha': '', 'error': f'Tags API returned {tags_resp.status_code}'}
 
         tags = tags_resp.json().get('tags', [])
-        # Collect SHA tags and version tags
+        # Collect SHA tags and version tags (last in list = newest)
         latest_sha = ''
         latest_version = ''
         for tag in tags:
@@ -64,10 +64,9 @@ def _get_latest_player_version():
                 continue
             name = tag.replace('-pi4-64', '')
             if name.startswith('v') and '.' in name:
-                if not latest_version:
-                    latest_version = name  # e.g. "v1.0.0"
-            elif not latest_sha:
-                latest_sha = name  # e.g. "abc1234"
+                latest_version = name  # e.g. "v1.0.0" — last wins
+            else:
+                latest_sha = name  # e.g. "abc1234" — last wins
 
         if latest_sha or latest_version:
             result = {'sha': latest_sha, 'version': latest_version}
@@ -796,12 +795,13 @@ class PlayerViewSet(viewsets.ModelViewSet):
         latest_sha = latest.get('sha', '')
         latest_version = latest.get('version', '')
 
-        # Compare by version first (e.g. v1.0.0 == v1.0.0 → up to date)
-        # Fall back to SHA comparison only when no version tags available
-        if current_ver_label and latest_version:
+        # Compare by SHA first (most reliable), fall back to version label
+        if current_sha and latest_sha:
+            update_available = current_sha != latest_sha
+        elif current_ver_label and latest_version:
             update_available = current_ver_label != latest_version
         else:
-            update_available = bool(current_sha and latest_sha and current_sha != latest_sha)
+            update_available = False
 
         return Response({
             'current_version': current_version,

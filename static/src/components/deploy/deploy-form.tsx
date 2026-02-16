@@ -603,6 +603,7 @@ const ContentPage: React.FC = () => {
   const [files, setFiles] = useState<MediaFile[]>([])
   const [loadingFiles, setLoadingFiles] = useState(true)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadStats, setUploadStats] = useState<{ current: number; total: number } | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null)
@@ -684,34 +685,46 @@ const ContentPage: React.FC = () => {
   // --- Upload handler ---
   const handleUpload = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return
-    for (let i = 0; i < fileList.length; i++) {
+    const total = fileList.length
+    let uploaded = 0
+    let failed = 0
+    const duplicates: string[] = []
+    for (let i = 0; i < total; i++) {
       const file = fileList[i]
       setUploadProgress(0)
+      setUploadStats({ current: i + 1, total })
       try {
         await mediaApi.upload(file, file.name, (pct) => setUploadProgress(pct))
-        Swal.fire({
-          icon: 'success',
-          title: t('common.success'),
-          text: t('content.fileUploaded'),
-          timer: 1500,
-          showConfirmButton: false,
-        })
+        uploaded++
       } catch (err) {
         const msg = String(err)
         if (msg.toLowerCase().includes('already exists')) {
-          Swal.fire({
-            icon: 'info',
-            title: t('content.duplicateTitle'),
-            text: t('content.duplicateText', { name: file.name }),
-            timer: 3000,
-            showConfirmButton: false,
-          })
+          duplicates.push(file.name)
         } else {
-          Swal.fire({ icon: 'error', title: t('common.error'), text: msg })
+          failed++
+          Swal.fire({ icon: 'error', title: t('common.error'), text: `${file.name}: ${msg}` })
         }
       } finally {
         setUploadProgress(null)
       }
+    }
+    setUploadStats(null)
+    if (duplicates.length > 0) {
+      Swal.fire({
+        icon: 'info',
+        title: t('content.duplicateTitle'),
+        text: duplicates.join(', '),
+        timer: 3000,
+        showConfirmButton: false,
+      })
+    } else if (uploaded > 0 && failed === 0) {
+      Swal.fire({
+        icon: 'success',
+        title: t('common.success'),
+        text: total === 1 ? t('content.fileUploaded') : `${uploaded} ${t('content.filesUploaded')}`,
+        timer: 1500,
+        showConfirmButton: false,
+      })
     }
     loadFiles()
     loadFolders()
@@ -908,7 +921,7 @@ const ContentPage: React.FC = () => {
       {uploadProgress !== null && (
         <div className="mb-3">
           <div className="d-flex justify-content-between mb-1">
-            <small>{t('content.uploading')}</small>
+            <small>{t('content.uploading')}{uploadStats && uploadStats.total > 1 ? ` (${uploadStats.current}/${uploadStats.total})` : ''}</small>
             <small>{uploadProgress}%</small>
           </div>
           <div className="progress" style={{ height: '6px' }}>
