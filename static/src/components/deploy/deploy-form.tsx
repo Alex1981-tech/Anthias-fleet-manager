@@ -685,12 +685,15 @@ const ContentPage: React.FC = () => {
   // --- Upload handler ---
   const handleUpload = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return
-    const total = fileList.length
+    // Copy FileList to Array immediately — FileList is a live reference
+    // and gets cleared when input.value = '' runs after first await
+    const files = Array.from(fileList)
+    const total = files.length
     let uploaded = 0
     let failed = 0
     const duplicates: string[] = []
     for (let i = 0; i < total; i++) {
-      const file = fileList[i]
+      const file = files[i]
       setUploadProgress(0)
       setUploadStats({ current: i + 1, total })
       try {
@@ -709,6 +712,9 @@ const ContentPage: React.FC = () => {
       }
     }
     setUploadStats(null)
+    // Refresh file list first so new files appear immediately
+    await loadFiles()
+    await loadFolders()
     if (duplicates.length > 0) {
       Swal.fire({
         icon: 'info',
@@ -726,8 +732,6 @@ const ContentPage: React.FC = () => {
         showConfirmButton: false,
       })
     }
-    loadFiles()
-    loadFolders()
   }
 
   // --- Add URL handler ---
