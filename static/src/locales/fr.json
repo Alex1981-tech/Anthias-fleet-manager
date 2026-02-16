@@ -560,7 +560,24 @@
     "stepDockerUp": "Démarrage des conteneurs",
     "stepWaitReady": "Attente du lecteur",
     "stepPhonehome": "Enregistrement au FM",
-    "stepSilentBoot": "Configuration du démarrage silencieux"
+    "stepSilentBoot": "Configuration du démarrage silencieux",
+    "stepTailscale": "Installation de Tailscale"
+  },
+  "tailscale": {
+    "title": "VPN Tailscale",
+    "description": "Connectez Fleet Manager et les lecteurs via le VPN Tailscale pour un accès distant entre différents réseaux.",
+    "enable": "Activer Tailscale",
+    "status": "Statut",
+    "connected": "Connecté",
+    "disconnected": "Déconnecté",
+    "notInstalled": "Non installé",
+    "fmIp": "IP Tailscale du FM",
+    "detectedIp": "Détection automatique",
+    "authKey": "Clé d'authentification",
+    "authKeyPlaceholder": "tskey-auth-...",
+    "authKeySet": "La clé d'authentification est configurée",
+    "saved": "Paramètres Tailscale enregistrés",
+    "saveFailed": "Échec de l'enregistrement des paramètres Tailscale"
   },
   "language": {
     "en": "English",

@@ -21,6 +21,7 @@ from fleet_manager.system_views import (
     system_update,
     system_update_check,
     system_version,
+    tailscale_settings,
 )
 
 
@@ -96,6 +97,7 @@ urlpatterns = [
     path('api/system/update-check/', system_update_check),
     path('api/system/update/', system_update),
     path('api/system/settings/', system_settings),
+    path('api/system/tailscale/', tailscale_settings),
     path('api/', include('players.urls')),
     path('api/', include('deploy.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

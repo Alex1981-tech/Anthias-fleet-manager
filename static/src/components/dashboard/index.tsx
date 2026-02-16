@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from '@/store/index'
 import { fetchPlayers } from '@/store/playersSlice'
 import { fetchGroups } from '@/store/groupsSlice'
 import PlayerCard from './player-card'
-import PlayerForm from '../players/player-form'
+import AddPlayerModal from '../players/add-player-modal'
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation()
@@ -186,8 +186,8 @@ const Dashboard: React.FC = () => {
       )}
 
       {showPlayerForm && (
-        <PlayerForm
-          player={null}
+        <AddPlayerModal
+          editingPlayer={null}
           groups={groups}
           onClose={() => setShowPlayerForm(false)}
           onSaved={() => {

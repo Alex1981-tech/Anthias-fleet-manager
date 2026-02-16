@@ -32,6 +32,8 @@ class PlayerSerializer(serializers.ModelSerializer):
             'is_online',
             'last_seen',
             'last_status',
+            'tailscale_ip',
+            'tailscale_enabled',
             'created_at',
         ]
         read_only_fields = ['id', 'is_online', 'last_seen', 'last_status', 'created_at']
@@ -66,6 +68,8 @@ class PlayerListSerializer(serializers.ModelSerializer):
             'is_online',
             'last_seen',
             'last_status',
+            'tailscale_ip',
+            'tailscale_enabled',
         ]
         read_only_fields = fields
 

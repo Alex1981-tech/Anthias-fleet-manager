@@ -67,6 +67,14 @@ class Player(models.Model):
         max_length=50, blank=True, default='',
         help_text='ISO timestamp of last fetched viewlog entry from player.',
     )
+    tailscale_ip = models.GenericIPAddressField(
+        null=True, blank=True,
+        help_text='Tailscale VPN IP address (100.x.x.x).',
+    )
+    tailscale_enabled = models.BooleanField(
+        default=False,
+        help_text='Whether to use Tailscale as fallback for connectivity.',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -78,6 +86,15 @@ class Player(models.Model):
     def get_api_url(self):
         """Return the player URL stripped of any trailing slash."""
         return self.url.rstrip('/')
+
+    def get_tailscale_url(self):
+        """Build a URL using the Tailscale IP, preserving the port from the primary URL."""
+        if not self.tailscale_ip or not self.tailscale_enabled:
+            return None
+        from urllib.parse import urlparse
+        parsed = urlparse(self.url)
+        port = f':{parsed.port}' if parsed.port and parsed.port != 80 else ''
+        return f'{parsed.scheme}://{self.tailscale_ip}{port}'
 
     def set_password(self, raw_password):
         """Encrypt and store the password."""

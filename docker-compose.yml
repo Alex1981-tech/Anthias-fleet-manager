@@ -50,6 +50,8 @@ services:
       - deploy_files:/app/deploy_files
       - media_files:/app/media
       - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+      - /usr/bin/tailscale:/usr/bin/tailscale:ro
 
   nginx:
     image: nginx:alpine

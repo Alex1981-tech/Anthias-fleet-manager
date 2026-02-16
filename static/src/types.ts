@@ -16,6 +16,8 @@ export interface Player {
   is_online: boolean
   last_seen: string | null
   last_status: Record<string, unknown>
+  tailscale_ip: string | null
+  tailscale_enabled: boolean
   created_at: string
 }
 
@@ -159,6 +161,14 @@ export interface CctvConfig {
   cameras: CctvCamera[]
   media_file_id?: string | null
   created_at: string
+}
+
+export interface TailscaleSettings {
+  tailscale_enabled: boolean
+  has_authkey: boolean
+  fm_tailscale_ip: string
+  detected_ip: string
+  status: 'connected' | 'disconnected' | 'not_installed'
 }
 
 export interface PlayerUpdateCheckResult {

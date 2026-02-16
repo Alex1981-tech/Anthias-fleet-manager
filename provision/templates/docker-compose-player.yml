@@ -49,6 +49,8 @@ services:
     image: ghcr.io/alex1981-tech/anthias-viewer:latest-pi4-64
     restart: always
     privileged: true
+    tty: true
+    stdin_open: true
     shm_size: '2460166144'
     environment:
       - NOREFRESH=1

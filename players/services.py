@@ -43,6 +43,7 @@ class AnthiasAPIClient:
     def __init__(self, player):
         self.player = player
         self.base_url = player.get_api_url()
+        self.fallback_url = player.get_tailscale_url()
         self.timeout = getattr(settings, 'PLAYER_REQUEST_TIMEOUT', 10)
 
         self.auth = None
@@ -55,12 +56,37 @@ class AnthiasAPIClient:
 
         Uses a shared session with connection pooling and automatic
         retry with exponential backoff on 5xx/429.
+
+        If the primary URL fails with a connection/timeout error and
+        a Tailscale fallback URL is configured, retries via Tailscale.
+        HTTP errors (4xx/5xx) do NOT trigger fallback — the player is
+        reachable but returned an error.
         """
         url = f'{self.base_url}{endpoint}'
         kwargs.setdefault('timeout', self.timeout)
         if self.auth:
             kwargs.setdefault('auth', self.auth)
 
+        try:
+            return self._do_request(method, url, **kwargs)
+        except PlayerConnectionError as primary_exc:
+            # Only fallback on connection/timeout errors (no status_code)
+            if primary_exc.status_code is not None or not self.fallback_url:
+                raise
+            # Try Tailscale fallback
+            fallback_url = f'{self.fallback_url}{endpoint}'
+            logger.info(
+                'Primary URL failed for %s, trying Tailscale fallback: %s',
+                self.player.name, fallback_url,
+            )
+            try:
+                return self._do_request(method, fallback_url, **kwargs)
+            except PlayerConnectionError:
+                # Both failed — raise the original error
+                raise primary_exc
+
+    def _do_request(self, method, url, **kwargs):
+        """Execute a single HTTP request and handle errors."""
         try:
             response = _session.request(method, url, **kwargs)
             response.raise_for_status()
@@ -96,7 +122,6 @@ class AnthiasAPIClient:
                 'HTTP error from player %s (%s): %s',
                 self.player.name, url, exc,
             )
-            # Try to extract the response body for validation errors
             response_data = None
             try:
                 response_data = resp.json()

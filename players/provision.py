@@ -4,6 +4,7 @@ import uuid
 from string import Template
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
 
@@ -25,7 +26,7 @@ class ProvisionTask(models.Model):
     player_name = models.CharField(max_length=200, blank=True, default='')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     current_step = models.IntegerField(default=0)
-    total_steps = models.IntegerField(default=11)
+    total_steps = models.IntegerField(default=12)
     steps = models.JSONField(default=list)
     error_message = models.CharField(max_length=1000, blank=True, default='')
     log_output = models.TextField(blank=True, default='')
@@ -183,6 +184,7 @@ try:
             _update_step(task, 3, 'install_docker', 'running', 'Installing Docker...')
             _append_log(task, '[Step 3] Installing Docker...')
 
+            docker_freshly_installed = False
             _, _, rc = _ssh_run(ssh, 'command -v docker', timeout=10, check=False)
             if rc == 0:
                 _append_log(task, 'Docker already installed, skipping.')
@@ -202,9 +204,31 @@ try:
                 _append_log(task, 'Adding user to docker group...')
                 _ssh_run(ssh, f'sudo usermod -aG docker {task.ssh_user}',
                          sudo_password=ssh_password, timeout=10)
+                docker_freshly_installed = True
 
             out, _, _ = _ssh_run(ssh, 'docker --version', timeout=10)
             _append_log(task, f'Docker: {out.strip()}')
+
+            # Reconnect SSH to pick up new docker group membership
+            if docker_freshly_installed:
+                _append_log(task, 'Reconnecting SSH to apply docker group...')
+                if sftp:
+                    sftp.close()
+                    sftp = None
+                ssh.close()
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(
+                    hostname=task.ip_address,
+                    port=task.ssh_port,
+                    username=task.ssh_user,
+                    password=ssh_password,
+                    timeout=15,
+                    look_for_keys=False,
+                    allow_agent=False,
+                )
+                _append_log(task, 'SSH reconnected.')
+
             _update_step(task, 3, 'install_docker', 'success', 'Docker installed')
 
             # Step 4: Create directories
@@ -403,12 +427,68 @@ WantedBy=timers.target
 
             _update_step(task, 10, 'phonehome', 'success', 'Phone-home installed')
 
-            # Step 11: Silent boot (non-fatal)
+            # Step 11: Install Tailscale (optional, non-fatal)
             task = ProvisionTask.objects.get(id=task_id)
             if task.status == 'failed':
                 return
-            _update_step(task, 11, 'silent_boot', 'running', 'Configuring silent boot...')
-            _append_log(task, '[Step 11] Configuring silent boot (non-fatal)...')
+            _update_step(task, 11, 'tailscale', 'running', 'Installing Tailscale...')
+            _append_log(task, '[Step 11] Installing Tailscale (optional)...')
+
+            tailscale_ip = None
+            try:
+                # Check if FM has a Tailscale authkey configured
+                ts_authkey_encrypted = cache.get('system:tailscale_authkey')
+                if ts_authkey_encrypted:
+                    from players.models import _get_fernet as _get_model_fernet
+                    try:
+                        f = _get_model_fernet()
+                        ts_authkey = f.decrypt(ts_authkey_encrypted.encode()).decode()
+                    except Exception:
+                        ts_authkey = ''
+
+                    if ts_authkey:
+                        # Install Tailscale
+                        _, _, rc = _ssh_run(ssh, 'command -v tailscale', timeout=10, check=False)
+                        if rc != 0:
+                            _append_log(task, 'Installing Tailscale...')
+                            _ssh_run(
+                                ssh,
+                                'curl -fsSL https://tailscale.com/install.sh | sh',
+                                timeout=120,
+                            )
+                        else:
+                            _append_log(task, 'Tailscale already installed.')
+
+                        # Authenticate
+                        _append_log(task, 'Authenticating with Tailscale...')
+                        _ssh_run(
+                            ssh,
+                            f'sudo tailscale up --authkey={_shell_quote(ts_authkey)}',
+                            sudo_password=ssh_password,
+                            timeout=30,
+                        )
+
+                        # Get Tailscale IP
+                        out, _, _ = _ssh_run(ssh, 'tailscale ip -4', timeout=10)
+                        tailscale_ip = out.strip()
+                        _append_log(task, f'Tailscale connected: {tailscale_ip}')
+                        _update_step(task, 11, 'tailscale', 'success', f'Tailscale: {tailscale_ip}')
+                    else:
+                        _append_log(task, 'Tailscale authkey decryption failed, skipping.')
+                        _update_step(task, 11, 'tailscale', 'skipped', 'Auth key error')
+                else:
+                    _append_log(task, 'No Tailscale authkey configured in FM settings, skipping.')
+                    _update_step(task, 11, 'tailscale', 'skipped', 'No auth key configured')
+            except Exception as e:
+                _append_log(task, f'Tailscale setup failed (non-fatal): {e}')
+                _update_step(task, 11, 'tailscale', 'skipped', f'Non-fatal: {e}')
+
+            # Step 12: Silent boot (non-fatal)
+            task = ProvisionTask.objects.get(id=task_id)
+            if task.status == 'failed':
+                return
+            _update_step(task, 12, 'silent_boot', 'running', 'Configuring silent boot...')
+            _append_log(task, '[Step 12] Configuring silent boot (non-fatal)...')
 
             try:
                 silent_boot_script = '''#!/bin/bash
@@ -429,29 +509,38 @@ touch "$FLAG"
                 _ssh_run(ssh, f'chmod +x {home}/setup-silent-boot.sh && bash {home}/setup-silent-boot.sh',
                          timeout=30, check=False)
                 _append_log(task, 'Silent boot configured (reboot required to take effect).')
-                _update_step(task, 11, 'silent_boot', 'success', 'Silent boot configured')
+                _update_step(task, 12, 'silent_boot', 'success', 'Silent boot configured')
             except Exception as e:
                 _append_log(task, f'Silent boot setup failed (non-fatal): {e}')
-                _update_step(task, 11, 'silent_boot', 'skipped', f'Non-fatal: {e}')
+                _update_step(task, 12, 'silent_boot', 'skipped', f'Non-fatal: {e}')
 
             # All done — create Player record
             from .models import Player
             player_name = task.player_name or f'Player {task.ip_address}'
             player_url = f'http://{task.ip_address}'
 
+            player_defaults = {
+                'name': player_name,
+                'is_online': True,
+                'last_seen': timezone.now(),
+            }
+            if tailscale_ip:
+                player_defaults['tailscale_ip'] = tailscale_ip
+                player_defaults['tailscale_enabled'] = True
+
             player, created = Player.objects.get_or_create(
                 url=player_url,
-                defaults={
-                    'name': player_name,
-                    'is_online': True,
-                    'last_seen': timezone.now(),
-                },
+                defaults=player_defaults,
             )
             if not created:
                 player.name = player_name
                 player.is_online = True
                 player.last_seen = timezone.now()
-                player.save(update_fields=['name', 'is_online', 'last_seen'])
+                if tailscale_ip:
+                    player.tailscale_ip = tailscale_ip
+                    player.tailscale_enabled = True
+                player.save(update_fields=['name', 'is_online', 'last_seen',
+                                           'tailscale_ip', 'tailscale_enabled'])
 
             task.player = player
             task.status = 'success'

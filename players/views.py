@@ -1013,6 +1013,7 @@ def register_player(request):
     url = (request.data.get('url') or '').rstrip('/')
     name = request.data.get('name') or 'Unknown'
     info = request.data.get('info') or {}
+    tailscale_ip = request.data.get('tailscale_ip') or None
 
     if not url:
         return Response(
@@ -1021,22 +1022,30 @@ def register_player(request):
         )
 
     now = timezone.now()
+    defaults = {
+        'name': name,
+        'is_online': True,
+        'last_seen': now,
+        'last_status': info,
+        'auto_registered': True,
+    }
+    if tailscale_ip:
+        defaults['tailscale_ip'] = tailscale_ip
+        defaults['tailscale_enabled'] = True
     try:
         player, created = Player.objects.get_or_create(
             url=url,
-            defaults={
-                'name': name,
-                'is_online': True,
-                'last_seen': now,
-                'last_status': info,
-                'auto_registered': True,
-            },
+            defaults=defaults,
         )
         if not created:
             player.is_online = True
             player.last_seen = now
             player.last_status = info
-            player.save(update_fields=['is_online', 'last_seen', 'last_status'])
+            if tailscale_ip:
+                player.tailscale_ip = tailscale_ip
+                player.tailscale_enabled = True
+            player.save(update_fields=['is_online', 'last_seen', 'last_status',
+                                       'tailscale_ip', 'tailscale_enabled'])
     except IntegrityError:
         # Concurrent create hit unique(url) — retry as update
         player = Player.objects.filter(url=url).first()
@@ -1105,9 +1114,20 @@ SERVER="{server}"
 URL="http://$(hostname -I | awk '{{print $1}}')"
 NAME="$(hostname)"
 INFO=$(curl -sf http://localhost/api/v2/info 2>/dev/null || echo '{{}}')
+
+# Detect Tailscale IP if available
+TS_IP=""
+if command -v tailscale >/dev/null 2>&1; then
+  TS_IP=$(tailscale ip -4 2>/dev/null || true)
+fi
+TS_FIELD=""
+if [ -n "$TS_IP" ]; then
+  TS_FIELD=",\\"tailscale_ip\\":\\"$TS_IP\\""
+fi
+
 curl -sf -X POST "${{SERVER}}/api/players/register/" \\
   -H "Content-Type: application/json" \\{auth_header_line}
-  -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}}}"
+  -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}$TS_FIELD}}"
 SCRIPT
 chmod +x /usr/local/bin/anthias-phonehome.sh
 

@@ -1,5 +1,6 @@
 import logging
 import re
+import subprocess
 import threading
 
 import requests
@@ -15,6 +16,11 @@ UPDATE_CHECK_CACHE_KEY = 'system:latest_version'
 UPDATE_CHECK_CACHE_TTL = 300  # 5 minutes
 AUTO_UPDATE_CACHE_KEY = 'system:auto_update'
 UPDATER_CONTAINER = 'anthias-fleet-manager-updater-1'
+
+# Tailscale settings keys
+TS_ENABLED_KEY = 'system:tailscale_enabled'
+TS_AUTHKEY_KEY = 'system:tailscale_authkey'
+TS_FM_IP_KEY = 'system:tailscale_fm_ip'
 
 
 def _parse_version(version_str):
@@ -182,3 +188,86 @@ def system_settings(request):
     if auto_update is not None:
         cache.set(AUTO_UPDATE_CACHE_KEY, bool(auto_update), None)
     return Response({'auto_update': cache.get(AUTO_UPDATE_CACHE_KEY, True)})
+
+
+def _get_fernet():
+    """Return a Fernet instance for encrypting Tailscale auth key."""
+    import base64
+    import hashlib
+    from cryptography.fernet import Fernet
+    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
+
+
+def _detect_tailscale_ip():
+    """Try to detect the local Tailscale IPv4 address."""
+    try:
+        result = subprocess.run(
+            ['tailscale', 'ip', '-4'],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+    return ''
+
+
+def _get_tailscale_status():
+    """Check if Tailscale is connected."""
+    try:
+        result = subprocess.run(
+            ['tailscale', 'status', '--json'],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0:
+            import json
+            data = json.loads(result.stdout)
+            backend = data.get('BackendState', '')
+            return 'connected' if backend == 'Running' else 'disconnected'
+    except (FileNotFoundError, subprocess.TimeoutExpired, ValueError, KeyError):
+        pass
+    return 'not_installed'
+
+
+@api_view(['GET', 'PATCH'])
+def tailscale_settings(request):
+    """Get or update Tailscale VPN settings."""
+    if request.method == 'GET':
+        detected_ip = _detect_tailscale_ip()
+        ts_status = _get_tailscale_status()
+        has_authkey = bool(cache.get(TS_AUTHKEY_KEY))
+        return Response({
+            'tailscale_enabled': cache.get(TS_ENABLED_KEY, False),
+            'has_authkey': has_authkey,
+            'fm_tailscale_ip': cache.get(TS_FM_IP_KEY, '') or detected_ip,
+            'detected_ip': detected_ip,
+            'status': ts_status,
+        })
+
+    # PATCH
+    ts_enabled = request.data.get('tailscale_enabled')
+    if ts_enabled is not None:
+        cache.set(TS_ENABLED_KEY, bool(ts_enabled), None)
+
+    authkey = request.data.get('authkey')
+    if authkey is not None:
+        if authkey:
+            f = _get_fernet()
+            encrypted = f.encrypt(authkey.encode()).decode()
+            cache.set(TS_AUTHKEY_KEY, encrypted, None)
+        else:
+            cache.delete(TS_AUTHKEY_KEY)
+
+    fm_ip = request.data.get('fm_tailscale_ip')
+    if fm_ip is not None:
+        cache.set(TS_FM_IP_KEY, fm_ip, None)
+
+    detected_ip = _detect_tailscale_ip()
+    return Response({
+        'tailscale_enabled': cache.get(TS_ENABLED_KEY, False),
+        'has_authkey': bool(cache.get(TS_AUTHKEY_KEY)),
+        'fm_tailscale_ip': cache.get(TS_FM_IP_KEY, '') or detected_ip,
+        'detected_ip': detected_ip,
+        'status': _get_tailscale_status(),
+    })

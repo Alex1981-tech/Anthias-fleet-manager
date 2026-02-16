@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FaCog, FaCopy, FaCheck, FaSave, FaSync, FaDownload } from 'react-icons/fa'
+import { FaCog, FaCopy, FaCheck, FaSave, FaSync, FaDownload, FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { pushLanguageToPlayers, system } from '@/services/api'
+import type { TailscaleSettings } from '@/types'
 import { APP_VERSION } from '../../changelog'
 
 const UPDATE_POLL_INTERVAL = 5000 // 5s
@@ -32,6 +33,14 @@ const Settings: React.FC = () => {
   const [checking, setChecking] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [autoUpdate, setAutoUpdate] = useState(true)
+
+  // Tailscale state
+  const [tsSettings, setTsSettings] = useState<TailscaleSettings | null>(null)
+  const [tsEnabled, setTsEnabled] = useState(false)
+  const [tsAuthKey, setTsAuthKey] = useState('')
+  const [tsFmIp, setTsFmIp] = useState('')
+  const [tsShowKey, setTsShowKey] = useState(false)
+  const [tsSaving, setTsSaving] = useState(false)
 
   // Post-update polling state
   const [updatePolling, setUpdatePolling] = useState(false)
@@ -89,6 +98,12 @@ const Settings: React.FC = () => {
     system.getSettings().then((res) => {
       setAutoUpdate(res.auto_update)
     }).catch(() => {})
+
+    system.getTailscale().then((res) => {
+      setTsSettings(res)
+      setTsEnabled(res.tailscale_enabled)
+      setTsFmIp(res.fm_tailscale_ip || '')
+    }).catch(() => {})
   }, [])
 
   const handleCheckUpdate = () => {
@@ -129,6 +144,30 @@ const Settings: React.FC = () => {
         })
       }
     })
+  }
+
+  const handleTailscaleSave = () => {
+    setTsSaving(true)
+    const data: Record<string, unknown> = {
+      tailscale_enabled: tsEnabled,
+      fm_tailscale_ip: tsFmIp,
+    }
+    if (tsAuthKey) {
+      data.authkey = tsAuthKey
+    }
+    system.updateTailscale(data).then((res) => {
+      setTsSettings(res)
+      setTsAuthKey('')
+      Swal.fire({
+        icon: 'success',
+        title: t('common.success'),
+        text: t('tailscale.saved'),
+        timer: 1500,
+        showConfirmButton: false,
+      })
+    }).catch(() => {
+      Swal.fire({ icon: 'error', title: t('common.error'), text: t('tailscale.saveFailed') })
+    }).finally(() => setTsSaving(false))
   }
 
   const handleAutoUpdateToggle = (value: boolean) => {
@@ -303,6 +342,98 @@ const Settings: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Tailscale VPN */}
+          <div className="fm-card fm-card-accent mt-4">
+            <div className="fm-card-header">
+              <h5 className="card-title">
+                <FaShieldAlt className="me-2" />
+                {t('tailscale.title')}
+              </h5>
+            </div>
+            <div className="fm-card-body">
+              <p className="form-text mb-3">{t('tailscale.description')}</p>
+
+              {/* Enable toggle */}
+              <div className="form-check form-switch mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="ts-enable"
+                  checked={tsEnabled}
+                  onChange={(e) => setTsEnabled(e.target.checked)}
+                />
+                <label className="form-check-label fw-semibold" htmlFor="ts-enable">
+                  {t('tailscale.enable')}
+                </label>
+              </div>
+
+              {/* Status badge */}
+              {tsSettings && (
+                <div className="mb-3">
+                  <span className="fw-semibold">{t('tailscale.status')}: </span>
+                  {tsSettings.status === 'connected' ? (
+                    <span className="badge bg-success">{t('tailscale.connected')}</span>
+                  ) : tsSettings.status === 'disconnected' ? (
+                    <span className="badge bg-warning text-dark">{t('tailscale.disconnected')}</span>
+                  ) : (
+                    <span className="badge bg-secondary">{t('tailscale.notInstalled')}</span>
+                  )}
+                </div>
+              )}
+
+              {/* FM Tailscale IP */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">{t('tailscale.fmIp')}</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={tsFmIp}
+                  onChange={(e) => setTsFmIp(e.target.value)}
+                  placeholder={tsSettings?.detected_ip || '100.x.x.x'}
+                  style={{ maxWidth: '300px' }}
+                />
+                {tsSettings?.detected_ip && (
+                  <div className="form-text">
+                    {t('tailscale.detectedIp')}: {tsSettings.detected_ip}
+                  </div>
+                )}
+              </div>
+
+              {/* Auth key */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">{t('tailscale.authKey')}</label>
+                <div className="input-group" style={{ maxWidth: '400px' }}>
+                  <input
+                    type={tsShowKey ? 'text' : 'password'}
+                    className="form-control"
+                    value={tsAuthKey}
+                    onChange={(e) => setTsAuthKey(e.target.value)}
+                    placeholder={tsSettings?.has_authkey ? '••••••••' : t('tailscale.authKeyPlaceholder')}
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={() => setTsShowKey(!tsShowKey)}
+                  >
+                    {tsShowKey ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {tsSettings?.has_authkey && !tsAuthKey && (
+                  <div className="form-text text-success">{t('tailscale.authKeySet')}</div>
+                )}
+              </div>
+
+              <button
+                className="fm-btn-primary"
+                onClick={handleTailscaleSave}
+                disabled={tsSaving}
+              >
+                <FaSave />
+                {tsSaving ? t('common.loading') : t('common.save')}
+              </button>
             </div>
           </div>
 

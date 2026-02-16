@@ -560,7 +560,24 @@
     "stepDockerUp": "Container starten",
     "stepWaitReady": "Auf Player warten",
     "stepPhonehome": "Beim FM registrieren",
-    "stepSilentBoot": "Leisen Start konfigurieren"
+    "stepSilentBoot": "Leisen Start konfigurieren",
+    "stepTailscale": "Tailscale installieren"
+  },
+  "tailscale": {
+    "title": "Tailscale VPN",
+    "description": "Verbinden Sie Fleet Manager und Player über Tailscale VPN für den Fernzugriff über verschiedene Netzwerke.",
+    "enable": "Tailscale aktivieren",
+    "status": "Status",
+    "connected": "Verbunden",
+    "disconnected": "Getrennt",
+    "notInstalled": "Nicht installiert",
+    "fmIp": "FM Tailscale-IP",
+    "detectedIp": "Automatisch erkannt",
+    "authKey": "Auth-Schlüssel",
+    "authKeyPlaceholder": "tskey-auth-...",
+    "authKeySet": "Auth-Schlüssel ist konfiguriert",
+    "saved": "Tailscale-Einstellungen gespeichert",
+    "saveFailed": "Tailscale-Einstellungen konnten nicht gespeichert werden"
   },
   "language": {
     "en": "English",

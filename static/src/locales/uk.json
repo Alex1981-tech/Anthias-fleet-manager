@@ -450,7 +450,9 @@
       "forgetPlayerButton": "Кнопка «Забути плеєр» на сторінці деталей — видалення плеєра з менеджера",
       "testSuiteFix": "Виправлено тести — всі 28 проходять (авторизація, мок og:image)",
       "cctvStreamLifecycle": "Lifecycle CCTV стрімів — ffmpeg зупиняється при збереженні конфігу, стартує при відкритті превʼю, зупиняється при закритті; стріми працюють лише коли потрібні розкладу або превʼю",
-      "provisionPlayer": "Віддалена інсталяція — встановлення Anthias на чисту Raspberry Pi прямо з Fleet Manager через SSH"
+      "provisionPlayer": "Віддалена інсталяція — встановлення Anthias на чисту Raspberry Pi прямо з Fleet Manager через SSH",
+      "tailscaleIntegration": "Інтеграція Tailscale VPN — підключення до віддалених плеєрів через Tailscale з автоматичним fallback",
+      "provisionFixes": "Виправлення провіжинінгу — Docker група, VLC framebuffer вивід, TTY для viewer"
     }
   },
   "updates": {
@@ -574,7 +576,24 @@
     "stepDockerUp": "Запуск контейнерів",
     "stepWaitReady": "Очікування плеєра",
     "stepPhonehome": "Реєстрація у FM",
+    "stepTailscale": "Встановлення Tailscale",
     "stepSilentBoot": "Налаштування тихого завантаження"
+  },
+  "tailscale": {
+    "title": "Tailscale VPN",
+    "description": "Підключіть Fleet Manager та плеєри через Tailscale VPN для віддаленого доступу з різних мереж.",
+    "enable": "Увімкнути Tailscale",
+    "status": "Статус",
+    "connected": "Підключено",
+    "disconnected": "Відключено",
+    "notInstalled": "Не встановлено",
+    "fmIp": "Tailscale IP FM",
+    "detectedIp": "Автовизначено",
+    "authKey": "Ключ авторизації",
+    "authKeyPlaceholder": "tskey-auth-...",
+    "authKeySet": "Ключ авторизації налаштовано",
+    "saved": "Налаштування Tailscale збережено",
+    "saveFailed": "Не вдалося зберегти налаштування Tailscale"
   },
   "language": {
     "en": "Англійська",

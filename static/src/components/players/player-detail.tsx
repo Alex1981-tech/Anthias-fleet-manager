@@ -39,6 +39,7 @@ import {
   FaExclamationTriangle,
   FaDownload,
   FaCheckCircle,
+  FaShieldAlt,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
@@ -1491,6 +1492,19 @@ const PlayerDetail: React.FC = () => {
                         <FaNetworkWired className="text-purple" style={{ fontSize: '14px', flexShrink: 0 }} />
                         <span className="fw-semibold">MAC:</span>
                         <span className="text-muted">{info.mac_address}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {player.tailscale_ip && (
+                    <div className="col-sm-6">
+                      <div className="d-flex align-items-center gap-2">
+                        <FaShieldAlt className="text-purple" style={{ fontSize: '14px', flexShrink: 0 }} />
+                        <span className="fw-semibold">Tailscale:</span>
+                        <span className="text-muted">{player.tailscale_ip}</span>
+                        {player.tailscale_enabled && (
+                          <span className="badge bg-info" style={{ fontSize: '0.65rem' }}>VPN</span>
+                        )}
                       </div>
                     </div>
                   )}
