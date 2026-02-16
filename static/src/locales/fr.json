@@ -424,7 +424,8 @@
       "cctvPolish": "Flux CCTV : aperçu en direct dans la bibliothèque, redémarrage automatique lors de la modification, miniatures snapshot, déploiement avec URL complète",
       "friendlyUpdateUx": "UX de mise à jour conviviale — détection automatique du changement de version et rechargement de la page",
       "cctvLiveViewFix": "Correction CCTV — flux en direct uniquement quand le stream est actif, bouton de basculement manuel supprimé",
-      "standardPlayerCompat": "Compatibilité Anthias standard — détection automatique des fonctionnalités personnalisées (horaire, contrôle de lecture, capture d'écran) et masquage des éléments non pris en charge"
+      "standardPlayerCompat": "Compatibilité Anthias standard — détection automatique des fonctionnalités personnalisées (horaire, contrôle de lecture, capture d'écran) et masquage des éléments non pris en charge",
+      "reliableUpdateProcess": "Processus de mise à jour fiable — directive build retirée du compose de production, flag --no-build ajouté à l'updater"
     }
   },
   "updates": {

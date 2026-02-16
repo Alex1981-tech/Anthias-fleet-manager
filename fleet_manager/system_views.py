@@ -134,7 +134,7 @@ def _trigger_compose_update():
         updater = client.containers.get(UPDATER_CONTAINER)
         cmd = (
             'docker compose pull web celery-worker celery-transcode celery-beat && '
-            'docker compose up -d --no-deps web celery-worker celery-transcode celery-beat'
+            'docker compose up -d --no-deps --no-build web celery-worker celery-transcode celery-beat'
         )
         updater.exec_run(['sh', '-c', cmd], workdir='/project', detach=True)
     except Exception as e:

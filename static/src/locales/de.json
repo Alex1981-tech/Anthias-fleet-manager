@@ -424,7 +424,8 @@
       "cctvPolish": "CCTV-Streams: Live-Vorschau in der Inhaltsbibliothek, automatischer Neustart bei Konfigurationsänderung, Snapshot-Miniaturbilder, Player-Deploy mit vollständiger URL",
       "friendlyUpdateUx": "Benutzerfreundliches Update — automatische Erkennung von Versionsänderungen und Aufforderung zum Neuladen",
       "cctvLiveViewFix": "CCTV-Fix — Live-Stream nur wenn aktiv, manuelle Umschalttaste entfernt",
-      "standardPlayerCompat": "Standard Anthias-Kompatibilität — automatische Erkennung benutzerdefinierter Funktionen (Zeitplan, Wiedergabesteuerung, Bildschirmfoto) und Ausblenden nicht unterstützter UI-Elemente"
+      "standardPlayerCompat": "Standard Anthias-Kompatibilität — automatische Erkennung benutzerdefinierter Funktionen (Zeitplan, Wiedergabesteuerung, Bildschirmfoto) und Ausblenden nicht unterstützter UI-Elemente",
+      "reliableUpdateProcess": "Zuverlässiger Update-Prozess — Build-Direktive aus Production-Compose entfernt, --no-build Flag zum Updater hinzugefügt"
     }
   },
   "updates": {

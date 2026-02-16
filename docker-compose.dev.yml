@@ -1,0 +1,11 @@
+# Development override — adds build: directive for local builds
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml build web
+services:
+  web:
+    build: .
+  celery-worker:
+    build: .
+  celery-transcode:
+    build: .
+  celery-beat:
+    build: .

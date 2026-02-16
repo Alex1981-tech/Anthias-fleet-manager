@@ -25,7 +25,6 @@ services:
 
   web:
     image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
-    build: .
     restart: unless-stopped
     environment: &app-env
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
@@ -65,7 +64,6 @@ services:
 
   celery-worker:
     image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
-    build: .
     restart: unless-stopped
     command: celery -A fleet_manager worker -l info --concurrency=4 -Q celery
     environment: *app-env
@@ -80,7 +78,6 @@ services:
 
   celery-transcode:
     image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
-    build: .
     restart: unless-stopped
     command: celery -A fleet_manager worker -l info --concurrency=1 -Q transcode
     environment: *app-env
@@ -95,7 +92,6 @@ services:
 
   celery-beat:
     image: ghcr.io/alex1981-tech/anthias-fleet-manager:latest
-    build: .
     restart: unless-stopped
     command: celery -A fleet_manager beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     environment: *app-env

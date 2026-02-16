@@ -424,7 +424,8 @@
       "cctvPolish": "Strumienie CCTV: podgląd na żywo w bibliotece, automatyczny restart przy zmianie konfiguracji, miniatury ze snapshot, deploy z pełnym URL",
       "friendlyUpdateUx": "Przyjazny UX aktualizacji — automatyczne wykrywanie zmiany wersji i propozycja przeładowania strony",
       "cctvLiveViewFix": "Naprawa CCTV — transmisja na żywo tylko gdy strumień jest aktywny, usunięto przycisk ręcznego przełączania",
-      "standardPlayerCompat": "Kompatybilność ze standardowym Anthias — automatyczne wykrywanie niestandardowych funkcji (harmonogram, sterowanie odtwarzaniem, zrzut ekranu) i ukrywanie nieobsługiwanych elementów"
+      "standardPlayerCompat": "Kompatybilność ze standardowym Anthias — automatyczne wykrywanie niestandardowych funkcji (harmonogram, sterowanie odtwarzaniem, zrzut ekranu) i ukrywanie nieobsługiwanych elementów",
+      "reliableUpdateProcess": "Niezawodny proces aktualizacji — usunięto dyrektywę build z compose produkcyjnego, dodano flagę --no-build do updatera"
     }
   },
   "updates": {
