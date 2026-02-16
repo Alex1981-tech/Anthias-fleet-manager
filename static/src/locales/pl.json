@@ -425,7 +425,9 @@
       "friendlyUpdateUx": "Przyjazny UX aktualizacji — automatyczne wykrywanie zmiany wersji i propozycja przeładowania strony",
       "cctvLiveViewFix": "Naprawa CCTV — transmisja na żywo tylko gdy strumień jest aktywny, usunięto przycisk ręcznego przełączania",
       "standardPlayerCompat": "Kompatybilność ze standardowym Anthias — automatyczne wykrywanie niestandardowych funkcji (harmonogram, sterowanie odtwarzaniem, zrzut ekranu) i ukrywanie nieobsługiwanych elementów",
-      "reliableUpdateProcess": "Niezawodny proces aktualizacji — usunięto dyrektywę build z compose produkcyjnego, dodano flagę --no-build do updatera"
+      "reliableUpdateProcess": "Niezawodny proces aktualizacji — usunięto dyrektywę build z compose produkcyjnego, dodano flagę --no-build do updatera",
+      "cctvNowPlayingDetection": "Podgląd CCTV na żywo wyświetla się tylko gdy odtwarzacz faktycznie wyświetla strumień CCTV",
+      "emptySlotFallback": "Puste sloty harmonogramu przełączają się na slot domyślny zamiast wyświetlać ekran powitalny"
     }
   },
   "updates": {

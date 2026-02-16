@@ -120,6 +120,10 @@ export const players = {
     return apiRequest('POST', `/players/${id}/playback-control/`, { command })
   },
 
+  nowPlaying(id: string): Promise<{ asset_id: string; asset_name: string; mimetype: string; started_at: string } | null> {
+    return apiRequest('GET', `/players/${id}/now-playing/`)
+  },
+
   reboot(id: string): Promise<{ success: boolean }> {
     return apiRequest('POST', `/players/${id}/reboot/`)
   },

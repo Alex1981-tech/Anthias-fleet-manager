@@ -274,6 +274,22 @@ class PlayerViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
+    @action(detail=True, methods=['get'], url_path='now-playing')
+    def now_playing(self, request, pk=None):
+        """Return the most recent 'started' playback entry for this player."""
+        player = self.get_object()
+        entry = PlaybackLog.objects.filter(
+            player=player, event='started',
+        ).order_by('-timestamp').first()
+        if not entry:
+            return Response(None)
+        return Response({
+            'asset_id': entry.asset_id,
+            'asset_name': entry.asset_name,
+            'mimetype': entry.mimetype,
+            'started_at': entry.timestamp.isoformat(),
+        })
+
     @action(detail=True, methods=['post'])
     def backup(self, request, pk=None):
         """Proxy to the player's /v2/backup endpoint."""

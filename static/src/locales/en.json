@@ -426,7 +426,9 @@
       "friendlyUpdateUx": "Friendly update UX — auto-detect version change after update and prompt page reload",
       "cctvLiveViewFix": "CCTV live view fix — show live stream only when CCTV is actively running, removed manual toggle button",
       "standardPlayerCompat": "Standard Anthias player compatibility — auto-detect custom features (schedule, playback control, screenshot) and hide unsupported UI elements",
-      "reliableUpdateProcess": "Reliable update process — removed build directive from production compose, added --no-build flag to updater"
+      "reliableUpdateProcess": "Reliable update process — removed build directive from production compose, added --no-build flag to updater",
+      "cctvNowPlayingDetection": "CCTV live preview now only shows when the player is actually displaying a CCTV stream, not just when a CCTV asset exists in the library",
+      "emptySlotFallback": "Empty schedule slots now fall back to the default slot instead of showing splash screen"
     }
   },
   "updates": {

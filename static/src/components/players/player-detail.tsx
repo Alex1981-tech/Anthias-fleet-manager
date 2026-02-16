@@ -409,40 +409,39 @@ const PlayerDetail: React.FC = () => {
     })
   }, [id, player])
 
-  // Detect CCTV asset and auto-enable live view only when stream is running
+  // Detect CCTV: only show live view if the player is CURRENTLY showing a CCTV asset
   useEffect(() => {
-    const cctvAsset = assets.find(a => a.uri?.includes('/cctv/'))
-    if (cctvAsset) {
-      const match = cctvAsset.uri.match(/\/cctv\/([a-f0-9-]+)/)
-      if (match) {
-        const configId = match[1]
-        setCctvConfigId(configId)
-        // Check if stream is actually running before enabling live view
-        cctvApi.status(configId).then(res => {
-          setLiveViewEnabled(res.status === 'running')
-        }).catch(() => {
-          setLiveViewEnabled(false)
-        })
-        return
-      }
-    }
-    setCctvConfigId(null)
-    setLiveViewEnabled(false)
-  }, [assets])
+    if (!id || !player?.is_online) return
 
-  // Periodically re-check CCTV stream status (every 30s)
-  useEffect(() => {
-    if (!cctvConfigId) return
-    const checkStatus = () => {
-      cctvApi.status(cctvConfigId).then(res => {
-        setLiveViewEnabled(res.status === 'running')
+    const checkNowPlaying = () => {
+      playersApi.nowPlaying(id!).then(np => {
+        if (!np) { setCctvConfigId(null); setLiveViewEnabled(false); return }
+        // Find the asset in the player's library to get its URI
+        const asset = assets.find(a => a.asset_id === np.asset_id)
+        const uri = asset?.uri || ''
+        if (uri.includes('/cctv/')) {
+          const match = uri.match(/\/cctv\/([a-f0-9-]+)/)
+          if (match) {
+            const configId = match[1]
+            setCctvConfigId(configId)
+            cctvApi.status(configId).then(res => {
+              setLiveViewEnabled(res.status === 'running')
+            }).catch(() => setLiveViewEnabled(false))
+            return
+          }
+        }
+        setCctvConfigId(null)
+        setLiveViewEnabled(false)
       }).catch(() => {
+        setCctvConfigId(null)
         setLiveViewEnabled(false)
       })
     }
-    const intervalId = setInterval(checkStatus, 30000)
+
+    checkNowPlaying()
+    const intervalId = setInterval(checkNowPlaying, 15000)
     return () => clearInterval(intervalId)
-  }, [cctvConfigId])
+  }, [id, player?.is_online, assets])
 
   // CCTV snapshot auto-refresh (every 2s)
   useEffect(() => {

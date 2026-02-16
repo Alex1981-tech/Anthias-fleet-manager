@@ -425,7 +425,9 @@
       "friendlyUpdateUx": "Benutzerfreundliches Update — automatische Erkennung von Versionsänderungen und Aufforderung zum Neuladen",
       "cctvLiveViewFix": "CCTV-Fix — Live-Stream nur wenn aktiv, manuelle Umschalttaste entfernt",
       "standardPlayerCompat": "Standard Anthias-Kompatibilität — automatische Erkennung benutzerdefinierter Funktionen (Zeitplan, Wiedergabesteuerung, Bildschirmfoto) und Ausblenden nicht unterstützter UI-Elemente",
-      "reliableUpdateProcess": "Zuverlässiger Update-Prozess — Build-Direktive aus Production-Compose entfernt, --no-build Flag zum Updater hinzugefügt"
+      "reliableUpdateProcess": "Zuverlässiger Update-Prozess — Build-Direktive aus Production-Compose entfernt, --no-build Flag zum Updater hinzugefügt",
+      "cctvNowPlayingDetection": "CCTV-Livevorschau wird nur angezeigt, wenn der Player tatsächlich einen CCTV-Stream wiedergibt",
+      "emptySlotFallback": "Leere Zeitplan-Slots fallen auf den Standard-Slot zurück, anstatt den Startbildschirm anzuzeigen"
     }
   },
   "updates": {
