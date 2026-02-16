@@ -95,8 +95,8 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
       setStatus(statusData)
       onScheduleChange?.(statusData.schedule_enabled)
       onSlotsLoaded?.(slotsData)
-    } catch (err: any) {
-      setError(translateApiError(err.message, t))
+    } catch (err: unknown) {
+      setError(translateApiError(err instanceof Error ? err.message : String(err), t))
     } finally {
       setLoading(false)
     }
@@ -657,7 +657,7 @@ const SlotFormModal = ({
     if (!slotType) return
     setSubmitting(true)
     try {
-      const data: any = {
+      const data: Partial<ScheduleSlot> & Record<string, unknown> = {
         name,
         slot_type: slotType,
         is_default: slotType === 'default',
@@ -690,8 +690,8 @@ const SlotFormModal = ({
       }
       Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
       onSaved()
-    } catch (err: any) {
-      Swal.fire(t('common.error'), translateApiError(err.message, t), 'error')
+    } catch (err: unknown) {
+      Swal.fire(t('common.error'), translateApiError(err instanceof Error ? err.message : String(err), t), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -1136,8 +1136,8 @@ const AddItemModal = ({
       }
       Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
       onAdded()
-    } catch (err: any) {
-      Swal.fire(t('common.error'), translateApiError(err.message, t), 'error')
+    } catch (err: unknown) {
+      Swal.fire(t('common.error'), translateApiError(err instanceof Error ? err.message : String(err), t), 'error')
     } finally {
       setSubmitting(false)
       setAddProgress({ current: 0, total: 0 })
@@ -1160,8 +1160,7 @@ const AddItemModal = ({
         const ft = file?.file_type?.toLowerCase() || ''
         const isVideo = ft === 'video'
         const result = await playersApi.deployContent(playerId, fileIds[i])
-        const assetData = result?.asset || result
-        const assetId = assetData?.asset_id || assetData?.id
+        const assetId = result?.asset_id
         if (assetId) {
           await scheduleApi.addItem(playerId, slot.slot_id, {
             asset_id: assetId,
@@ -1171,8 +1170,8 @@ const AddItemModal = ({
       }
       Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
       onAdded()
-    } catch (err: any) {
-      Swal.fire(t('common.error'), translateApiError(err.message, t), 'error')
+    } catch (err: unknown) {
+      Swal.fire(t('common.error'), translateApiError(err instanceof Error ? err.message : String(err), t), 'error')
     } finally {
       setSubmitting(false)
       setDeployProgress({ current: 0, total: 0 })

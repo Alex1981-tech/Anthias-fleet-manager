@@ -63,7 +63,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, groups, onClose, onSave
     e.preventDefault()
     setSaving(true)
 
-    const data: Record<string, any> = {
+    const data: Record<string, string | null> = {
       name,
       url,
       username,

@@ -281,6 +281,15 @@ function PreviewModal({
 }) {
   const { t } = useTranslation()
 
+  // Stop CCTV stream when preview modal closes
+  useEffect(() => {
+    if (!file || file.file_type !== 'cctv' || !file.cctv_config) return
+    const configId = file.cctv_config.id
+    return () => {
+      cctvApi.stop(configId).catch(() => {})
+    }
+  }, [file])
+
   if (!file) return null
 
   return (
@@ -445,7 +454,7 @@ function AddContentModal({
     }
   }
 
-  const handleCctvSave = async (data: Record<string, any>) => {
+  const handleCctvSave = async (data: Record<string, unknown>) => {
     await cctvApi.create(data)
     Swal.fire({
       icon: 'success',
@@ -850,7 +859,7 @@ const ContentPage: React.FC = () => {
     }
   }
 
-  const handleCctvSave = async (data: Record<string, any>) => {
+  const handleCctvSave = async (data: Record<string, unknown>) => {
     if (!editCctvConfig) return
     try {
       await cctvApi.update(editCctvConfig.id, data)
@@ -995,7 +1004,7 @@ const ContentPage: React.FC = () => {
                     onClick={() => setActiveFolder(activeFolder === folder.id ? null : folder.id)}
                     onContextMenu={(e) => {
                       e.preventDefault()
-                      handleDeleteFolder(e as any, folder)
+                      handleDeleteFolder(e as unknown as React.MouseEvent, folder)
                     }}
                     title={`${folder.name} (${folder.file_count})`}
                   >

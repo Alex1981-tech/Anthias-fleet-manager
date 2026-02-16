@@ -12,7 +12,7 @@ interface CameraField {
 
 interface CctvFormContentProps {
   config?: CctvConfig | null
-  onSave: (data: Record<string, any>) => Promise<void>
+  onSave: (data: Record<string, unknown>) => Promise<void>
   saving?: boolean
   submitLabel?: string
 }
@@ -96,7 +96,7 @@ export const CctvFormContent: React.FC<CctvFormContentProps> = ({
 
     setSaving(true)
     try {
-      const data: Record<string, any> = {
+      const data: Record<string, unknown> = {
         name,
         display_mode: displayMode,
         rotation_interval: rotationInterval,
@@ -268,7 +268,7 @@ export const CctvFormContent: React.FC<CctvFormContentProps> = ({
 interface CctvFormModalProps {
   show: boolean
   onClose: () => void
-  onSave: (data: Record<string, any>) => Promise<void>
+  onSave: (data: Record<string, unknown>) => Promise<void>
   config?: CctvConfig | null
 }
 

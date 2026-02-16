@@ -125,25 +125,15 @@ def cctv_detail(request, config_id):
     serializer.is_valid(raise_exception=True)
     config = serializer.save()
 
-    # Restart stream if it was running so changes take effect
+    # Stop running stream — it will restart with new config when needed
+    # (preview modal open, player schedule, or manual start)
     if config.is_active:
-        from .cctv_service import get_stream_status, start_stream, stop_stream, update_thumbnail
+        from .cctv_service import get_stream_status, stop_stream
         stream_status = get_stream_status(str(config.id))
         if stream_status.get('status') == 'running':
             stop_stream(str(config.id))
-        if config.cameras.count() > 0:
-            try:
-                start_stream(str(config.id))
-                def _delayed_thumb():
-                    import time
-                    time.sleep(5)
-                    try:
-                        update_thumbnail(str(config.id))
-                    except Exception:
-                        pass
-                threading.Thread(target=_delayed_thumb, daemon=True).start()
-            except Exception:
-                logger.warning('Failed to restart CCTV stream %s after update', config.id)
+        config.is_active = False
+        config.save(update_fields=['is_active'])
 
     return Response(CctvConfigSerializer(config).data)
 

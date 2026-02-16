@@ -438,7 +438,8 @@
       "ssrfDnsFix": "OG preview no longer blocks external URLs when DNS is temporarily unavailable",
       "silentExceptionLogging": "Added warning logs to previously silent exception handlers (CCTV stream start, thumbnail update)",
       "forgetPlayerButton": "Forget player button on player detail page — remove player from fleet manager",
-      "testSuiteFix": "Fixed test suite — all 28 tests pass (auth, og:image mock)"
+      "testSuiteFix": "Fixed test suite — all 28 tests pass (auth, og:image mock)",
+      "cctvStreamLifecycle": "CCTV stream lifecycle — ffmpeg stops on config save, restarts on preview open, stops on preview close; streams only run when needed by schedule or preview"
     }
   },
   "updates": {

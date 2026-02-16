@@ -41,7 +41,7 @@ import {
 import Swal from 'sweetalert2'
 import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
-import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder } from '@/types'
+import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot } from '@/types'
 import { PlayerSchedule } from './player-schedule'
 import { ScheduleTimeline } from './schedule-timeline'
 
@@ -203,12 +203,12 @@ const PlayerDetail: React.FC = () => {
   const [hasPlaybackControl, setHasPlaybackControl] = useState(true)
 
   // Schedule slots for timeline
-  const [scheduleSlots, setScheduleSlots] = useState<any[]>([])
-  const handleSlotsLoaded = useCallback((slots: any[]) => setScheduleSlots(slots), [])
+  const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([])
+  const handleSlotsLoaded = useCallback((slots: ScheduleSlot[]) => setScheduleSlots(slots), [])
 
   // Player settings modal state
   const [showSettingsModal, setShowSettingsModal] = useState(false)
-  const [_deviceSettings, setDeviceSettings] = useState<Record<string, any> | null>(null)
+  const [_deviceSettings, setDeviceSettings] = useState<Record<string, unknown> | null>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsForm, setSettingsForm] = useState({
@@ -549,7 +549,7 @@ const PlayerDetail: React.FC = () => {
       a.asset_id === asset.asset_id ? { ...a, is_enabled: newEnabled, is_active: newActive } : a
     ))
     try {
-      await playersApi.updateAsset(id, asset.asset_id, { is_enabled: newEnabled } as any)
+      await playersApi.updateAsset(id, asset.asset_id, { is_enabled: newEnabled })
       // Silent refresh — update from server without showing spinner
       const freshAssets = await playersApi.getAssets(id)
       setAssets(Array.isArray(freshAssets) ? freshAssets : [])
@@ -618,7 +618,7 @@ const PlayerDetail: React.FC = () => {
   // Save edit
   const handleSaveEdit = async () => {
     if (!id || !editAsset) return
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, string | number | boolean> = {
       name: editForm.name,
       nocache: editForm.nocache ? 1 : 0,
     }
@@ -633,7 +633,7 @@ const PlayerDetail: React.FC = () => {
       updateData.duration = sec
     }
     try {
-      await playersApi.updateAsset(id, editAsset.asset_id, updateData as any)
+      await playersApi.updateAsset(id, editAsset.asset_id, updateData as Partial<PlayerAsset>)
       Swal.fire({ icon: 'success', title: t('assets.updated'), timer: 1500, showConfirmButton: false })
       setEditAsset(null)
       loadAssets()
@@ -651,8 +651,8 @@ const PlayerDetail: React.FC = () => {
       setTimeout(() => {
         handleScreenshot()
       }, 3000)
-    } catch (err: any) {
-      const msg = String(err.message || '')
+    } catch (err: unknown) {
+      const msg = String(err instanceof Error ? err.message : '')
       if (msg.includes('404') || msg.includes('502') || msg.includes('Not Found')) {
         setHasPlaybackControl(false)
         Swal.fire({ icon: 'info', title: t('players.featureNotSupported'), timer: 2000, showConfirmButton: false })
@@ -668,15 +668,15 @@ const PlayerDetail: React.FC = () => {
     setShowSettingsModal(true)
     setSettingsLoading(true)
     try {
-      const data = await playersApi.getSettings(id)
+      const data = await playersApi.getSettings(id) as Record<string, string | number | boolean | object>
       setDeviceSettings(data)
       setSettingsForm({
-        player_name: player?.name || data.player_name || '',
+        player_name: player?.name || String(data.player_name || ''),
         default_duration: String(data.default_duration ?? ''),
         default_streaming_duration: String(data.default_streaming_duration ?? ''),
-        audio_output: data.audio_output || 'hdmi',
-        date_format: data.date_format || 'mm/dd/yyyy',
-        resolution: data.resolution || '',
+        audio_output: String(data.audio_output || 'hdmi'),
+        date_format: String(data.date_format || 'mm/dd/yyyy'),
+        resolution: String(data.resolution || ''),
         show_splash: !!data.show_splash,
         default_assets: !!data.default_assets,
         shuffle_playlist: !!data.shuffle_playlist,
@@ -685,9 +685,10 @@ const PlayerDetail: React.FC = () => {
       })
       // Load display power schedule
       if (data.display_power_schedule && typeof data.display_power_schedule === 'object') {
+        const dps = data.display_power_schedule as Record<string, unknown>
         setDisplaySchedule({
-          enabled: !!data.display_power_schedule.enabled,
-          days: data.display_power_schedule.days || {
+          enabled: !!dps.enabled,
+          days: (dps.days as Record<string, { on: string; off: string } | null>) || {
             '1': { on: '08:00', off: '22:00' }, '2': { on: '08:00', off: '22:00' },
             '3': { on: '08:00', off: '22:00' }, '4': { on: '08:00', off: '22:00' },
             '5': { on: '08:00', off: '22:00' }, '6': null, '7': null,
@@ -716,7 +717,7 @@ const PlayerDetail: React.FC = () => {
     if (!id) return
     setSettingsSaving(true)
     try {
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         player_name: settingsForm.player_name,
         default_duration: settingsForm.default_duration ? parseInt(settingsForm.default_duration, 10) : 0,
         default_streaming_duration: settingsForm.default_streaming_duration ? parseInt(settingsForm.default_streaming_duration, 10) : 0,
@@ -735,7 +736,7 @@ const PlayerDetail: React.FC = () => {
       // Sync player name to fleet manager if changed
       if (settingsForm.player_name && settingsForm.player_name !== player?.name) {
         try {
-          const updated = await playersApi.partialUpdate(id, { name: settingsForm.player_name } as any)
+          const updated = await playersApi.partialUpdate(id, { name: settingsForm.player_name })
           setPlayer(updated)
         } catch {
           // Non-fatal: device settings saved, fleet manager name sync failed
@@ -1737,7 +1738,7 @@ const PlayerDetail: React.FC = () => {
                       key={key}
                       className={`btn btn-sm ${contentFilterType === key ? 'btn-primary' : 'btn-outline-secondary'}`}
                       style={{ borderRadius: '20px', fontSize: '0.78rem', padding: '3px 12px' }}
-                      onClick={() => setContentFilterType(key as any)}
+                      onClick={() => setContentFilterType(key as 'all' | 'video' | 'image' | 'web')}
                     >
                       {icon && <span className="me-1">{icon}</span>}
                       {label}
@@ -2086,7 +2087,7 @@ const PlayerDetail: React.FC = () => {
                             className="form-check-input"
                             type="checkbox"
                             id={`settings-${key}`}
-                            checked={(settingsForm as any)[key]}
+                            checked={settingsForm[key as keyof typeof settingsForm] as boolean}
                             onChange={e => setSettingsForm({ ...settingsForm, [key]: e.target.checked })}
                           />
                           <label className="form-check-label" htmlFor={`settings-${key}`} style={{ fontSize: '0.85rem' }}>

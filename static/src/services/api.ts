@@ -7,10 +7,10 @@ function getCsrfToken(): string {
   return match ? match[1] : ''
 }
 
-async function apiRequest<T = any>(
+async function apiRequest<T = unknown>(
   method: string,
   url: string,
-  data?: Record<string, any> | FormData,
+  data?: Record<string, unknown> | FormData,
 ): Promise<T> {
   const headers: Record<string, string> = {
     'X-CSRFToken': getCsrfToken(),
@@ -92,27 +92,27 @@ export const players = {
     return apiRequest<PlayerAsset[]>('GET', `/players/${id}/assets/`)
   },
 
-  updateAsset(playerId: string, assetId: string, data: Partial<PlayerAsset>): Promise<any> {
+  updateAsset(playerId: string, assetId: string, data: Partial<PlayerAsset>): Promise<PlayerAsset> {
     return apiRequest('PATCH', `/players/${playerId}/asset-update/`, { asset_id: assetId, ...data })
   },
 
-  deleteAsset(playerId: string, assetId: string): Promise<any> {
+  deleteAsset(playerId: string, assetId: string): Promise<{ success: boolean }> {
     return apiRequest('POST', `/players/${playerId}/asset-delete/`, { asset_id: assetId })
   },
 
-  createAsset(playerId: string, data: Record<string, any>): Promise<any> {
+  createAsset(playerId: string, data: Record<string, unknown>): Promise<PlayerAsset> {
     return apiRequest('POST', `/players/${playerId}/asset-create/`, data)
   },
 
-  deployContent(playerId: string, mediaFileId: string, overrides?: Record<string, any>): Promise<any> {
+  deployContent(playerId: string, mediaFileId: string, overrides?: Record<string, unknown>): Promise<PlayerAsset> {
     return apiRequest('POST', `/players/${playerId}/asset-upload/`, { media_file_id: mediaFileId, ...overrides })
   },
 
-  getSettings(id: string): Promise<Record<string, any>> {
+  getSettings(id: string): Promise<Record<string, unknown>> {
     return apiRequest('GET', `/players/${id}/device-settings/`)
   },
 
-  saveSettings(id: string, data: Record<string, any>): Promise<any> {
+  saveSettings(id: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
     return apiRequest('PATCH', `/players/${id}/device-settings/`, data)
   },
 
@@ -361,11 +361,11 @@ export const cctv = {
     return apiRequest<CctvConfig>('GET', `/cctv/${id}/`)
   },
 
-  create(data: Record<string, any>): Promise<CctvConfig> {
+  create(data: Record<string, unknown>): Promise<CctvConfig> {
     return apiRequest<CctvConfig>('POST', '/cctv/', data)
   },
 
-  update(id: string, data: Record<string, any>): Promise<CctvConfig> {
+  update(id: string, data: Record<string, unknown>): Promise<CctvConfig> {
     return apiRequest<CctvConfig>('PUT', `/cctv/${id}/`, data)
   },
 

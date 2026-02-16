@@ -15,7 +15,7 @@ export interface Player {
   group_detail?: Group | null
   is_online: boolean
   last_seen: string | null
-  last_status: Record<string, any>
+  last_status: Record<string, unknown>
   created_at: string
 }
 
@@ -164,7 +164,7 @@ export interface CctvConfig {
 export interface DeployTask {
   id: string
   name: string
-  asset_data: Record<string, any>
+  asset_data: Record<string, unknown>
   target_players: string[]
   status: 'pending' | 'running' | 'completed' | 'failed'
   progress: Record<string, { status: string; name: string; error?: string }>
