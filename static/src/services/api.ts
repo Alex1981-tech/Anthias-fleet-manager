@@ -35,7 +35,9 @@ async function apiRequest<T = unknown>(
 
   if (!response.ok) {
     if (response.status === 403 && !url.startsWith('/auth/')) {
-      window.location.href = '/login'
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
       throw new Error('Authentication required')
     }
     let errorMessage = `HTTP ${response.status}`
