@@ -197,6 +197,11 @@ const PlayerDetail: React.FC = () => {
   const [scheduleEnabled, setScheduleEnabled] = useState(false)
   const handleScheduleChange = useCallback((enabled: boolean) => setScheduleEnabled(enabled), [])
 
+  // Capability detection for standard Anthias players
+  const [hasSchedule, setHasSchedule] = useState<boolean | null>(null)
+  const [hasScreenshot, setHasScreenshot] = useState<boolean | null>(null)
+  const [hasPlaybackControl, setHasPlaybackControl] = useState(true)
+
   // Schedule slots for timeline
   const [scheduleSlots, setScheduleSlots] = useState<any[]>([])
   const handleSlotsLoaded = useCallback((slots: any[]) => setScheduleSlots(slots), [])
@@ -370,8 +375,9 @@ const PlayerDetail: React.FC = () => {
         try {
           const url = await playersApi.getScreenshot(id)
           setScreenshotUrl(url)
+          setHasScreenshot(true)
         } catch {
-          // Screenshot may not be available
+          setHasScreenshot(false)
         } finally {
           setScreenshotLoading(false)
         }
@@ -392,12 +398,15 @@ const PlayerDetail: React.FC = () => {
     mediaApi.list().then(files => setMediaFiles(files)).catch(() => {})
   }, [])
 
-  // Detect schedule mode
+  // Detect schedule mode (also probes capability)
   useEffect(() => {
     if (!id || !player?.is_online) return
     scheduleApi.getStatus(id).then(s => {
       setScheduleEnabled(s.schedule_enabled)
-    }).catch(() => {})
+      setHasSchedule(true)
+    }).catch(() => {
+      setHasSchedule(false)
+    })
   }, [id, player])
 
   // Detect CCTV asset and auto-enable live view only when stream is running
@@ -497,8 +506,13 @@ const PlayerDetail: React.FC = () => {
       if (screenshotUrl) URL.revokeObjectURL(screenshotUrl)
       const url = await playersApi.getScreenshot(id)
       setScreenshotUrl(url)
+      setHasScreenshot(true)
     } catch {
-      Swal.fire({ icon: 'error', title: t('common.error'), text: t('players.screenshotError') })
+      if (hasScreenshot === null) {
+        setHasScreenshot(false)
+      } else {
+        Swal.fire({ icon: 'error', title: t('common.error'), text: t('players.screenshotError') })
+      }
     } finally {
       setScreenshotLoading(false)
     }
@@ -618,7 +632,13 @@ const PlayerDetail: React.FC = () => {
         handleScreenshot()
       }, 3000)
     } catch (err: any) {
-      Swal.fire({ icon: 'error', title: t('common.error'), text: translateApiError(err.message, t) })
+      const msg = String(err.message || '')
+      if (msg.includes('404') || msg.includes('502') || msg.includes('Not Found')) {
+        setHasPlaybackControl(false)
+        Swal.fire({ icon: 'info', title: t('players.featureNotSupported'), timer: 2000, showConfirmButton: false })
+      } else {
+        Swal.fire({ icon: 'error', title: t('common.error'), text: translateApiError(msg, t) })
+      }
     }
   }
 
@@ -1180,15 +1200,17 @@ const PlayerDetail: React.FC = () => {
               )}
               {/* Playback controls under screenshot */}
               <div className="d-flex justify-content-center gap-2 mt-2">
-                <button
-                  className="fm-btn-accent fm-btn-sm"
-                  onClick={() => handlePlaybackControl('previous')}
-                  disabled={!player.is_online}
-                  title={t('assets.previous')}
-                >
-                  <FaBackward className="me-1" />
-                  {t('assets.previous')}
-                </button>
+                {hasPlaybackControl && (
+                  <button
+                    className="fm-btn-accent fm-btn-sm"
+                    onClick={() => handlePlaybackControl('previous')}
+                    disabled={!player.is_online}
+                    title={t('assets.previous')}
+                  >
+                    <FaBackward className="me-1" />
+                    {t('assets.previous')}
+                  </button>
+                )}
                 <button
                   className="fm-btn-primary fm-btn-sm"
                   onClick={handleScreenshot}
@@ -1202,15 +1224,17 @@ const PlayerDetail: React.FC = () => {
                   )}
                   {t('players.takeScreenshot')}
                 </button>
-                <button
-                  className="fm-btn-accent fm-btn-sm"
-                  onClick={() => handlePlaybackControl('next')}
-                  disabled={!player.is_online}
-                  title={t('assets.next')}
-                >
-                  <FaForward className="me-1" />
-                  {t('assets.next')}
-                </button>
+                {hasPlaybackControl && (
+                  <button
+                    className="fm-btn-accent fm-btn-sm"
+                    onClick={() => handlePlaybackControl('next')}
+                    disabled={!player.is_online}
+                    title={t('assets.next')}
+                  >
+                    <FaForward className="me-1" />
+                    {t('assets.next')}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1433,11 +1457,13 @@ const PlayerDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Schedule Timeline */}
-      {scheduleSlots.length > 0 && <ScheduleTimeline slots={scheduleSlots} />}
+      {/* Schedule Timeline — hidden for standard Anthias players */}
+      {hasSchedule !== false && scheduleSlots.length > 0 && <ScheduleTimeline slots={scheduleSlots} />}
 
-      {/* Schedule Slots */}
-      <PlayerSchedule playerId={id!} isOnline={player.is_online} onScheduleChange={handleScheduleChange} onSlotsLoaded={handleSlotsLoaded} />
+      {/* Schedule Slots — hidden for standard Anthias players */}
+      {hasSchedule !== false && (
+        <PlayerSchedule playerId={id!} isOnline={player.is_online} onScheduleChange={handleScheduleChange} onSlotsLoaded={handleSlotsLoaded} />
+      )}
 
       {/* Assets */}
       {assetsLoading ? (

@@ -56,7 +56,9 @@
     "throttlePastIssue": "was detected",
     "liveView": "Live View",
     "liveViewStop": "Screenshot",
-    "liveBadge": "LIVE"
+    "liveBadge": "LIVE",
+    "featureNotSupported": "This feature is not supported on this player",
+    "screenshotNotSupported": "Screenshot not available for this player"
   },
   "groups": {
     "title": "Groups",
@@ -422,7 +424,8 @@
       "cctvLiveView": "Live CCTV stream on player detail page — auto-refreshing snapshot with LIVE badge and keepalive",
       "cctvPolish": "CCTV streams: live preview in content library, auto-restart on config change, snapshot thumbnails, player deploy with full URL",
       "friendlyUpdateUx": "Friendly update UX — auto-detect version change after update and prompt page reload",
-      "cctvLiveViewFix": "CCTV live view fix — show live stream only when CCTV is actively running, removed manual toggle button"
+      "cctvLiveViewFix": "CCTV live view fix — show live stream only when CCTV is actively running, removed manual toggle button",
+      "standardPlayerCompat": "Standard Anthias player compatibility — auto-detect custom features (schedule, playback control, screenshot) and hide unsupported UI elements"
     }
   },
   "updates": {

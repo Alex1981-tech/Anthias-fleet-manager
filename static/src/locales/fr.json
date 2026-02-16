@@ -56,7 +56,9 @@
     "throttlePastIssue": "détecté",
     "liveView": "En direct",
     "liveViewStop": "Capture",
-    "liveBadge": "LIVE"
+    "liveBadge": "LIVE",
+    "featureNotSupported": "Cette fonctionnalité n'est pas prise en charge sur ce lecteur",
+    "screenshotNotSupported": "Capture d'écran non disponible pour ce lecteur"
   },
   "groups": {
     "title": "Groupes",
@@ -421,7 +423,8 @@
       "cctvLiveView": "Flux CCTV en direct sur la page du lecteur — snapshot auto-actualisé avec badge LIVE et keepalive",
       "cctvPolish": "Flux CCTV : aperçu en direct dans la bibliothèque, redémarrage automatique lors de la modification, miniatures snapshot, déploiement avec URL complète",
       "friendlyUpdateUx": "UX de mise à jour conviviale — détection automatique du changement de version et rechargement de la page",
-      "cctvLiveViewFix": "Correction CCTV — flux en direct uniquement quand le stream est actif, bouton de basculement manuel supprimé"
+      "cctvLiveViewFix": "Correction CCTV — flux en direct uniquement quand le stream est actif, bouton de basculement manuel supprimé",
+      "standardPlayerCompat": "Compatibilité Anthias standard — détection automatique des fonctionnalités personnalisées (horaire, contrôle de lecture, capture d'écran) et masquage des éléments non pris en charge"
     }
   },
   "updates": {
