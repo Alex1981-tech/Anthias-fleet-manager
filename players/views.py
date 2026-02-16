@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
@@ -823,7 +824,7 @@ def playback_log(request):
                 'tracking_since': p.history_tracking_since.isoformat() if p.history_tracking_since else None,
             }
         except Player.DoesNotExist:
-            pass
+            logger.debug('Player %s not found for tracking info', player_id)
     else:
         for p in Player.objects.filter(history_tracking_since__isnull=False):
             tracking_info[str(p.id)] = {
@@ -883,6 +884,15 @@ def playback_stats(request):
 @permission_classes([AllowAny])
 def register_player(request):
     """Phone-home endpoint: players POST here periodically to register/heartbeat."""
+    token = getattr(settings, 'PLAYER_REGISTER_TOKEN', '')
+    if token:
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_header != f'Bearer {token}':
+            return Response(
+                {'error': 'Invalid or missing registration token'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
     url = (request.data.get('url') or '').rstrip('/')
     name = request.data.get('name') or 'Unknown'
     info = request.data.get('info') or {}
@@ -961,6 +971,11 @@ def install_phonehome(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    token = getattr(settings, 'PLAYER_REGISTER_TOKEN', '')
+    auth_header_line = ''
+    if token:
+        auth_header_line = f'\n  -H "Authorization: Bearer {token}" \\\\'
+
     script = f'''#!/bin/bash
 set -e
 
@@ -974,7 +989,7 @@ URL="http://$(hostname -I | awk '{{print $1}}')"
 NAME="$(hostname)"
 INFO=$(curl -sf http://localhost/api/v2/info 2>/dev/null || echo '{{}}')
 curl -sf -X POST "${{SERVER}}/api/players/register/" \\
-  -H "Content-Type: application/json" \\
+  -H "Content-Type: application/json" \\{auth_header_line}
   -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}}}"
 SCRIPT
 chmod +x /usr/local/bin/anthias-phonehome.sh

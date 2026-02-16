@@ -7,10 +7,11 @@
     "noImplicitAny": true,
     "strict": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "paths": {
       "@/components/*": ["static/src/components/*"],
       "@/store/*": ["static/src/store/*"],

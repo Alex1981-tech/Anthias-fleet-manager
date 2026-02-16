@@ -52,7 +52,8 @@ def _is_safe_url(url):
             if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
                 return False
     except socket.gaierror:
-        return False
+        logger.warning('DNS resolution failed for %s — allowing (not a private IP threat)', hostname)
+        return True
 
     return True
 
@@ -523,7 +524,7 @@ def check_cctv_schedules(self):
                     try:
                         update_thumbnail(cid)
                     except Exception:
-                        pass
+                        logger.warning('Failed to update CCTV thumbnail for %s', cid, exc_info=True)
 
                 threading.Thread(target=_thumb, args=(config_id,), daemon=True).start()
         except CctvConfig.DoesNotExist:

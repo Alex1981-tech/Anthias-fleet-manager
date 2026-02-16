@@ -166,6 +166,9 @@ CELERY_TASK_ROUTES = {
 PLAYER_POLL_INTERVAL = int(os.environ.get('PLAYER_POLL_INTERVAL', '60'))
 PLAYER_REQUEST_TIMEOUT = int(os.environ.get('PLAYER_REQUEST_TIMEOUT', '10'))
 
+# Shared secret for player phone-home registration (empty = open mode)
+PLAYER_REGISTER_TOKEN = os.environ.get('PLAYER_REGISTER_TOKEN', '')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # App version (set via Docker build args, fallback to changelog.ts)

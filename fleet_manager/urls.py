@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.conf import settings
 from django.contrib import admin
@@ -12,6 +13,8 @@ from django.views.static import serve
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 
 from fleet_manager.system_views import (
     system_settings,
@@ -74,7 +77,7 @@ def cctv_player_view(request, config_id):
         try:
             start_stream(str(config.id))
         except Exception:
-            pass
+            logger.warning('Failed to auto-start CCTV stream %s', config_id, exc_info=True)
     return render(request, 'cctv_player.html', {
         'config_id': str(config.id),
         'config_name': config.name,

@@ -51,10 +51,7 @@ const getMonday = (date: Date) => {
   return d
 }
 
-const formatDateShort = (d: Date) => {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`
-}
+
 
 const toISODate = (d: Date) => {
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -75,7 +72,7 @@ const EventMarkers: React.FC<{
   events: ScheduleSlot[]
   tooltip: { slot: ScheduleSlot; x: number; y: number } | null
   setTooltip: (v: { slot: ScheduleSlot; x: number; y: number } | null) => void
-}> = ({ events, tooltip, setTooltip }) => {
+}> = ({ events, setTooltip }) => {
   if (events.length === 0) return null
 
   return (
@@ -219,7 +216,6 @@ const DayView: React.FC<{ slots: ScheduleSlot[]; selectedDate: Date; t: (k: stri
 
 const WeekView: React.FC<{ slots: ScheduleSlot[]; weekStart: Date; t: (k: string) => string }> = ({ slots, weekStart, t }) => {
   const now = new Date()
-  const todayDow = dayOfWeekISO(now)
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
   const nowPct = (currentMinutes / 1440) * 100
 

@@ -208,7 +208,7 @@ const PlayerDetail: React.FC = () => {
 
   // Player settings modal state
   const [showSettingsModal, setShowSettingsModal] = useState(false)
-  const [deviceSettings, setDeviceSettings] = useState<Record<string, any> | null>(null)
+  const [_deviceSettings, setDeviceSettings] = useState<Record<string, any> | null>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsForm, setSettingsForm] = useState({
@@ -477,6 +477,27 @@ const PlayerDetail: React.FC = () => {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [previewAsset])
+
+  const handleForget = async () => {
+    const result = await Swal.fire({
+      title: t('players.forgetTitle'),
+      text: t('players.forgetConfirm'),
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: t('players.forget'),
+      cancelButtonText: t('common.cancel'),
+    })
+    if (result.isConfirmed && id) {
+      try {
+        await playersApi.delete(id)
+        Swal.fire({ icon: 'success', title: t('players.forgotten'), timer: 1500, showConfirmButton: false })
+        navigate('/')
+      } catch (error) {
+        Swal.fire({ icon: 'error', title: t('common.error'), text: String(error) })
+      }
+    }
+  }
 
   const handleReboot = async () => {
     if (!id) return
@@ -1103,6 +1124,15 @@ const PlayerDetail: React.FC = () => {
             >
               <FaSyncAlt className="me-1" />
               {t('players.reboot')}
+            </button>
+            <button
+              className="fm-btn-sm"
+              style={{ background: '#dc3545', color: '#fff', border: 'none' }}
+              onClick={handleForget}
+              title={t('players.forget')}
+            >
+              <FaTrash className="me-1" />
+              {t('players.forget')}
             </button>
           </div>
         </div>

@@ -38,6 +38,10 @@
     "username": "Username",
     "password": "Password",
     "reboot": "Reboot",
+    "forget": "Forget",
+    "forgetTitle": "Forget player",
+    "forgetConfirm": "Remove this player from the fleet manager? It can re-register via phone-home.",
+    "forgotten": "Player forgotten",
     "shutdown": "Shutdown",
     "backup": "Backup",
     "info": "Info",
@@ -428,7 +432,13 @@
       "standardPlayerCompat": "Standard Anthias player compatibility — auto-detect custom features (schedule, playback control, screenshot) and hide unsupported UI elements",
       "reliableUpdateProcess": "Reliable update process — removed build directive from production compose, added --no-build flag to updater",
       "cctvNowPlayingDetection": "CCTV live preview now only shows when the player is actually displaying a CCTV stream, not just when a CCTV asset exists in the library",
-      "emptySlotFallback": "Empty schedule slots now fall back to the default slot instead of showing splash screen"
+      "emptySlotFallback": "Empty schedule slots now fall back to the default slot instead of showing splash screen",
+      "registerTokenAuth": "Player registration endpoint secured with optional Bearer token (PLAYER_REGISTER_TOKEN)",
+      "eslintSetup": "ESLint 9 with TypeScript support added, moduleResolution fixed to bundler",
+      "ssrfDnsFix": "OG preview no longer blocks external URLs when DNS is temporarily unavailable",
+      "silentExceptionLogging": "Added warning logs to previously silent exception handlers (CCTV stream start, thumbnail update)",
+      "forgetPlayerButton": "Forget player button on player detail page — remove player from fleet manager",
+      "testSuiteFix": "Fixed test suite — all 28 tests pass (auth, og:image mock)"
     }
   },
   "updates": {

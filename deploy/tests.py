@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -30,6 +31,8 @@ class MediaFileModelTests(TestCase):
 class MediaAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.force_authenticate(user=user)
 
     def test_list_media_returns_paginated(self):
         """Media endpoint should be paginated (returns {count, results})."""
@@ -54,6 +57,8 @@ class MediaAPITests(TestCase):
 class DeployAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        user = User.objects.create_user(username='testuser2', password='testpass')
+        self.client.force_authenticate(user=user)
 
     def test_list_deploy_returns_paginated(self):
         """Deploy endpoint should be paginated."""
@@ -92,21 +97,33 @@ class ExecuteDeployTests(TestCase):
 
 
 class FetchOgImageTests(TestCase):
+    @patch('deploy.tasks._is_safe_url', return_value=True)
     @patch('deploy.tasks.urllib.request.urlopen')
-    def test_extracts_og_image(self, mock_urlopen):
+    def test_extracts_og_image(self, mock_urlopen, _mock_safe):
         html = b'<html><head><meta property="og:image" content="https://example.com/img.jpg"></head></html>'
-        mock_resp = MagicMock()
-        mock_resp.read.return_value = html
-        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
-        mock_resp.__exit__ = MagicMock(return_value=False)
-        mock_urlopen.return_value = mock_resp
+
+        # HEAD response — text/html (not an image)
+        head_resp = MagicMock()
+        head_resp.headers = MagicMock()
+        head_resp.headers.get.return_value = 'text/html; charset=utf-8'
+        head_resp.__enter__ = MagicMock(return_value=head_resp)
+        head_resp.__exit__ = MagicMock(return_value=False)
+
+        # GET response — HTML with og:image
+        get_resp = MagicMock()
+        get_resp.read.return_value = html
+        get_resp.__enter__ = MagicMock(return_value=get_resp)
+        get_resp.__exit__ = MagicMock(return_value=False)
+
+        mock_urlopen.side_effect = [head_resp, get_resp]
 
         from deploy.tasks import _fetch_og_image
         result = _fetch_og_image('https://example.com')
         self.assertEqual(result, 'https://example.com/img.jpg')
 
+    @patch('deploy.tasks._is_safe_url', return_value=True)
     @patch('deploy.tasks.urllib.request.urlopen')
-    def test_returns_none_on_error(self, mock_urlopen):
+    def test_returns_none_on_error(self, mock_urlopen, _mock_safe):
         mock_urlopen.side_effect = Exception('network error')
 
         from deploy.tasks import _fetch_og_image

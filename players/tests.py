@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -54,6 +55,8 @@ class PlaybackLogDedupTests(TestCase):
 class PlayerAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.force_authenticate(user=user)
 
     def test_list_players_returns_array(self):
         """Players endpoint should NOT be paginated (returns plain array)."""
