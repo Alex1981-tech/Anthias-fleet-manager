@@ -453,7 +453,9 @@
       "cctvStreamLifecycle": "Lifecycle CCTV стрімів — ffmpeg зупиняється при збереженні конфігу, стартує при відкритті превʼю, зупиняється при закритті; стріми працюють лише коли потрібні розкладу або превʼю",
       "provisionPlayer": "Віддалена інсталяція — встановлення Anthias на чисту Raspberry Pi прямо з Fleet Manager через SSH",
       "tailscaleIntegration": "Інтеграція Tailscale VPN — підключення до віддалених плеєрів через Tailscale з автоматичним fallback",
-      "provisionFixes": "Виправлення провіжинінгу — Docker група, VLC framebuffer вивід, TTY для viewer"
+      "provisionFixes": "Виправлення провіжинінгу — Docker група, VLC framebuffer вивід, TTY для viewer",
+      "multiFileUploadFix": "Виправлення мультизавантаження — файли тепер завантажуються коректно і з'являються одразу",
+      "slotLibraryFix": "Виправлення додавання контенту з бібліотеки в слот розкладу"
     }
   },
   "updates": {
