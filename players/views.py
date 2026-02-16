@@ -1015,6 +1015,11 @@ def register_player(request):
     info = request.data.get('info') or {}
     tailscale_ip = request.data.get('tailscale_ip') or None
 
+    # Auto-detect Tailscale IP from URL if not explicitly provided
+    if not tailscale_ip:
+        from players.serializers import _extract_tailscale_ip
+        tailscale_ip = _extract_tailscale_ip(url)
+
     if not url:
         return Response(
             {'error': 'url is required'},

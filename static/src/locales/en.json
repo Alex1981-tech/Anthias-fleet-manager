@@ -455,7 +455,8 @@
       "tailscaleIntegration": "Tailscale VPN integration — connect to remote players via Tailscale with automatic fallback",
       "provisionFixes": "Provisioning fixes — Docker group permission fix, VLC framebuffer output, viewer TTY allocation",
       "multiFileUploadFix": "Fix multi-file upload — files now upload correctly and appear immediately",
-      "slotLibraryFix": "Fix adding content from library to schedule slot"
+      "slotLibraryFix": "Fix adding content from library to schedule slot",
+      "tailscaleAutoDetect": "Auto-detect Tailscale VPN IP from player URL"
     }
   },
   "updates": {

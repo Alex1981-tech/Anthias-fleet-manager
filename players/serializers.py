@@ -1,6 +1,23 @@
+import ipaddress
+from urllib.parse import urlparse
+
 from rest_framework import serializers
 
 from .models import Group, PlaybackLog, Player, PlayerSnapshot
+
+# Tailscale uses CGNAT range 100.64.0.0/10
+TAILSCALE_NETWORK = ipaddress.ip_network('100.64.0.0/10')
+
+
+def _extract_tailscale_ip(url):
+    """If the URL host is a Tailscale CGNAT IP, return it; else None."""
+    try:
+        host = urlparse(url).hostname
+        if host and ipaddress.ip_address(host) in TAILSCALE_NETWORK:
+            return host
+    except (ValueError, TypeError):
+        pass
+    return None
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -40,6 +57,12 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         raw_password = validated_data.pop('password', '')
+        # Auto-detect Tailscale IP from URL
+        if not validated_data.get('tailscale_ip'):
+            ts_ip = _extract_tailscale_ip(validated_data.get('url', ''))
+            if ts_ip:
+                validated_data['tailscale_ip'] = ts_ip
+                validated_data.setdefault('tailscale_enabled', True)
         player = Player(**validated_data)
         player.set_password(raw_password)
         player.save()
@@ -51,6 +74,12 @@ class PlayerSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         if raw_password is not None:
             instance.set_password(raw_password)
+        # Auto-detect Tailscale IP from URL if not explicitly set
+        if not instance.tailscale_ip:
+            ts_ip = _extract_tailscale_ip(instance.url)
+            if ts_ip:
+                instance.tailscale_ip = ts_ip
+                instance.tailscale_enabled = True
         instance.save()
         return instance
 

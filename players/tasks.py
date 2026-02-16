@@ -29,7 +29,16 @@ def poll_player(self, player_id):
         player.is_online = True
         player.last_seen = timezone.now()
         player.last_status = info
-        player.save(update_fields=['is_online', 'last_seen', 'last_status'])
+        fields = ['is_online', 'last_seen', 'last_status']
+        # One-time: auto-detect Tailscale IP from URL
+        if not player.tailscale_ip:
+            from players.serializers import _extract_tailscale_ip
+            ts_ip = _extract_tailscale_ip(player.url)
+            if ts_ip:
+                player.tailscale_ip = ts_ip
+                player.tailscale_enabled = True
+                fields += ['tailscale_ip', 'tailscale_enabled']
+        player.save(update_fields=fields)
 
         # Save snapshot for history
         from .models import PlayerSnapshot
