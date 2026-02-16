@@ -1160,7 +1160,8 @@ const AddItemModal = ({
         const ft = file?.file_type?.toLowerCase() || ''
         const isVideo = ft === 'video'
         const result = await playersApi.deployContent(playerId, fileIds[i])
-        const assetId = result?.asset_id
+        // Backend returns { success: true, asset: { asset_id: "..." } }
+        const assetId = (result as unknown as { asset?: { asset_id?: string } })?.asset?.asset_id
         if (assetId) {
           await scheduleApi.addItem(playerId, slot.slot_id, {
             asset_id: assetId,
