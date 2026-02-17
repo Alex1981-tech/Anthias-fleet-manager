@@ -470,7 +470,11 @@
       "tailscaleAutoDetect": "Auto-detect Tailscale VPN IP from player URL",
       "cctvSnapshotRate": "CCTV stream refresh rate increased to 2 fps (every 0.5s)",
       "loginRedirectLoop": "Fix login page infinite reload loop",
-      "macIdentity": "Player identity by MAC address — stable identification even when IP changes (DHCP)"
+      "macIdentity": "Player identity by MAC address — stable identification even when IP changes (DHCP)",
+      "cecMonitorControl": "HDMI-CEC monitor control — turn display on/off from player detail page",
+      "scheduleTimelineRedesign": "Schedule timeline redesign — event blocks with duration, color palette for time slots, display-off overlay",
+      "slotContentModal": "Slot content modal improvements — folder tabs, progress bar, duplicate check",
+      "scrollOptimistic": "Fix scroll jumping on slot/asset deletion (optimistic state update)"
     }
   },
   "updates": {
