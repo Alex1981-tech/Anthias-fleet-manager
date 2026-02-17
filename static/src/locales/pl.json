@@ -59,7 +59,13 @@
     "liveBadge": "LIVE",
     "featureNotSupported": "Ta funkcja nie jest obsługiwana na tym odtwarzaczu",
     "screenshotNotSupported": "Zrzut ekranu niedostępny dla tego odtwarzacza",
-    "macAddress": "MAC"
+    "macAddress": "MAC",
+    "monitor": "Monitor",
+    "monitorOn": "Wł",
+    "monitorOff": "Wył",
+    "cecNotAvailable": "CEC niedostępny",
+    "monitorStandbySent": "Monitor wyłączony",
+    "monitorWakeSent": "Monitor włączony"
   },
   "groups": {
     "title": "Grupy",
@@ -314,6 +320,8 @@
     "deselectAll": "Odznacz wszystko",
     "addingProgress": "Dodawanie {{current}}/{{total}}...",
     "deployAndAdd": "Wdróż i dodaj",
+    "addedReport": "Dodano: {{added}}, użyto ponownie: {{skipped}}",
+    "deploying": "Wdrażanie...",
     "chooseSlotType": "Wybierz typ slotu",
     "slotTypeDefault": "Domyślny",
     "slotTypeDefaultDesc": "Odtwarza, gdy żaden inny slot nie jest aktywny. Dozwolony tylko jeden.",
@@ -354,7 +362,8 @@
       "eventSlot": "Wydarzenie",
       "items": "elementy",
       "noSlots": "Brak skonfigurowanych slotów harmonogramu",
-      "today": "Dzisiaj"
+      "today": "Dzisiaj",
+      "displayOff": "Wyświetlacz wył."
     }
   },
   "playerSettings": {

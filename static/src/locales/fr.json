@@ -59,7 +59,13 @@
     "liveBadge": "LIVE",
     "featureNotSupported": "Cette fonctionnalité n'est pas prise en charge sur ce lecteur",
     "screenshotNotSupported": "Capture d'écran non disponible pour ce lecteur",
-    "macAddress": "MAC"
+    "macAddress": "MAC",
+    "monitor": "Moniteur",
+    "monitorOn": "Allumé",
+    "monitorOff": "Éteint",
+    "cecNotAvailable": "CEC indisponible",
+    "monitorStandbySent": "Moniteur éteint",
+    "monitorWakeSent": "Moniteur allumé"
   },
   "groups": {
     "title": "Groupes",
@@ -314,6 +320,8 @@
     "deselectAll": "Tout désélectionner",
     "addingProgress": "Ajout {{current}}/{{total}}...",
     "deployAndAdd": "Déployer et ajouter",
+    "addedReport": "Ajoutés : {{added}}, réutilisés : {{skipped}}",
+    "deploying": "Déploiement...",
     "chooseSlotType": "Choisir le type de créneau",
     "slotTypeDefault": "Par défaut",
     "slotTypeDefaultDesc": "Diffusé quand aucun autre créneau n'est actif. Un seul autorisé.",
@@ -354,7 +362,8 @@
       "eventSlot": "Événement",
       "items": "éléments",
       "noSlots": "Aucun créneau horaire configuré",
-      "today": "Aujourd'hui"
+      "today": "Aujourd'hui",
+      "displayOff": "Écran éteint"
     }
   },
   "playerSettings": {

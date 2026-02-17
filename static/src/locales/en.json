@@ -72,7 +72,13 @@
     "updateFailed": "Update failed",
     "checking": "Checking...",
     "updating": "Updating...",
-    "macAddress": "MAC"
+    "macAddress": "MAC",
+    "monitor": "Monitor",
+    "monitorOn": "On",
+    "monitorOff": "Off",
+    "cecNotAvailable": "CEC N/A",
+    "monitorStandbySent": "Monitor off",
+    "monitorWakeSent": "Monitor on"
   },
   "groups": {
     "title": "Groups",
@@ -225,6 +231,7 @@
     "activity": "Activity",
     "actions": "Actions",
     "confirmDelete": "Are you sure you want to delete this asset?",
+    "usedInSlots": "This asset is used in schedule slots: {{slots}}. It will be removed from them too. Continue?",
     "deleted": "Asset deleted",
     "deleteFailed": "Failed to delete asset",
     "updated": "Asset updated",
@@ -329,6 +336,8 @@
     "deselectAll": "Deselect All",
     "addingProgress": "Adding {{current}}/{{total}}...",
     "deployAndAdd": "Deploy & Add",
+    "addedReport": "Added: {{added}}, reused: {{skipped}}",
+    "deploying": "Deploying...",
     "chooseSlotType": "Choose Slot Type",
     "slotTypeDefault": "Default",
     "slotTypeDefaultDesc": "Plays when no other slot is active. Only one allowed.",
@@ -369,7 +378,8 @@
       "eventSlot": "Event",
       "items": "items",
       "noSlots": "No schedule slots configured",
-      "today": "Today"
+      "today": "Today",
+      "displayOff": "Display off"
     }
   },
   "playerSettings": {

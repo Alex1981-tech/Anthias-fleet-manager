@@ -72,7 +72,13 @@
     "updateFailed": "Помилка оновлення",
     "checking": "Перевірка...",
     "updating": "Оновлення...",
-    "macAddress": "MAC"
+    "macAddress": "MAC",
+    "monitor": "Монітор",
+    "monitorOn": "Увімк",
+    "monitorOff": "Вимк",
+    "cecNotAvailable": "CEC недоступний",
+    "monitorStandbySent": "Монітор вимкнено",
+    "monitorWakeSent": "Монітор увімкнено"
   },
   "groups": {
     "title": "Групи",
@@ -225,6 +231,7 @@
     "activity": "Активність",
     "actions": "Дії",
     "confirmDelete": "Ви впевнені, що хочете видалити цей ресурс?",
+    "usedInSlots": "Цей ресурс використовується в слотах розкладу: {{slots}}. Його буде видалено і звідти. Продовжити?",
     "deleted": "Ресурс видалено",
     "deleteFailed": "Не вдалося видалити ресурс",
     "updated": "Ресурс оновлено",
@@ -329,6 +336,8 @@
     "deselectAll": "Зняти всі",
     "addingProgress": "Додавання {{current}}/{{total}}...",
     "deployAndAdd": "Розгорнути й додати",
+    "addedReport": "Додано: {{added}}, вже були: {{skipped}}",
+    "deploying": "Завантаження...",
     "chooseSlotType": "Оберіть тип слота",
     "slotTypeDefault": "За замовчуванням",
     "slotTypeDefaultDesc": "Грає коли жоден інший слот не активний. Допускається лише один.",
@@ -369,7 +378,8 @@
       "eventSlot": "Подія",
       "items": "елементів",
       "noSlots": "Часові слоти не налаштовано",
-      "today": "Сьогодні"
+      "today": "Сьогодні",
+      "displayOff": "Дисплей вимк."
     }
   },
   "playerSettings": {

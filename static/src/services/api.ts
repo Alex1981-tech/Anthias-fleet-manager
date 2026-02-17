@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -160,6 +160,18 @@ export const players = {
 
   triggerUpdate(id: string): Promise<{ success: boolean }> {
     return apiRequest<{ success: boolean }>('POST', `/players/${id}/update/`)
+  },
+
+  getCecStatus(id: string): Promise<CecStatus> {
+    return apiRequest<CecStatus>('GET', `/players/${id}/cec-status/`)
+  },
+
+  cecStandby(id: string): Promise<CecStatus> {
+    return apiRequest<CecStatus>('POST', `/players/${id}/cec-standby/`)
+  },
+
+  cecWake(id: string): Promise<CecStatus> {
+    return apiRequest<CecStatus>('POST', `/players/${id}/cec-wake/`)
   },
 }
 

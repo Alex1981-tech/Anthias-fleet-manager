@@ -59,7 +59,13 @@
     "liveBadge": "LIVE",
     "featureNotSupported": "Diese Funktion wird auf diesem Player nicht unterstützt",
     "screenshotNotSupported": "Bildschirmfoto für diesen Player nicht verfügbar",
-    "macAddress": "MAC"
+    "macAddress": "MAC",
+    "monitor": "Monitor",
+    "monitorOn": "Ein",
+    "monitorOff": "Aus",
+    "cecNotAvailable": "CEC nicht verfügbar",
+    "monitorStandbySent": "Monitor ausgeschaltet",
+    "monitorWakeSent": "Monitor eingeschaltet"
   },
   "groups": {
     "title": "Gruppen",
@@ -314,6 +320,8 @@
     "deselectAll": "Alle abwählen",
     "addingProgress": "Hinzufügen {{current}}/{{total}}...",
     "deployAndAdd": "Verteilen & Hinzufügen",
+    "addedReport": "Hinzugefügt: {{added}}, wiederverwendet: {{skipped}}",
+    "deploying": "Wird verteilt...",
     "chooseSlotType": "Zeitfenstertyp wählen",
     "slotTypeDefault": "Standard",
     "slotTypeDefaultDesc": "Wird abgespielt, wenn kein anderes Zeitfenster aktiv ist. Nur eines erlaubt.",
@@ -354,7 +362,8 @@
       "eventSlot": "Ereignis",
       "items": "Einträge",
       "noSlots": "Keine Zeitfenster konfiguriert",
-      "today": "Heute"
+      "today": "Heute",
+      "displayOff": "Display aus"
     }
   },
   "playerSettings": {

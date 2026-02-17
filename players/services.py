@@ -265,3 +265,20 @@ class AnthiasAPIClient:
         response = self._request('POST', '/api/v2/update')
         return response.json()
 
+    # ── CEC TV control ──
+
+    def get_cec_status(self):
+        """GET /api/v2/cec/status - Get CEC availability and TV power state."""
+        response = self._request('GET', '/api/v2/cec/status')
+        return response.json()
+
+    def cec_standby(self):
+        """POST /api/v2/cec/standby - Send TV to standby via HDMI-CEC."""
+        response = self._request('POST', '/api/v2/cec/standby')
+        return response.json()
+
+    def cec_wake(self):
+        """POST /api/v2/cec/wake - Wake TV via HDMI-CEC."""
+        response = self._request('POST', '/api/v2/cec/wake')
+        return response.json()
+

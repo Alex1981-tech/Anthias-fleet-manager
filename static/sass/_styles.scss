@@ -1218,8 +1218,12 @@ body {
     z-index: 0;
   }
 
-  &:not(.fm-timeline-bar-default) {
+  &.fm-timeline-bar-time {
     z-index: 1;
+  }
+
+  &.fm-timeline-bar-event {
+    z-index: 2;
   }
 }
 
@@ -1233,60 +1237,34 @@ body {
   text-overflow: ellipsis;
 }
 
-// ── Event markers (triangles above the track) ──
-.fm-timeline-events {
-  position: relative;
-  height: 22px;
-  margin-bottom: 2px;
-}
-
-.fm-timeline-event-marker {
+// ── Display-off overlay (hatched) ──
+.fm-timeline-display-off {
   position: absolute;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  z-index: 2;
-
-  &:hover {
-    .fm-timeline-event-label {
-      opacity: 1;
-    }
-    .fm-timeline-event-triangle {
-      filter: brightness(1.2);
-    }
-  }
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(128, 128, 128, 0.18),
+    rgba(128, 128, 128, 0.18) 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  border-left: 1px solid rgba(128, 128, 128, 0.25);
+  border-right: 1px solid rgba(128, 128, 128, 0.25);
 }
 
-.fm-timeline-event-triangle {
-  display: block;
-  transition: filter 0.15s;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-}
-
-.fm-timeline-event-label {
-  font-size: 0.6rem;
-  font-weight: $font-weight-medium;
-  color: $gray-600;
-  white-space: nowrap;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.7;
-  transition: opacity 0.15s;
-  margin-bottom: 1px;
-}
-
-.fm-timeline-event-marker-sm {
-  .fm-timeline-event-label {
-    display: none;
-  }
-}
-
-// ── Legend event swatch (triangle shape, pointing down) ──
-.fm-timeline-legend-swatch-event {
-  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+// ── Legend display-off swatch (hatched) ──
+.fm-timeline-legend-swatch-off {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(128, 128, 128, 0.35),
+    rgba(128, 128, 128, 0.35) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  border: 1px solid rgba(128, 128, 128, 0.4);
 }
 
 // ── Date navigation ──
@@ -1460,12 +1438,6 @@ body {
 .fm-timeline-week-track-wrap {
   flex: 1;
   min-width: 0;
-}
-
-.fm-timeline-week-events {
-  position: relative;
-  height: 8px;
-  margin-bottom: 1px;
 }
 
 .fm-timeline-week-track {
@@ -1778,8 +1750,27 @@ body {
     color: #888;
   }
 
-  .fm-timeline-event-label {
-    color: #999;
+  .fm-timeline-display-off {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(180, 180, 180, 0.12),
+      rgba(180, 180, 180, 0.12) 3px,
+      transparent 3px,
+      transparent 7px
+    );
+    border-left-color: rgba(180, 180, 180, 0.2);
+    border-right-color: rgba(180, 180, 180, 0.2);
+  }
+
+  .fm-timeline-legend-swatch-off {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(180, 180, 180, 0.25),
+      rgba(180, 180, 180, 0.25) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+    border-color: rgba(180, 180, 180, 0.3);
   }
 
   .fm-timeline-cal-icon {

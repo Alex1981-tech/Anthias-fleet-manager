@@ -827,6 +827,48 @@ class PlayerViewSet(viewsets.ModelViewSet):
             )
 
 
+    # ── CEC TV control ──
+
+    @action(detail=True, methods=['get'], url_path='cec-status')
+    def cec_status(self, request, pk=None):
+        """Get CEC availability and TV power state from the player."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            return Response(client.get_cec_status())
+        except PlayerConnectionError as exc:
+            return Response(
+                {'error': str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+    @action(detail=True, methods=['post'], url_path='cec-standby')
+    def cec_standby(self, request, pk=None):
+        """Send TV to standby via HDMI-CEC."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            return Response(client.cec_standby())
+        except PlayerConnectionError as exc:
+            return Response(
+                {'error': str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+    @action(detail=True, methods=['post'], url_path='cec-wake')
+    def cec_wake(self, request, pk=None):
+        """Wake TV via HDMI-CEC."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            return Response(client.cec_wake())
+        except PlayerConnectionError as exc:
+            return Response(
+                {'error': str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+
 class BulkActionView(APIView):
     """
     Handle bulk actions across multiple players.

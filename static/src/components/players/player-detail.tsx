@@ -40,11 +40,12 @@ import {
   FaDownload,
   FaCheckCircle,
   FaShieldAlt,
+  FaPowerOff,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
-import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult } from '@/types'
+import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult, CecStatus } from '@/types'
 import { PlayerSchedule } from './player-schedule'
 import { ScheduleTimeline } from './schedule-timeline'
 
@@ -215,6 +216,10 @@ const PlayerDetail: React.FC = () => {
   const [latestSha, setLatestSha] = useState('')
   const [updating, setUpdating] = useState(false)
 
+  // CEC monitor control
+  const [cecStatus, setCecStatus] = useState<CecStatus | null>(null)
+  const [cecLoading, setCecLoading] = useState(false)
+
   // Player settings modal state
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [_deviceSettings, setDeviceSettings] = useState<Record<string, unknown> | null>(null)
@@ -377,6 +382,10 @@ const PlayerDetail: React.FC = () => {
     }
     loadInfo()
     loadAssets()
+    // Load CEC status (silent fail if not supported)
+    if (player.is_online) {
+      playersApi.getCecStatus(id).then(setCecStatus).catch(() => setCecStatus(null))
+    }
     // Auto-request screenshot on page load
     if (player.is_online) {
       const loadScreenshot = async () => {
@@ -632,9 +641,21 @@ const PlayerDetail: React.FC = () => {
   // Asset delete
   const handleDeleteAsset = async (asset: PlayerAsset) => {
     if (!id) return
+
+    // Check if asset is used in any schedule slots
+    const usedInSlots = scheduleSlots.filter(slot =>
+      slot.items.some(item => item.asset_id === asset.asset_id)
+    )
+
+    let confirmText = t('assets.confirmDelete')
+    if (usedInSlots.length > 0) {
+      const slotNames = usedInSlots.map(s => s.name).join(', ')
+      confirmText = t('assets.usedInSlots', { slots: slotNames })
+    }
+
     const result = await Swal.fire({
       title: t('assets.deleteAsset'),
-      text: t('assets.confirmDelete'),
+      text: confirmText,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: t('common.delete'),
@@ -644,7 +665,14 @@ const PlayerDetail: React.FC = () => {
       try {
         await playersApi.deleteAsset(id, asset.asset_id)
         Swal.fire({ icon: 'success', title: t('assets.deleted'), timer: 1500, showConfirmButton: false })
-        loadAssets()
+        setAssets(prev => prev.filter(a => a.asset_id !== asset.asset_id))
+        // Update schedule slots — remove deleted asset from items
+        if (usedInSlots.length > 0) {
+          setScheduleSlots(prev => prev.map(slot => ({
+            ...slot,
+            items: slot.items.filter(item => item.asset_id !== asset.asset_id),
+          })))
+        }
       } catch {
         Swal.fire({ icon: 'error', title: t('assets.deleteFailed') })
       }
@@ -1551,6 +1579,51 @@ const PlayerDetail: React.FC = () => {
                       </div>
                     ) : null
                   })()}
+
+                  {/* CEC Monitor Control */}
+                  {cecStatus && (
+                    <div className="col-12 d-flex align-items-center gap-2 mt-1">
+                      <FaDesktop className="text-muted" />
+                      <small className="text-muted fw-semibold">{t('players.monitor')}:</small>
+                      {cecStatus.cec_available ? (
+                        cecStatus.tv_on ? (
+                          <span className="badge bg-success">{t('players.monitorOn')}</span>
+                        ) : (
+                          <span className="badge bg-danger">{t('players.monitorOff')}</span>
+                        )
+                      ) : (
+                        <span className="badge bg-secondary">{t('players.cecNotAvailable')}</span>
+                      )}
+                      <button
+                        className="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 py-0 px-2"
+                        disabled={!cecStatus.cec_available || !player.is_online || cecLoading}
+                        onClick={async () => {
+                          setCecLoading(true)
+                          try {
+                            const result = await playersApi.cecStandby(id!)
+                            setCecStatus(result)
+                            Swal.fire({ icon: 'success', title: t('players.monitorStandbySent'), timer: 1500, showConfirmButton: false })
+                          } catch { /* silent */ } finally { setCecLoading(false) }
+                        }}
+                      >
+                        <FaPowerOff size={10} /> {t('players.monitorOff')}
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 py-0 px-2"
+                        disabled={!cecStatus.cec_available || !player.is_online || cecLoading}
+                        onClick={async () => {
+                          setCecLoading(true)
+                          try {
+                            const result = await playersApi.cecWake(id!)
+                            setCecStatus(result)
+                            Swal.fire({ icon: 'success', title: t('players.monitorWakeSent'), timer: 1500, showConfirmButton: false })
+                          } catch { /* silent */ } finally { setCecLoading(false) }
+                        }}
+                      >
+                        <FaDesktop size={10} /> {t('players.monitorOn')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-muted mb-0">
@@ -1597,7 +1670,7 @@ const PlayerDetail: React.FC = () => {
       )}
 
       {/* Schedule Timeline — hidden for standard Anthias players */}
-      {hasSchedule !== false && scheduleSlots.length > 0 && <ScheduleTimeline slots={scheduleSlots} />}
+      {hasSchedule !== false && scheduleSlots.length > 0 && <ScheduleTimeline slots={scheduleSlots} displaySchedule={displaySchedule} />}
 
       {/* Schedule Slots — hidden for standard Anthias players */}
       {hasSchedule !== false && (

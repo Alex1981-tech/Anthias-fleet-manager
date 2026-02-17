@@ -181,6 +181,11 @@ export interface PlayerUpdateCheckResult {
   error?: string
 }
 
+export interface CecStatus {
+  cec_available: boolean
+  tv_on: boolean
+}
+
 export interface DeployTask {
   id: string
   name: string

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   FaCalendarAlt,
@@ -16,11 +16,13 @@ import {
   FaFile,
   FaCheckSquare,
   FaSquare,
+  FaFolder,
+  FaFolderOpen,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
-import { schedule as scheduleApi, players as playersApi, media as mediaApi } from '@/services/api'
+import { schedule as scheduleApi, players as playersApi, media as mediaApi, folders as foldersApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
-import type { ScheduleSlot, ScheduleSlotItem, ScheduleStatus, PlayerAsset, MediaFile, SlotType } from '@/types'
+import type { ScheduleSlot, ScheduleSlotItem, ScheduleStatus, PlayerAsset, MediaFile, MediaFolder, SlotType } from '@/types'
 
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7]
 
@@ -106,6 +108,11 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
     fetchData()
   }, [fetchData])
 
+  // Notify parent when slots change (for timeline sync)
+  useEffect(() => {
+    onSlotsLoaded?.(slots)
+  }, [slots, onSlotsLoaded])
+
   // Load media files for thumbnails
   useEffect(() => {
     mediaApi.list().then(files => setMediaFiles(files)).catch(() => {})
@@ -151,7 +158,7 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
     if (!result.isConfirmed) return
     try {
       await scheduleApi.deleteSlot(playerId, slot.slot_id)
-      fetchData()
+      setSlots(prev => prev.filter(s => s.slot_id !== slot.slot_id))
     } catch {
       Swal.fire(t('common.error'), t('schedule.failed'), 'error')
     }
@@ -183,7 +190,11 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
     if (!result.isConfirmed) return
     try {
       await scheduleApi.removeItem(playerId, slot.slot_id, item.item_id)
-      fetchData()
+      setSlots(prev => prev.map(s =>
+        s.slot_id === slot.slot_id
+          ? { ...s, items: s.items.filter(i => i.item_id !== item.item_id) }
+          : s
+      ))
     } catch {
       Swal.fire(t('common.error'), t('schedule.failed'), 'error')
     }
@@ -1031,6 +1042,7 @@ const AddItemModal = ({
 
   // Assets tab state
   const [assets, setAssets] = useState<PlayerAsset[]>([])
+  const [allPlayerAssets, setAllPlayerAssets] = useState<PlayerAsset[]>([])
   const [loadingAssets, setLoadingAssets] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [submitting, setSubmitting] = useState(false)
@@ -1041,9 +1053,8 @@ const AddItemModal = ({
   const [loadingLibrary, setLoadingLibrary] = useState(false)
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set())
   const [deployProgress, setDeployProgress] = useState({ current: 0, total: 0 })
-
-  // Duration override for new items
-  const [itemDuration, setItemDuration] = useState('10')
+  const [libraryFolders, setLibraryFolders] = useState<MediaFolder[]>([])
+  const [activeFolder, setActiveFolder] = useState<string | null>(null)
 
   const findMediaForAsset = useCallback((asset: PlayerAsset): MediaFile | null => {
     return mediaFiles.find(f => f.name === asset.name) || null
@@ -1053,6 +1064,7 @@ const AddItemModal = ({
     const load = async () => {
       try {
         const data = await playersApi.getAssets(playerId)
+        setAllPlayerAssets(data)
         const existingIds = new Set(slot.items.map((i) => i.asset_id))
         setAssets(data.filter((a) => !existingIds.has(a.asset_id)))
       } catch {
@@ -1064,14 +1076,16 @@ const AddItemModal = ({
     load()
   }, [playerId, slot])
 
-  // Load library files when switching to library tab
+  // Load library files and folders when switching to library tab
   useEffect(() => {
     if (activeTab === 'library' && libraryFiles.length === 0 && !loadingLibrary) {
       setLoadingLibrary(true)
-      mediaApi.list().then(files => {
+      Promise.all([
+        mediaApi.list().catch(() => [] as MediaFile[]),
+        foldersApi.list().catch(() => [] as MediaFolder[]),
+      ]).then(([files, folders]) => {
         setLibraryFiles(files)
-      }).catch(() => {
-        setLibraryFiles([])
+        setLibraryFolders(folders)
       }).finally(() => {
         setLoadingLibrary(false)
       })
@@ -1106,8 +1120,14 @@ const AddItemModal = ({
     })
   }
 
+  const filteredLibraryFiles = useMemo(() => {
+    if (activeFolder === null) return libraryFiles
+    if (activeFolder === 'none') return libraryFiles.filter(f => !f.folder)
+    return libraryFiles.filter(f => f.folder === activeFolder)
+  }, [libraryFiles, activeFolder])
+
   const selectAllFiles = () => {
-    setSelectedFileIds(new Set(libraryFiles.map(f => f.id)))
+    setSelectedFileIds(new Set(filteredLibraryFiles.map(f => f.id)))
   }
 
   const deselectAllFiles = () => {
@@ -1120,18 +1140,12 @@ const AddItemModal = ({
     setSubmitting(true)
     const ids = Array.from(selectedIds)
     setAddProgress({ current: 0, total: ids.length })
-    const durVal = parseInt(itemDuration, 10)
-    const durOverride = !isNaN(durVal) && durVal > 0 ? durVal : null
 
     try {
       for (let i = 0; i < ids.length; i++) {
         setAddProgress({ current: i + 1, total: ids.length })
-        const asset = assets.find(a => a.asset_id === ids[i])
-        const mt = asset?.mimetype?.toLowerCase() || ''
-        const isVideo = mt === 'video'
         await scheduleApi.addItem(playerId, slot.slot_id, {
           asset_id: ids[i],
-          ...(!isVideo && durOverride ? { duration_override: durOverride } : {}),
         })
       }
       Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
@@ -1144,32 +1158,51 @@ const AddItemModal = ({
     }
   }
 
-  // Submit files (from library — deploy then add)
+  // Submit files (from library — deploy then add, reuse existing assets)
   const handleSubmitLibrary = async () => {
     if (selectedFileIds.size === 0) return
     setSubmitting(true)
     const fileIds = Array.from(selectedFileIds)
     setDeployProgress({ current: 0, total: fileIds.length })
-    const durVal = parseInt(itemDuration, 10)
-    const durOverride = !isNaN(durVal) && durVal > 0 ? durVal : null
+    let deployed = 0
+    let reused = 0
 
     try {
       for (let i = 0; i < fileIds.length; i++) {
         setDeployProgress({ current: i + 1, total: fileIds.length })
         const file = libraryFiles.find(f => f.id === fileIds[i])
-        const ft = file?.file_type?.toLowerCase() || ''
-        const isVideo = ft === 'video'
-        const result = await playersApi.deployContent(playerId, fileIds[i])
-        // Backend returns { success: true, asset: { asset_id: "..." } }
-        const assetId = (result as unknown as { asset?: { asset_id?: string } })?.asset?.asset_id
-        if (assetId) {
+        if (!file) continue
+
+        // Check if asset with same name already exists on player
+        const existing = allPlayerAssets.find(a => a.name === file.name)
+        if (existing) {
+          // Reuse existing asset — skip deploy
           await scheduleApi.addItem(playerId, slot.slot_id, {
-            asset_id: assetId,
-            ...(!isVideo && durOverride ? { duration_override: durOverride } : {}),
+            asset_id: existing.asset_id,
           })
+          reused++
+        } else {
+          const result = await playersApi.deployContent(playerId, fileIds[i])
+          const assetId = (result as unknown as { asset?: { asset_id?: string } })?.asset?.asset_id
+          if (assetId) {
+            await scheduleApi.addItem(playerId, slot.slot_id, {
+              asset_id: assetId,
+            })
+            deployed++
+          }
         }
       }
-      Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
+      if (reused > 0) {
+        Swal.fire({
+          title: t('common.success'),
+          text: t('schedule.addedReport', { added: deployed, skipped: reused }),
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false,
+        })
+      } else {
+        Swal.fire({ title: t('common.success'), icon: 'success', timer: 2000, showConfirmButton: false })
+      }
       onAdded()
     } catch (err: unknown) {
       Swal.fire(t('common.error'), translateApiError(err instanceof Error ? err.message : String(err), t), 'error')
@@ -1384,8 +1417,74 @@ const AddItemModal = ({
                         </button>
                       </div>
                     </div>
+                    {/* Folder icons */}
+                    {libraryFolders.length > 0 && (
+                      <div className="d-flex flex-wrap gap-2 mb-2 align-items-start">
+                        <div
+                          className="text-center"
+                          style={{
+                            width: '72px',
+                            cursor: 'pointer',
+                            padding: '4px 2px',
+                            borderRadius: '6px',
+                            border: activeFolder === null ? '2px solid var(--bs-primary)' : '2px solid transparent',
+                            background: activeFolder === null ? 'var(--bs-primary-bg-subtle)' : 'transparent',
+                            transition: 'all 0.15s',
+                          }}
+                          onClick={() => { setActiveFolder(null); setSelectedFileIds(new Set()) }}
+                        >
+                          <FaFolder style={{ fontSize: '1.6rem', color: 'var(--bs-secondary)' }} />
+                          <div style={{ fontSize: '0.65rem', lineHeight: '1.2' }}>{t('common.all')}</div>
+                        </div>
+                        <div
+                          className="text-center"
+                          style={{
+                            width: '72px',
+                            cursor: 'pointer',
+                            padding: '4px 2px',
+                            borderRadius: '6px',
+                            border: activeFolder === 'none' ? '2px solid var(--bs-primary)' : '2px solid transparent',
+                            background: activeFolder === 'none' ? 'var(--bs-primary-bg-subtle)' : 'transparent',
+                            transition: 'all 0.15s',
+                          }}
+                          onClick={() => { setActiveFolder('none'); setSelectedFileIds(new Set()) }}
+                        >
+                          <FaFolder style={{ fontSize: '1.6rem', color: 'var(--bs-secondary)' }} />
+                          <div style={{ fontSize: '0.65rem', lineHeight: '1.2' }}>{t('content.noFolder')}</div>
+                        </div>
+                        {libraryFolders.map((folder) => (
+                          <div
+                            key={folder.id}
+                            className="text-center"
+                            style={{
+                              width: '72px',
+                              cursor: 'pointer',
+                              padding: '4px 2px',
+                              borderRadius: '6px',
+                              border: activeFolder === folder.id ? '2px solid var(--bs-primary)' : '2px solid transparent',
+                              background: activeFolder === folder.id ? 'var(--bs-primary-bg-subtle)' : 'transparent',
+                              transition: 'all 0.15s',
+                            }}
+                            onClick={() => { setActiveFolder(activeFolder === folder.id ? null : folder.id); setSelectedFileIds(new Set()) }}
+                            title={`${folder.name} (${folder.file_count})`}
+                          >
+                            {activeFolder === folder.id ? (
+                              <FaFolderOpen style={{ fontSize: '1.6rem', color: '#ffc107' }} />
+                            ) : (
+                              <FaFolder style={{ fontSize: '1.6rem', color: '#ffc107' }} />
+                            )}
+                            <div
+                              style={{ fontSize: '0.65rem', lineHeight: '1.2', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                            >
+                              {folder.name}
+                            </div>
+                            <small className="text-muted" style={{ fontSize: '0.55rem' }}>{folder.file_count}</small>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="row g-2" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                      {libraryFiles.map((file) => {
+                      {filteredLibraryFiles.map((file) => {
                         const isSelected = selectedFileIds.has(file.id)
                         return (
                           <div key={file.id} className="col-4 col-md-3 col-lg-2">
@@ -1438,34 +1537,23 @@ const AddItemModal = ({
 
           </div>
           <div className="modal-footer">
-            {/* Duration input */}
-            <div className="d-flex align-items-center gap-2 me-auto">
-              <label className="form-label mb-0 fw-semibold text-nowrap" style={{ fontSize: '0.85rem' }}>
-                {t('assets.duration')}:
-              </label>
-              <div className="input-group input-group-sm" style={{ width: '120px' }}>
-                <input
-                  type="number"
-                  className="form-control"
-                  min="1"
-                  value={itemDuration}
-                  onChange={(e) => setItemDuration(e.target.value)}
-                  disabled={submitting}
-                />
-                <span className="input-group-text">{t('assets.sec')}</span>
+            {/* Progress bar */}
+            {submitting && (addProgress.total > 0 || deployProgress.total > 0) && (
+              <div className="d-flex align-items-center gap-2 me-auto" style={{ flex: 1 }}>
+                <div className="progress" style={{ height: '6px', flex: 1 }}>
+                  <div
+                    className="progress-bar bg-primary"
+                    style={{
+                      width: `${Math.round(((addProgress.current || deployProgress.current) / (addProgress.total || deployProgress.total)) * 100)}%`,
+                      transition: 'width 0.3s',
+                    }}
+                  />
+                </div>
+                <span className="text-muted small text-nowrap">
+                  {addProgress.current || deployProgress.current} / {addProgress.total || deployProgress.total}
+                </span>
               </div>
-              {/* Progress indicator */}
-              {submitting && addProgress.total > 0 && (
-                <span className="text-muted ms-2">
-                  {t('schedule.addingProgress', { current: addProgress.current, total: addProgress.total })}
-                </span>
-              )}
-              {submitting && deployProgress.total > 0 && (
-                <span className="text-muted ms-2">
-                  {t('schedule.addingProgress', { current: deployProgress.current, total: deployProgress.total })}
-                </span>
-              )}
-            </div>
+            )}
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
               {t('common.cancel')}
             </button>
