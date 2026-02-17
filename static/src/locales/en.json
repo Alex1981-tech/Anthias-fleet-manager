@@ -485,7 +485,8 @@
       "rbacUsers": "Role-based access control (RBAC) — admin, editor, viewer roles with user management",
       "auditLog": "Audit log — track all user actions with filters and pagination",
       "remoteTerminal": "Remote terminal — SSH access to players directly from the browser via WebSocket",
-      "bulkProvisioning": "Bulk provisioning — scan network and install Anthias on multiple Raspberry Pi at once"
+      "bulkProvisioning": "Bulk provisioning — scan network and install Anthias on multiple Raspberry Pi at once",
+      "terminalProtocolFix": "Fix remote terminal — send raw ANSI text instead of JSON for proper xterm.js rendering"
     }
   },
   "updates": {
