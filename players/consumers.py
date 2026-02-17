@@ -45,19 +45,13 @@ class TerminalConsumer(AsyncWebsocketConsumer):
             return
 
         await self.accept()
-        await self.send(text_data=json.dumps({
-            'type': 'status',
-            'message': f'Connecting to {self.player.name}...',
-        }))
+        await self.send(text_data=f'\x1b[33mConnecting to {self.player.name}...\x1b[0m\r\n')
 
         # Start SSH in background
         try:
             await self._connect_ssh()
         except Exception as e:
-            await self.send(text_data=json.dumps({
-                'type': 'error',
-                'message': f'SSH connection failed: {e}',
-            }))
+            await self.send(text_data=f'\x1b[31mSSH connection failed: {e}\x1b[0m\r\n')
             await self.close()
             return
 
@@ -88,10 +82,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         self.ssh_channel.get_pty(term='xterm-256color', width=120, height=30)
         self.ssh_channel.invoke_shell()
 
-        await self.send(text_data=json.dumps({
-            'type': 'status',
-            'message': 'Connected.',
-        }))
+        await self.send(text_data='\x1b[32mConnected.\x1b[0m\r\n')
 
     async def _read_ssh(self):
         """Read from SSH channel and forward to WebSocket."""
@@ -101,19 +92,17 @@ class TerminalConsumer(AsyncWebsocketConsumer):
                     break
                 data = await asyncio.to_thread(self._recv_ssh)
                 if data:
-                    await self.send(text_data=json.dumps({
-                        'type': 'output',
-                        'data': data,
-                    }))
+                    # Send raw terminal output directly (no JSON wrapping)
+                    await self.send(text_data=data)
                 else:
                     await asyncio.sleep(0.05)
         except Exception as e:
             logger.debug('SSH reader stopped: %s', e)
         finally:
-            await self.send(text_data=json.dumps({
-                'type': 'status',
-                'message': 'Connection closed.',
-            }))
+            try:
+                await self.send(text_data='\r\n\x1b[31mConnection closed.\x1b[0m\r\n')
+            except Exception:
+                pass
             await self.close()
 
     def _recv_ssh(self):
@@ -181,8 +170,5 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         asyncio.ensure_future(self._do_idle_disconnect())
 
     async def _do_idle_disconnect(self):
-        await self.send(text_data=json.dumps({
-            'type': 'status',
-            'message': 'Disconnected due to inactivity.',
-        }))
+        await self.send(text_data='\r\n\x1b[33mDisconnected due to inactivity.\x1b[0m\r\n')
         await self.close()
