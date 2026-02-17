@@ -17,6 +17,9 @@ from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
+from rest_framework.routers import DefaultRouter
+
+from fleet_manager.permissions import _user_role
 from fleet_manager.system_views import (
     system_settings,
     system_update,
@@ -24,11 +27,17 @@ from fleet_manager.system_views import (
     system_version,
     tailscale_settings,
 )
+from deploy.audit_views import audit_list
+from fleet_manager.user_views import UserViewSet
+
+user_router = DefaultRouter()
+user_router.register('users', UserViewSet)
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def auth_login(request):
+    from deploy.audit import log_action
     data = request.data
     user = authenticate(
         request,
@@ -37,7 +46,9 @@ def auth_login(request):
     )
     if user is not None:
         login(request, user)
+        log_action(request, 'login', 'session', target_name=user.username)
         return Response({'success': True, 'username': user.username})
+    log_action(request, 'login_failed', 'session', target_name=data.get('username', ''))
     return Response(
         {'detail': 'Invalid credentials'},
         status=401,
@@ -46,6 +57,8 @@ def auth_login(request):
 
 @api_view(['POST'])
 def auth_logout(request):
+    from deploy.audit import log_action
+    log_action(request, 'logout', 'session', target_name=request.user.username)
     logout(request)
     return Response({'success': True})
 
@@ -57,6 +70,7 @@ def auth_status(request):
         return Response({
             'authenticated': True,
             'username': request.user.username,
+            'role': _user_role(request.user),
         })
     return Response({'authenticated': False})
 
@@ -100,6 +114,8 @@ urlpatterns = [
     path('api/system/update/', system_update),
     path('api/system/settings/', system_settings),
     path('api/system/tailscale/', tailscale_settings),
+    path('api/', include(user_router.urls)),
+    path('api/audit/', audit_list),
     path('api/', include('players.urls')),
     path('api/', include('deploy.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

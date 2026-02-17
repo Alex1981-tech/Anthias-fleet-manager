@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings, User, AuditLogResponse, BulkProvisionTask } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -461,5 +461,56 @@ export const system = {
 
   updateTailscale(data: Record<string, unknown>): Promise<TailscaleSettings> {
     return apiRequest<TailscaleSettings>('PATCH', '/system/tailscale/', data)
+  },
+}
+
+export const users = {
+  list(): Promise<User[]> {
+    return apiRequest<User[]>('GET', '/users/')
+  },
+
+  me(): Promise<User> {
+    return apiRequest<User>('GET', '/users/me/')
+  },
+
+  create(data: { username: string; email?: string; password: string; role: string; first_name?: string; last_name?: string }): Promise<User> {
+    return apiRequest<User>('POST', '/users/', data)
+  },
+
+  update(id: number, data: Partial<User> & { password?: string; role?: string }): Promise<User> {
+    return apiRequest<User>('PATCH', `/users/${id}/`, data)
+  },
+
+  delete(id: number): Promise<void> {
+    return apiRequest<void>('DELETE', `/users/${id}/`)
+  },
+}
+
+export const audit = {
+  list(params: { user?: string; action?: string; target_type?: string; from?: string; to?: string; page?: number; page_size?: number } = {}): Promise<AuditLogResponse> {
+    const searchParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== '') searchParams.set(key, String(val))
+    })
+    const qs = searchParams.toString()
+    return apiRequest<AuditLogResponse>('GET', `/audit/${qs ? '?' + qs : ''}`)
+  },
+}
+
+export const bulkProvision = {
+  scan(data: { method: string; start_ip?: string; end_ip?: string; ips?: string[] }): Promise<{ method: string; discovered_ips: string[]; count: number }> {
+    return apiRequest('POST', '/bulk-provision/scan/', data)
+  },
+
+  start(data: { ips: string[]; ssh_user?: string; ssh_password: string; scan_method?: string }): Promise<BulkProvisionTask> {
+    return apiRequest<BulkProvisionTask>('POST', '/bulk-provision/start/', data)
+  },
+
+  get(taskId: string): Promise<BulkProvisionTask> {
+    return apiRequest<BulkProvisionTask>('GET', `/bulk-provision/${taskId}/`)
+  },
+
+  list(): Promise<BulkProvisionTask[]> {
+    return apiRequest<BulkProvisionTask[]>('GET', '/bulk-provision/')
   },
 }

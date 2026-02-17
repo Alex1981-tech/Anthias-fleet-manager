@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.6.1'
+export const APP_VERSION = '1.7.0'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.7.0',
+    date: '2026-02-17',
+    changeKeys: [
+      'rbacUsers',
+      'auditLog',
+      'remoteTerminal',
+      'bulkProvisioning',
+    ],
+  },
   {
     version: '1.6.1',
     date: '2026-02-17',

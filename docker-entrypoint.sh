@@ -14,8 +14,8 @@ connection.ensure_connection()
 done
 echo "Database ready!"
 
-# Only run migrations and collectstatic for the web (gunicorn) container
-if [[ "$1" == "gunicorn" ]]; then
+# Only run migrations and collectstatic for the web (gunicorn/daphne) container
+if [[ "$1" == "gunicorn" || "$1" == "daphne" ]]; then
     echo "Running migrations..."
     python manage.py migrate --noinput
 

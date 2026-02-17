@@ -16,6 +16,7 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1' if not DEBUG else '*').split(',')
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -26,6 +27,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'django_celery_beat',
+    'channels',
     'players',
     'deploy',
 ]
@@ -61,6 +63,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'fleet_manager.wsgi.application'
+ASGI_APPLICATION = 'fleet_manager.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')],
+        },
+    },
+}
 
 if os.environ.get('DATABASE_URL') or os.environ.get('DB_ENGINE', '').startswith('django.db.backends.postgresql'):
     DATABASES = {

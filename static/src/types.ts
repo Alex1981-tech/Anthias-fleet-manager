@@ -204,6 +204,59 @@ export interface ProvisionStep {
   timestamp: string
 }
 
+export type UserRole = 'viewer' | 'editor' | 'admin'
+
+export interface User {
+  id: number
+  username: string
+  email: string
+  first_name: string
+  last_name: string
+  is_active: boolean
+  role: UserRole
+  last_login: string | null
+  date_joined: string
+}
+
+export interface AuditLogEntry {
+  id: string
+  timestamp: string
+  user: number | null
+  username: string | null
+  action: string
+  target_type: string
+  target_id: string
+  target_name: string
+  details: Record<string, unknown>
+  ip_address: string | null
+}
+
+export interface AuditLogResponse {
+  results: AuditLogEntry[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface BulkProvisionTask {
+  id: string
+  created_at: string
+  created_by: number | null
+  created_by_username: string | null
+  status: 'pending' | 'scanning' | 'provisioning' | 'completed' | 'failed'
+  scan_method: string
+  ip_range_start: string | null
+  ip_range_end: string | null
+  discovered_ips: string[]
+  selected_ips: string[]
+  results: Record<string, {
+    status: string
+    player_id?: string | null
+    task_id?: string
+    error?: string
+  }>
+}
+
 export interface ProvisionTask {
   id: string
   ip_address: string

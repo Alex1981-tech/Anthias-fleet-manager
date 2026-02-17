@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -7,23 +7,28 @@ import {
   FaSearch,
   FaEdit,
   FaTrash,
+  FaNetworkWired,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { useAppDispatch, useAppSelector } from '@/store/index'
 import { fetchPlayers, deletePlayer } from '@/store/playersSlice'
 import { fetchGroups } from '@/store/groupsSlice'
 import AddPlayerModal from './add-player-modal'
+import BulkProvision from './bulk-provision'
+import { RoleContext } from '@/components/app'
 import type { Player } from '@/types'
 
 const PlayerList: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
+  const role = useContext(RoleContext)
   const { players, loading } = useAppSelector((state) => state.players)
   const { groups } = useAppSelector((state) => state.groups)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
+  const [showBulkProvision, setShowBulkProvision] = useState(false)
 
   useEffect(() => {
     dispatch(fetchPlayers())
@@ -102,7 +107,13 @@ const PlayerList: React.FC = () => {
             {t('players.title')}
           </h1>
         </div>
-        <div className="page-actions">
+        <div className="page-actions d-flex gap-2">
+          {role === 'admin' && (
+            <button className="fm-btn-outline" onClick={() => setShowBulkProvision(true)}>
+              <FaNetworkWired />
+              {t('bulkProvision.title')}
+            </button>
+          )}
           <button className="fm-btn-primary" onClick={handleAdd}>
             <FaPlus />
             {t('players.addPlayer')}
@@ -244,6 +255,10 @@ const PlayerList: React.FC = () => {
           onClose={handleFormClose}
           onSaved={handleFormSaved}
         />
+      )}
+
+      {showBulkProvision && (
+        <BulkProvision onClose={() => { setShowBulkProvision(false); dispatch(fetchPlayers()) }} />
       )}
     </div>
   )

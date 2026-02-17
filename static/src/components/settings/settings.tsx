@@ -1,16 +1,20 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FaCog, FaCopy, FaCheck, FaSave, FaSync, FaDownload, FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { FaCog, FaCopy, FaCheck, FaSave, FaSync, FaDownload, FaShieldAlt, FaEye, FaEyeSlash, FaUsers, FaHistory } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { pushLanguageToPlayers, system } from '@/services/api'
 import type { TailscaleSettings } from '@/types'
 import { APP_VERSION } from '../../changelog'
+import { RoleContext } from '@/components/app'
+import UsersSettings from './users-settings'
 
 const UPDATE_POLL_INTERVAL = 5000 // 5s
 const UPDATE_TIMEOUT = 120000 // 120s
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation()
+  const role = useContext(RoleContext)
 
   const [pollInterval, setPollInterval] = useState(
     localStorage.getItem('fm_poll_interval') || '60',
@@ -509,6 +513,34 @@ const Settings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Users Management — admin only */}
+      {role === 'admin' && (
+        <div className="row g-3 mt-1">
+          <div className="col-12">
+            <UsersSettings />
+          </div>
+        </div>
+      )}
+
+      {/* Audit Log link — admin only */}
+      {role === 'admin' && (
+        <div className="row g-3 mt-1">
+          <div className="col-12">
+            <div className="fm-card fm-card-accent">
+              <div className="fm-card-header py-2 d-flex justify-content-between align-items-center">
+                <h5 className="card-title mb-0">
+                  <FaHistory className="me-2" />
+                  {t('audit.title')}
+                </h5>
+                <Link to="/audit" className="fm-btn-outline btn-sm">
+                  {t('audit.viewAll')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Post-update polling overlay */}
       {(updatePolling || updateTimedOut) && (

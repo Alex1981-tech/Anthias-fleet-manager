@@ -5,6 +5,8 @@ from django.db.models import Count
 from rest_framework import parsers, serializers, status, viewsets
 from rest_framework.response import Response
 
+from fleet_manager.permissions import IsEditorOrReadOnly
+
 from .models import DeployTask, MediaFile, MediaFolder, detect_file_type
 from .serializers import DeployTaskSerializer, MediaFileSerializer, MediaFolderSerializer
 from .tasks import _is_safe_url, execute_deploy, fetch_og_image_task, generate_image_thumbnail, transcode_video
@@ -16,12 +18,14 @@ class MediaFolderViewSet(viewsets.ModelViewSet):
     """ViewSet for managing media folders."""
     queryset = MediaFolder.objects.annotate(file_count=Count('files'))
     serializer_class = MediaFolderSerializer
+    permission_classes = [IsEditorOrReadOnly]
 
 
 class MediaFileViewSet(viewsets.ModelViewSet):
     """ViewSet for managing uploaded media files."""
     serializer_class = MediaFileSerializer
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
+    permission_classes = [IsEditorOrReadOnly]
 
     def get_queryset(self):
         qs = MediaFile.objects.select_related('folder').prefetch_related('cctv_config__cameras').all()
@@ -86,6 +90,7 @@ class DeployTaskViewSet(viewsets.ModelViewSet):
     """ViewSet for managing deploy tasks."""
     queryset = DeployTask.objects.prefetch_related('target_players').all()
     serializer_class = DeployTaskSerializer
+    permission_classes = [IsEditorOrReadOnly]
 
     def perform_create(self, serializer):
         """Save the deploy task and kick off the Celery task."""

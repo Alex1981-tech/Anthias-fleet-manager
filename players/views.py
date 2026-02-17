@@ -13,6 +13,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from fleet_manager.permissions import IsAdmin, IsEditorOrReadOnly
+
 from deploy.models import MediaFile
 from .models import Group, PlaybackLog, Player, PlayerSnapshot
 from .serializers import GroupSerializer, PlaybackLogSerializer, PlayerListSerializer, PlayerSerializer, PlayerSnapshotSerializer
@@ -146,6 +148,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = None
+    permission_classes = [IsEditorOrReadOnly]
 
 
 class PlayerViewSet(viewsets.ModelViewSet):
@@ -153,6 +156,12 @@ class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.select_related('group').all()
     serializer_class = PlayerSerializer
     pagination_class = None
+    permission_classes = [IsEditorOrReadOnly]
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            return [IsAdmin()]
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -165,13 +174,20 @@ class PlayerViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """After creating a player, try to connect and update status."""
+        from deploy.audit import log_action
         player = serializer.save()
+        log_action(self.request, 'create', 'player', target_id=player.id, target_name=player.name)
         client = self._get_client(player)
         try:
             info = client.get_info()
             _update_player_status(player, True, info)
         except Exception:
             _update_player_status(player, False)
+
+    def perform_destroy(self, instance):
+        from deploy.audit import log_action
+        log_action(self.request, 'delete', 'player', target_id=instance.id, target_name=instance.name)
+        instance.delete()
 
     @action(detail=True, methods=['post'], url_path='test-connection')
     def test_connection(self, request, pk=None):
@@ -250,10 +266,12 @@ class PlayerViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reboot(self, request, pk=None):
         """Proxy to the player's /v2/reboot endpoint."""
+        from deploy.audit import log_action
         player = self.get_object()
         client = self._get_client(player)
         try:
             client.reboot()
+            log_action(request, 'reboot', 'player', target_id=player.id, target_name=player.name)
             return Response({
                 'success': True,
                 'message': f'Reboot command sent to {player.name}.',
@@ -876,6 +894,7 @@ class BulkActionView(APIView):
     POST /api/bulk/reboot/   - Reboot multiple players.
     POST /api/bulk/shutdown/ - Shut down multiple players.
     """
+    permission_classes = [IsEditorOrReadOnly]
 
     def _execute_bulk_action(self, action_name, player_ids):
         """

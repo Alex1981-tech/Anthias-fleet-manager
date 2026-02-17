@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import React, { useEffect, useState, useCallback, useRef, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -8,6 +8,7 @@ import {
   FaMemory,
   FaHdd,
   FaClock,
+  FaTerminal as FaTerminalIcon,
   FaMicrochip,
   FaNetworkWired,
   FaCamera,
@@ -48,6 +49,8 @@ import { translateApiError } from '@/utils/translateError'
 import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult, CecStatus } from '@/types'
 import { PlayerSchedule } from './player-schedule'
 import { ScheduleTimeline } from './schedule-timeline'
+import PlayerTerminal from './player-terminal'
+import { RoleContext } from '@/components/app'
 
 const getAssetTypeIcon = (mimetype: string) => {
   if (!mimetype) return <FaFile />
@@ -149,8 +152,10 @@ const PlayerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const role = useContext(RoleContext)
 
   const [player, setPlayer] = useState<Player | null>(null)
+  const [showTerminal, setShowTerminal] = useState(false)
   const [info, setInfo] = useState<PlayerInfo | null>(null)
   const [assets, setAssets] = useState<PlayerAsset[]>([])
   const [loading, setLoading] = useState(true)
@@ -1236,6 +1241,16 @@ const PlayerDetail: React.FC = () => {
               <FaSyncAlt className="me-1" />
               {t('players.reboot')}
             </button>
+            {role === 'admin' && player.is_online && (
+              <button
+                className="fm-btn-outline fm-btn-sm"
+                onClick={() => setShowTerminal(!showTerminal)}
+                title={t('terminal.title')}
+              >
+                <FaTerminalIcon className="me-1" />
+                {t('terminal.title')}
+              </button>
+            )}
             <button
               className="fm-btn-sm"
               style={{ background: '#dc3545', color: '#fff', border: 'none' }}
@@ -1684,6 +1699,11 @@ const PlayerDetail: React.FC = () => {
             }}
           />
         </div>
+      )}
+
+      {/* Terminal — admin only */}
+      {showTerminal && id && (
+        <PlayerTerminal playerId={id} onClose={() => setShowTerminal(false)} />
       )}
 
       {/* Schedule Timeline — hidden for standard Anthias players */}

@@ -5,7 +5,8 @@
     "groups": "Groups",
     "content": "Content",
     "history": "History",
-    "settings": "Settings"
+    "settings": "Settings",
+    "audit": "Audit Log"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -480,7 +481,11 @@
       "displayOffTimeline": "Fix display-off overlay on schedule timeline — now shows immediately on page load",
       "settingsLayout": "Settings page — compact 2x2 grid layout",
       "flagSwitcher": "Language switcher — SVG country flags instead of text codes",
-      "playbackStatsFix": "Fix playback duration stats — match transcoded files by base name (video.MOV = video.mp4)"
+      "playbackStatsFix": "Fix playback duration stats — match transcoded files by base name (video.MOV = video.mp4)",
+      "rbacUsers": "Role-based access control (RBAC) — admin, editor, viewer roles with user management",
+      "auditLog": "Audit log — track all user actions with filters and pagination",
+      "remoteTerminal": "Remote terminal — SSH access to players directly from the browser via WebSocket",
+      "bulkProvisioning": "Bulk provisioning — scan network and install Anthias on multiple Raspberry Pi at once"
     }
   },
   "updates": {
@@ -622,6 +627,77 @@
     "authKeySet": "Auth key is configured",
     "saved": "Tailscale settings saved",
     "saveFailed": "Failed to save Tailscale settings"
+  },
+  "users": {
+    "title": "Users",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "username": "Username",
+    "email": "Email",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "password": "Password",
+    "leaveBlank": "leave blank to keep current",
+    "role": "Role",
+    "role_admin": "Admin",
+    "role_editor": "Editor",
+    "role_viewer": "Viewer",
+    "lastLogin": "Last Login",
+    "actions": "Actions",
+    "created": "User created",
+    "updated": "User updated",
+    "confirmDeactivate": "Deactivate this user?",
+    "deactivated": "User deactivated",
+    "inactive": "Inactive"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "subtitle": "Track all actions performed in the system.",
+    "viewAll": "View All",
+    "time": "Time",
+    "user": "User",
+    "action": "Action",
+    "targetType": "Target Type",
+    "target": "Target",
+    "ip": "IP Address",
+    "dateFrom": "Date from",
+    "dateTo": "Date to",
+    "noEntries": "No audit entries",
+    "showing": "Showing {{count}} of {{total}}"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "reconnect": "Reconnect"
+  },
+  "bulkProvision": {
+    "title": "Bulk Provision",
+    "selectMethod": "Select scan method",
+    "method_arp": "Auto-scan (ARP)",
+    "method_arp_desc": "Scan local network for active hosts using ARP",
+    "method_range": "IP Range",
+    "method_range_desc": "Scan a range of IP addresses for SSH access",
+    "method_manual": "Manual Entry",
+    "method_manual_desc": "Enter IP addresses manually",
+    "rangeStart": "Start IP",
+    "rangeEnd": "End IP",
+    "rangeRequired": "Start and end IP are required",
+    "manualIps": "IP addresses (one per line or comma-separated)",
+    "noIps": "Please enter at least one IP address",
+    "scan": "Scan",
+    "scanning": "Scanning...",
+    "reviewTitle": "Found {{count}} hosts",
+    "ipAddress": "IP Address",
+    "startProvision": "Provision {{count}} players",
+    "provisioning": "Provisioning in progress...",
+    "resultsTitle": "Provisioning Results",
+    "success": "Success",
+    "failed": "Failed",
+    "running": "Running",
+    "pending": "Pending",
+    "error": "Error"
   },
   "language": {
     "en": "English",

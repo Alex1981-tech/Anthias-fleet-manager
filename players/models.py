@@ -183,3 +183,48 @@ class PlaybackLog(models.Model):
 
     def __str__(self):
         return f'{self.player.name} — {self.asset_name} [{self.event}]'
+
+
+class BulkProvisionTask(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('scanning', 'Scanning'),
+        ('provisioning', 'Provisioning'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    scan_method = models.CharField(max_length=20, default='arp')
+    ip_range_start = models.GenericIPAddressField(null=True, blank=True)
+    ip_range_end = models.GenericIPAddressField(null=True, blank=True)
+    discovered_ips = models.JSONField(default=list)
+    selected_ips = models.JSONField(default=list)
+    ssh_user = models.CharField(max_length=100, default='pi')
+    ssh_password_encrypted = models.CharField(max_length=500, blank=True, default='')
+    results = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'BulkProvision {self.id} ({self.status})'
+
+    def set_ssh_password(self, raw_password):
+        if raw_password:
+            f = _get_fernet()
+            self.ssh_password_encrypted = f.encrypt(raw_password.encode()).decode()
+
+    def get_ssh_password(self):
+        if not self.ssh_password_encrypted:
+            return ''
+        try:
+            f = _get_fernet()
+            return f.decrypt(self.ssh_password_encrypted.encode()).decode()
+        except Exception:
+            return ''
