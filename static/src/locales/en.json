@@ -475,6 +475,7 @@
       "scheduleTimelineRedesign": "Schedule timeline redesign — event blocks with duration, color palette for time slots, display-off overlay",
       "slotContentModal": "Slot content modal improvements — folder tabs, progress bar, duplicate check",
       "scrollOptimistic": "Fix scroll jumping on slot/asset deletion (optimistic state update)",
+      "tokenAuth": "Token Authentication for REST API (Home Assistant integration support)",
       "hoverPreview": "Hover preview on Content page (list mode) — floating popup with video/image/web preview",
       "displayOffTimeline": "Fix display-off overlay on schedule timeline — now shows immediately on page load",
       "settingsLayout": "Settings page — compact 2x2 grid layout",

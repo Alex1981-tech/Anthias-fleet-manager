@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.6.0'
+export const APP_VERSION = '1.6.1'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.6.1',
+    date: '2026-02-17',
+    changeKeys: [
+      'tokenAuth',
+    ],
+  },
   {
     version: '1.6.0',
     date: '2026-02-17',
