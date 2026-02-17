@@ -488,6 +488,7 @@
       "bulkProvisioning": "Bulk provisioning — scan network and install Anthias on multiple Raspberry Pi at once",
       "terminalProtocolFix": "Fix remote terminal — send raw ANSI text instead of JSON for proper xterm.js rendering",
       "fullAuditCoverage": "Full audit log coverage — track schedule, media, deploy, CCTV, settings, CEC, and all player actions",
+      "nginxAutoUpdate": "Nginx config auto-update — WebSocket proxy config is now automatically synced on container restart",
       "terminalCheatsheet": "Terminal command cheatsheet — clickable sidebar with Docker, system, network, Anthias API, and config file commands",
       "autoSshCreds": "Auto-set default SSH credentials when players register via phone-home"
     }
