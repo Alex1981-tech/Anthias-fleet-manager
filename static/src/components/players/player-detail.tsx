@@ -382,6 +382,23 @@ const PlayerDetail: React.FC = () => {
     }
     loadInfo()
     loadAssets()
+    // Load display power schedule for timeline overlay
+    if (player.is_online) {
+      playersApi.getSettings(id).then((data) => {
+        const raw = data as Record<string, unknown>
+        if (raw.display_power_schedule && typeof raw.display_power_schedule === 'object') {
+          const dps = raw.display_power_schedule as Record<string, unknown>
+          setDisplaySchedule({
+            enabled: !!dps.enabled,
+            days: (dps.days as Record<string, { on: string; off: string } | null>) || {
+              '1': { on: '08:00', off: '22:00' }, '2': { on: '08:00', off: '22:00' },
+              '3': { on: '08:00', off: '22:00' }, '4': { on: '08:00', off: '22:00' },
+              '5': { on: '08:00', off: '22:00' }, '6': null, '7': null,
+            },
+          })
+        }
+      }).catch(() => {})
+    }
     // Load CEC status (silent fail if not supported)
     if (player.is_online) {
       playersApi.getCecStatus(id).then(setCecStatus).catch(() => setCecStatus(null))

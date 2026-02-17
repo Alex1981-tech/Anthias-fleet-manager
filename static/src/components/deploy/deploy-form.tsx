@@ -37,6 +37,11 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
 }
 
+function baseName(name: string): string {
+  const dot = name.lastIndexOf('.')
+  return dot > 0 ? name.substring(0, dot) : name
+}
+
 function getDomain(url: string): string {
   try {
     return new URL(url).hostname
@@ -623,6 +628,11 @@ const ContentPage: React.FC = () => {
     localStorage.setItem('content-view-mode', mode)
   }
 
+  // Hover preview (list view)
+  const [hoveredFile, setHoveredFile] = useState<MediaFile | null>(null)
+  const [hoverRect, setHoverRect] = useState<DOMRect | null>(null)
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Filters
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
 
@@ -1118,7 +1128,17 @@ const ContentPage: React.FC = () => {
                 </colgroup>
                 <tbody>
                   {filteredFiles.map((file) => (
-                    <tr key={file.id}>
+                    <tr
+                      key={file.id}
+                      onMouseEnter={(e) => {
+                        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+                        setHoveredFile(file)
+                        setHoverRect(e.currentTarget.getBoundingClientRect())
+                      }}
+                      onMouseLeave={() => {
+                        hoverTimeoutRef.current = setTimeout(() => setHoveredFile(null), 200)
+                      }}
+                    >
                       {/* Thumbnail */}
                       <td style={{ padding: '4px 6px', verticalAlign: 'middle' }}>
                         {file.processing_status === 'processing' ? (
@@ -1302,10 +1322,10 @@ const ContentPage: React.FC = () => {
                       )}
                       {/* Playback duration */}
                       <td className="text-muted" style={{ padding: '4px 6px', verticalAlign: 'middle', fontSize: '0.75rem', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {playbackStats[file.name] > 0 && (
+                        {playbackStats[baseName(file.name)] > 0 && (
                           <span className="d-inline-flex align-items-center gap-1 text-info">
                             <FaClock />
-                            {formatPlaybackDuration(playbackStats[file.name])}
+                            {formatPlaybackDuration(playbackStats[baseName(file.name)])}
                           </span>
                         )}
                       </td>
@@ -1355,6 +1375,136 @@ const ContentPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+
+              {/* Hover preview popup */}
+              {hoveredFile && hoverRect && (() => {
+                const f = hoveredFile
+                return (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      left: Math.min(hoverRect.left, window.innerWidth - 320),
+                      top: hoverRect.bottom + 8 + 230 > window.innerHeight
+                        ? hoverRect.top - 8 - 240
+                        : hoverRect.bottom + 8,
+                      zIndex: 10000,
+                      width: '300px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <div
+                      className="shadow-lg"
+                      style={{
+                        background: 'var(--bs-body-bg, #fff)',
+                        border: '1px solid var(--bs-border-color, #dee2e6)',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Preview content */}
+                      {f.file_type === 'video' && f.file ? (
+                        f.thumbnail_file_url ? (
+                          <img
+                            src={f.thumbnail_file_url}
+                            alt={f.name}
+                            style={{ width: '100%', height: '170px', objectFit: 'cover', display: 'block', background: '#000' }}
+                          />
+                        ) : (
+                          <video
+                            src={f.url}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            style={{ width: '100%', height: '170px', objectFit: 'cover', display: 'block', background: '#000' }}
+                          />
+                        )
+                      ) : f.file_type === 'image' && f.file ? (
+                        <img
+                          src={f.thumbnail_file_url || f.url}
+                          alt={f.name}
+                          style={{ width: '100%', height: '170px', objectFit: 'cover', display: 'block', background: '#000' }}
+                        />
+                      ) : f.file_type === 'web' && f.source_url ? (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: '170px',
+                            background: 'linear-gradient(135deg, #e8f4fd 0%, #d0e8f7 100%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {f.thumbnail_url ? (
+                            <img src={f.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <>
+                              <img
+                                src={`https://www.google.com/s2/favicons?domain=${getDomain(f.source_url)}&sz=64`}
+                                alt=""
+                                style={{ width: '48px', height: '48px', marginBottom: '8px' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                              />
+                              <small className="text-muted px-3 text-center" style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}>
+                                {getDomain(f.source_url)}
+                              </small>
+                            </>
+                          )}
+                        </div>
+                      ) : f.file_type === 'cctv' ? (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: '170px',
+                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {f.thumbnail_file_url ? (
+                            <img src={f.thumbnail_file_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <FaVideo style={{ fontSize: '2.5rem', color: '#dc3545' }} />
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex flex-column align-items-center justify-content-center"
+                          style={{
+                            width: '100%',
+                            height: '170px',
+                            background: 'var(--bs-gray-200, #e9ecef)',
+                            color: 'var(--bs-gray-500, #adb5bd)',
+                            fontSize: '2.5rem',
+                          }}
+                        >
+                          <FileTypeIcon type={f.file_type} />
+                          <small className="mt-2" style={{ fontSize: '0.7rem' }}>
+                            {t('content.noPreview')}
+                          </small>
+                        </div>
+                      )}
+                      {/* Info footer */}
+                      <div className="p-2">
+                        <div className="fw-semibold mb-1" style={{ fontSize: '0.85rem', wordBreak: 'break-word' }}>
+                          {f.name}
+                        </div>
+                        <div className="d-flex gap-3 text-muted" style={{ fontSize: '0.75rem' }}>
+                          <span className="d-inline-flex align-items-center gap-1">
+                            <FileTypeIcon type={f.file_type} />
+                            {f.file_type.charAt(0).toUpperCase() + f.file_type.slice(1)}
+                          </span>
+                          {f.file_size > 0 && <span>{formatFileSize(f.file_size)}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
           ) : (
             /* ===== GRID VIEW ===== */
@@ -1579,10 +1729,10 @@ const ContentPage: React.FC = () => {
                         >
                           <FaTrash style={{ fontSize: '0.65rem' }} />
                         </button>
-                        {playbackStats[file.name] > 0 && (
+                        {playbackStats[baseName(file.name)] > 0 && (
                           <span className="ms-auto d-flex align-items-center gap-1 text-info" style={{ fontSize: '0.8rem' }} title={t('content.totalPlayTime')}>
                             <FaClock />
-                            {formatPlaybackDuration(playbackStats[file.name])}
+                            {formatPlaybackDuration(playbackStats[baseName(file.name)])}
                           </span>
                         )}
                       </div>

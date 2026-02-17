@@ -474,7 +474,12 @@
       "cecMonitorControl": "HDMI-CEC monitor control — turn display on/off from player detail page",
       "scheduleTimelineRedesign": "Schedule timeline redesign — event blocks with duration, color palette for time slots, display-off overlay",
       "slotContentModal": "Slot content modal improvements — folder tabs, progress bar, duplicate check",
-      "scrollOptimistic": "Fix scroll jumping on slot/asset deletion (optimistic state update)"
+      "scrollOptimistic": "Fix scroll jumping on slot/asset deletion (optimistic state update)",
+      "hoverPreview": "Hover preview on Content page (list mode) — floating popup with video/image/web preview",
+      "displayOffTimeline": "Fix display-off overlay on schedule timeline — now shows immediately on page load",
+      "settingsLayout": "Settings page — compact 2x2 grid layout",
+      "flagSwitcher": "Language switcher — SVG country flags instead of text codes",
+      "playbackStatsFix": "Fix playback duration stats — match transcoded files by base name (video.MOV = video.mp4)"
     }
   },
   "updates": {

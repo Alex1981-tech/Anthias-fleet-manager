@@ -208,42 +208,39 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      <div className="row g-4">
-        <div className="col-lg-8">
-          <div className="fm-card fm-card-accent">
-            <div className="fm-card-header">
-              <h5 className="card-title">{t('settings.general')}</h5>
+      <div className="row g-3">
+        {/* General Settings */}
+        <div className="col-lg-6">
+          <div className="fm-card fm-card-accent h-100">
+            <div className="fm-card-header py-2">
+              <h5 className="card-title mb-0">{t('settings.general')}</h5>
             </div>
-            <div className="fm-card-body">
-              {/* Poll interval */}
-              <div className="mb-4">
-                <label className="form-label fw-semibold">
+            <div className="fm-card-body py-3">
+              <div className="mb-3">
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>
                   {t('settings.pollInterval')}
                 </label>
                 <select
-                  className="form-select"
+                  className="form-select form-select-sm"
                   value={pollInterval}
                   onChange={(e) => setPollInterval(e.target.value)}
-                  style={{ maxWidth: '300px' }}
                 >
                   <option value="30">30 {t('settings.seconds')}</option>
                   <option value="60">1 {t('settings.minute')}</option>
                   <option value="120">2 {t('settings.minutes')}</option>
                   <option value="300">5 {t('settings.minutes')}</option>
                 </select>
-                <div className="form-text">{t('settings.pollIntervalDesc')}</div>
+                <div className="form-text" style={{ fontSize: '0.75rem' }}>{t('settings.pollIntervalDesc')}</div>
               </div>
 
-              {/* Language */}
-              <div className="mb-4">
-                <label className="form-label fw-semibold">
+              <div className="mb-3">
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>
                   {t('settings.language')}
                 </label>
                 <select
-                  className="form-select"
+                  className="form-select form-select-sm"
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  style={{ maxWidth: '300px' }}
                 >
                   <option value="en">English</option>
                   <option value="uk">Українська</option>
@@ -253,9 +250,8 @@ const Settings: React.FC = () => {
                 </select>
               </div>
 
-              {/* Theme */}
-              <div className="mb-4">
-                <label className="form-label fw-semibold">
+              <div className="mb-3">
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>
                   {t('settings.theme')}
                 </label>
                 <div className="d-flex gap-3">
@@ -290,47 +286,48 @@ const Settings: React.FC = () => {
                 </div>
               </div>
 
-              <button className="fm-btn-primary" onClick={handleSave}>
+              <button className="fm-btn-primary btn-sm" onClick={handleSave}>
                 <FaSave />
                 {t('common.save')}
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Auto-Registration */}
-          <div className="fm-card fm-card-accent mt-4">
-            <div className="fm-card-header">
-              <h5 className="card-title">{t('settings.autoRegistration')}</h5>
+        {/* Auto-Registration */}
+        <div className="col-lg-6">
+          <div className="fm-card fm-card-accent h-100">
+            <div className="fm-card-header py-2">
+              <h5 className="card-title mb-0">{t('settings.autoRegistration')}</h5>
             </div>
-            <div className="fm-card-body">
-              <p className="form-text mb-3">{t('settings.autoRegistrationDesc')}</p>
+            <div className="fm-card-body py-3">
+              <p className="form-text mb-2" style={{ fontSize: '0.8rem' }}>{t('settings.autoRegistrationDesc')}</p>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
+              <div className="mb-2">
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>
                   {t('settings.serverUrl')}
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control form-control-sm"
                   value={serverUrl}
                   onChange={(e) => setServerUrl(e.target.value)}
-                  style={{ maxWidth: '400px' }}
                 />
               </div>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
+              <div>
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>
                   {t('settings.installCommand')}
                 </label>
                 <div className="position-relative">
                   <pre
-                    className="bg-dark text-light p-3 rounded"
-                    style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+                    className="bg-dark text-light p-2 rounded"
+                    style={{ fontSize: '0.75rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all', marginBottom: 0 }}
                   >
                     {`curl -sSL ${serverUrl}/api/players/install-phonehome/?server=${encodeURIComponent(serverUrl)} | sudo bash`}
                   </pre>
                   <button
-                    className={`btn btn-sm position-absolute top-0 end-0 m-2 ${copied ? 'btn-success' : 'btn-outline-light'}`}
+                    className={`btn btn-sm position-absolute top-0 end-0 m-1 ${copied ? 'btn-success' : 'btn-outline-light'}`}
                     onClick={() => {
                       const cmd = `curl -sSL ${serverUrl}/api/players/install-phonehome/?server=${encodeURIComponent(serverUrl)} | sudo bash`
                       navigator.clipboard.writeText(cmd)
@@ -344,20 +341,21 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Tailscale VPN */}
-          <div className="fm-card fm-card-accent mt-4">
-            <div className="fm-card-header">
-              <h5 className="card-title">
+        {/* Tailscale VPN */}
+        <div className="col-lg-6">
+          <div className="fm-card fm-card-accent h-100">
+            <div className="fm-card-header py-2">
+              <h5 className="card-title mb-0">
                 <FaShieldAlt className="me-2" />
                 {t('tailscale.title')}
               </h5>
             </div>
-            <div className="fm-card-body">
-              <p className="form-text mb-3">{t('tailscale.description')}</p>
+            <div className="fm-card-body py-3">
+              <p className="form-text mb-2" style={{ fontSize: '0.8rem' }}>{t('tailscale.description')}</p>
 
-              {/* Enable toggle */}
-              <div className="form-check form-switch mb-3">
+              <div className="form-check form-switch mb-2">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -370,10 +368,9 @@ const Settings: React.FC = () => {
                 </label>
               </div>
 
-              {/* Status badge */}
               {tsSettings && (
-                <div className="mb-3">
-                  <span className="fw-semibold">{t('tailscale.status')}: </span>
+                <div className="mb-2">
+                  <span className="fw-semibold" style={{ fontSize: '0.85rem' }}>{t('tailscale.status')}: </span>
                   {tsSettings.status === 'connected' ? (
                     <span className="badge bg-success">{t('tailscale.connected')}</span>
                   ) : tsSettings.status === 'disconnected' ? (
@@ -384,28 +381,25 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
-              {/* FM Tailscale IP */}
-              <div className="mb-3">
-                <label className="form-label fw-semibold">{t('tailscale.fmIp')}</label>
+              <div className="mb-2">
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>{t('tailscale.fmIp')}</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control form-control-sm"
                   value={tsFmIp}
                   onChange={(e) => setTsFmIp(e.target.value)}
                   placeholder={tsSettings?.detected_ip || '100.x.x.x'}
-                  style={{ maxWidth: '300px' }}
                 />
                 {tsSettings?.detected_ip && (
-                  <div className="form-text">
+                  <div className="form-text" style={{ fontSize: '0.75rem' }}>
                     {t('tailscale.detectedIp')}: {tsSettings.detected_ip}
                   </div>
                 )}
               </div>
 
-              {/* Auth key */}
               <div className="mb-3">
-                <label className="form-label fw-semibold">{t('tailscale.authKey')}</label>
-                <div className="input-group" style={{ maxWidth: '400px' }}>
+                <label className="form-label fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>{t('tailscale.authKey')}</label>
+                <div className="input-group input-group-sm">
                   <input
                     type={tsShowKey ? 'text' : 'password'}
                     className="form-control"
@@ -422,12 +416,12 @@ const Settings: React.FC = () => {
                   </button>
                 </div>
                 {tsSettings?.has_authkey && !tsAuthKey && (
-                  <div className="form-text text-success">{t('tailscale.authKeySet')}</div>
+                  <div className="form-text text-success" style={{ fontSize: '0.75rem' }}>{t('tailscale.authKeySet')}</div>
                 )}
               </div>
 
               <button
-                className="fm-btn-primary"
+                className="fm-btn-primary btn-sm"
                 onClick={handleTailscaleSave}
                 disabled={tsSaving}
               >
@@ -436,33 +430,33 @@ const Settings: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Updates */}
-          <div className="fm-card fm-card-accent mt-4">
-            <div className="fm-card-header">
-              <h5 className="card-title">{t('updates.title')}</h5>
+        {/* Updates */}
+        <div className="col-lg-6">
+          <div className="fm-card fm-card-accent h-100">
+            <div className="fm-card-header py-2">
+              <h5 className="card-title mb-0">{t('updates.title')}</h5>
             </div>
-            <div className="fm-card-body">
-              {/* Current version info */}
-              <div className="mb-3">
-                <span className="fw-semibold">{t('updates.currentVersion')}: </span>
+            <div className="fm-card-body py-3">
+              <div className="mb-2">
+                <span className="fw-semibold" style={{ fontSize: '0.85rem' }}>{t('updates.currentVersion')}: </span>
                 <span className="badge bg-primary">v{APP_VERSION}</span>
                 {buildDate && buildDate !== 'unknown' && (
-                  <span className="text-muted ms-2">
+                  <div className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
                     {t('updates.buildDate')}: {new Date(buildDate).toLocaleString()}
-                  </span>
+                  </div>
                 )}
               </div>
 
-              {/* Update status */}
               {updateInfo && !updateInfo.error && !updateInfo.update_available && (
-                <div className="alert alert-success py-2 mb-3">
+                <div className="alert alert-success py-1 px-2 mb-2" style={{ fontSize: '0.8rem' }}>
                   {t('updates.upToDate')}
                 </div>
               )}
 
               {updateInfo?.update_available && (
-                <div className="alert alert-warning py-2 mb-3">
+                <div className="alert alert-warning py-1 px-2 mb-2" style={{ fontSize: '0.8rem' }}>
                   {t('updates.newVersion')}: <strong>v{updateInfo.latest_version}</strong>
                   {updateInfo.release_url && (
                     <> &mdash; <a href={updateInfo.release_url} target="_blank" rel="noopener noreferrer">{t('updates.releaseNotes')}</a></>
@@ -471,15 +465,14 @@ const Settings: React.FC = () => {
               )}
 
               {updateInfo?.error && (
-                <div className="alert alert-danger py-2 mb-3">
+                <div className="alert alert-danger py-1 px-2 mb-2" style={{ fontSize: '0.8rem' }}>
                   {updateInfo.error}
                 </div>
               )}
 
-              {/* Action buttons */}
-              <div className="d-flex gap-2 mb-4">
+              <div className="d-flex gap-2 mb-3">
                 <button
-                  className="fm-btn-outline"
+                  className="fm-btn-outline btn-sm"
                   onClick={handleCheckUpdate}
                   disabled={checking}
                 >
@@ -489,7 +482,7 @@ const Settings: React.FC = () => {
 
                 {updateInfo?.update_available && (
                   <button
-                    className="fm-btn-primary"
+                    className="fm-btn-primary btn-sm"
                     onClick={handleTriggerUpdate}
                     disabled={updating}
                   >
@@ -499,7 +492,6 @@ const Settings: React.FC = () => {
                 )}
               </div>
 
-              {/* Auto-update toggle */}
               <div className="form-check form-switch">
                 <input
                   className="form-check-input"
@@ -511,7 +503,7 @@ const Settings: React.FC = () => {
                 <label className="form-check-label fw-semibold" htmlFor="auto-update-toggle">
                   {t('updates.autoUpdate')}
                 </label>
-                <div className="form-text">{t('updates.autoUpdateDesc')}</div>
+                <div className="form-text" style={{ fontSize: '0.75rem' }}>{t('updates.autoUpdateDesc')}</div>
               </div>
             </div>
           </div>

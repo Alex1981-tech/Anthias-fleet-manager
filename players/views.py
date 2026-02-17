@@ -1009,27 +1009,35 @@ def playback_log(request):
 
 @api_view(['GET'])
 def playback_stats(request):
-    """Return total playback duration per asset_name (in seconds).
+    """Return total playback duration per asset base name (in seconds).
 
     Uses SQL LEAD() window function to compute duration between consecutive
     'started' events per player.  The last event per player is skipped
     (no way to know when it ended).
+
+    Groups by base name (without extension) so that e.g. 'video.MOV' uploaded
+    as MediaFile matches 'video.mp4' logged by the player after transcoding.
     """
     from django.db import connection
 
     sql = """
-        SELECT asset_name, SUM(dur) AS total_seconds
+        SELECT base_name, SUM(dur) AS total_seconds
         FROM (
-            SELECT asset_name,
-                   EXTRACT(EPOCH FROM
-                       LEAD(timestamp) OVER (PARTITION BY player_id ORDER BY timestamp)
-                       - timestamp
-                   ) AS dur
+            SELECT
+                CASE
+                    WHEN asset_name LIKE '%%.%%'
+                    THEN LEFT(asset_name, LENGTH(asset_name) - LENGTH(SUBSTRING(asset_name FROM '\\.[^.]*$')))
+                    ELSE asset_name
+                END AS base_name,
+                EXTRACT(EPOCH FROM
+                    LEAD(timestamp) OVER (PARTITION BY player_id ORDER BY timestamp)
+                    - timestamp
+                ) AS dur
             FROM players_playbacklog
             WHERE event = 'started'
         ) sub
         WHERE dur IS NOT NULL AND dur > 0 AND dur < 86400
-        GROUP BY asset_name
+        GROUP BY base_name
     """
     with connection.cursor() as cur:
         cur.execute(sql)
