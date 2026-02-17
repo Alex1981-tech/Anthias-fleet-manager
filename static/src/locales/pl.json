@@ -58,7 +58,8 @@
     "liveViewStop": "Zrzut ekranu",
     "liveBadge": "LIVE",
     "featureNotSupported": "Ta funkcja nie jest obsługiwana na tym odtwarzaczu",
-    "screenshotNotSupported": "Zrzut ekranu niedostępny dla tego odtwarzacza"
+    "screenshotNotSupported": "Zrzut ekranu niedostępny dla tego odtwarzacza",
+    "macAddress": "MAC"
   },
   "groups": {
     "title": "Grupy",

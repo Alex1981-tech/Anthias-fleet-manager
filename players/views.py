@@ -997,6 +997,19 @@ def playback_stats(request):
     return Response({'stats': stats})
 
 
+INVALID_MAC = 'Unable to retrieve MAC address.'
+
+
+def _normalize_mac(raw):
+    """Lowercase + strip a MAC address; return '' if invalid/placeholder."""
+    if not raw or not isinstance(raw, str):
+        return ''
+    mac = raw.strip().lower()
+    if mac == INVALID_MAC.lower() or len(mac) != 17:
+        return ''
+    return mac
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_player(request):
@@ -1015,6 +1028,11 @@ def register_player(request):
     info = request.data.get('info') or {}
     tailscale_ip = request.data.get('tailscale_ip') or None
 
+    # Extract MAC: from top-level field (phone-home script) or from info dict
+    mac_address = _normalize_mac(request.data.get('mac_address'))
+    if not mac_address and isinstance(info, dict):
+        mac_address = _normalize_mac(info.get('mac_address'))
+
     # Auto-detect Tailscale IP from URL if not explicitly provided
     if not tailscale_ip:
         from players.serializers import _extract_tailscale_ip
@@ -1027,44 +1045,75 @@ def register_player(request):
         )
 
     now = timezone.now()
-    defaults = {
-        'name': name,
-        'is_online': True,
-        'last_seen': now,
-        'last_status': info,
-        'auto_registered': True,
-    }
-    if tailscale_ip:
-        defaults['tailscale_ip'] = tailscale_ip
-        defaults['tailscale_enabled'] = True
-    try:
-        player, created = Player.objects.get_or_create(
-            url=url,
-            defaults=defaults,
-        )
-        if not created:
+    update_fields = ['is_online', 'last_seen', 'last_status',
+                     'tailscale_ip', 'tailscale_enabled']
+
+    # --- MAC-based lookup (stable identity) ---
+    player = None
+    created = False
+
+    if mac_address:
+        player = Player.objects.filter(mac_address=mac_address).first()
+        if player:
+            # Player found by MAC — update URL if IP changed
+            if player.url != url:
+                # Remove ghost player that might hold the new URL
+                Player.objects.filter(url=url).exclude(pk=player.pk).delete()
+                player.url = url
+                update_fields.append('url')
             player.is_online = True
             player.last_seen = now
             player.last_status = info
             if tailscale_ip:
                 player.tailscale_ip = tailscale_ip
                 player.tailscale_enabled = True
-            player.save(update_fields=['is_online', 'last_seen', 'last_status',
-                                       'tailscale_ip', 'tailscale_enabled'])
-    except IntegrityError:
-        # Concurrent create hit unique(url) — retry as update
-        player = Player.objects.filter(url=url).first()
-        if player:
-            player.is_online = True
-            player.last_seen = now
-            player.last_status = info
-            player.save(update_fields=['is_online', 'last_seen', 'last_status'])
-            created = False
-        else:
-            return Response(
-                {'error': 'Registration conflict, please retry'},
-                status=status.HTTP_409_CONFLICT,
+            player.save(update_fields=update_fields)
+            logger.info('Player %s identified by MAC %s (url=%s)', player.name, mac_address, url)
+
+    # --- Fallback: URL-based lookup (old mechanism) ---
+    if player is None:
+        defaults = {
+            'name': name,
+            'is_online': True,
+            'last_seen': now,
+            'last_status': info,
+            'auto_registered': True,
+        }
+        if mac_address:
+            defaults['mac_address'] = mac_address
+        if tailscale_ip:
+            defaults['tailscale_ip'] = tailscale_ip
+            defaults['tailscale_enabled'] = True
+        try:
+            player, created = Player.objects.get_or_create(
+                url=url,
+                defaults=defaults,
             )
+            if not created:
+                player.is_online = True
+                player.last_seen = now
+                player.last_status = info
+                if mac_address and not player.mac_address:
+                    player.mac_address = mac_address
+                    update_fields.append('mac_address')
+                if tailscale_ip:
+                    player.tailscale_ip = tailscale_ip
+                    player.tailscale_enabled = True
+                player.save(update_fields=update_fields)
+        except IntegrityError:
+            # Concurrent create hit unique(url) — retry as update
+            player = Player.objects.filter(url=url).first()
+            if player:
+                player.is_online = True
+                player.last_seen = now
+                player.last_status = info
+                player.save(update_fields=['is_online', 'last_seen', 'last_status'])
+                created = False
+            else:
+                return Response(
+                    {'error': 'Registration conflict, please retry'},
+                    status=status.HTTP_409_CONFLICT,
+                )
 
     if created:
         return Response({'status': 'created', 'id': str(player.id)}, status=status.HTTP_201_CREATED)
@@ -1120,6 +1169,16 @@ URL="http://$(hostname -I | awk '{{print $1}}')"
 NAME="$(hostname)"
 INFO=$(curl -sf http://localhost/api/v2/info 2>/dev/null || echo '{{}}')
 
+# Detect hardware MAC address (prefer wired, then wireless)
+MAC=""
+for iface in eth0 end0 wlan0; do
+  [ -f "/sys/class/net/$iface/address" ] && MAC=$(cat "/sys/class/net/$iface/address") && break
+done
+MAC_FIELD=""
+if [ -n "$MAC" ]; then
+  MAC_FIELD=",\\"mac_address\\":\\"$MAC\\""
+fi
+
 # Detect Tailscale IP if available
 TS_IP=""
 if command -v tailscale >/dev/null 2>&1; then
@@ -1132,7 +1191,7 @@ fi
 
 curl -sf -X POST "${{SERVER}}/api/players/register/" \\
   -H "Content-Type: application/json" \\{auth_header_line}
-  -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}$TS_FIELD}}"
+  -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}$MAC_FIELD$TS_FIELD}}"
 SCRIPT
 chmod +x /usr/local/bin/anthias-phonehome.sh
 

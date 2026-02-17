@@ -16,6 +16,7 @@ export interface Player {
   is_online: boolean
   last_seen: string | null
   last_status: Record<string, unknown>
+  mac_address?: string
   tailscale_ip: string | null
   tailscale_enabled: boolean
   created_at: string

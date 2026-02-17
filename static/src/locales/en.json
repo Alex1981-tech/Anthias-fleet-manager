@@ -71,7 +71,8 @@
     "updateTriggered": "Update triggered. Containers will restart shortly.",
     "updateFailed": "Update failed",
     "checking": "Checking...",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "macAddress": "MAC"
   },
   "groups": {
     "title": "Groups",
@@ -458,7 +459,8 @@
       "slotLibraryFix": "Fix adding content from library to schedule slot",
       "tailscaleAutoDetect": "Auto-detect Tailscale VPN IP from player URL",
       "cctvSnapshotRate": "CCTV stream refresh rate increased to 2 fps (every 0.5s)",
-      "loginRedirectLoop": "Fix login page infinite reload loop"
+      "loginRedirectLoop": "Fix login page infinite reload loop",
+      "macIdentity": "Player identity by MAC address — stable identification even when IP changes (DHCP)"
     }
   },
   "updates": {

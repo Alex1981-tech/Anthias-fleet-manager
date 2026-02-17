@@ -1486,12 +1486,12 @@ const PlayerDetail: React.FC = () => {
                     </div>
                   )}
 
-                  {info.mac_address && (
+                  {(player.mac_address || info.mac_address) && (
                     <div className="col-sm-6">
                       <div className="d-flex align-items-center gap-2">
                         <FaNetworkWired className="text-purple" style={{ fontSize: '14px', flexShrink: 0 }} />
-                        <span className="fw-semibold">MAC:</span>
-                        <span className="text-muted">{info.mac_address}</span>
+                        <span className="fw-semibold">{t('players.macAddress')}:</span>
+                        <span className="text-muted">{player.mac_address || info.mac_address}</span>
                       </div>
                     </div>
                   )}

@@ -67,6 +67,11 @@ class Player(models.Model):
         max_length=50, blank=True, default='',
         help_text='ISO timestamp of last fetched viewlog entry from player.',
     )
+    mac_address = models.CharField(
+        max_length=17, blank=True, default='',
+        help_text='Hardware MAC address (e.g. b8:27:eb:xx:xx:xx). Used for device identity.',
+        db_index=True,
+    )
     tailscale_ip = models.GenericIPAddressField(
         null=True, blank=True,
         help_text='Tailscale VPN IP address (100.x.x.x).',

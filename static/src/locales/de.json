@@ -58,7 +58,8 @@
     "liveViewStop": "Screenshot",
     "liveBadge": "LIVE",
     "featureNotSupported": "Diese Funktion wird auf diesem Player nicht unterstützt",
-    "screenshotNotSupported": "Bildschirmfoto für diesen Player nicht verfügbar"
+    "screenshotNotSupported": "Bildschirmfoto für diesen Player nicht verfügbar",
+    "macAddress": "MAC"
   },
   "groups": {
     "title": "Gruppen",

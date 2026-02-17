@@ -58,7 +58,8 @@
     "liveViewStop": "Capture",
     "liveBadge": "LIVE",
     "featureNotSupported": "Cette fonctionnalité n'est pas prise en charge sur ce lecteur",
-    "screenshotNotSupported": "Capture d'écran non disponible pour ce lecteur"
+    "screenshotNotSupported": "Capture d'écran non disponible pour ce lecteur",
+    "macAddress": "MAC"
   },
   "groups": {
     "title": "Groupes",

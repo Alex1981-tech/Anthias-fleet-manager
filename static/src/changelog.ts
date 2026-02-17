@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.5.7'
+export const APP_VERSION = '1.5.8'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.5.8',
+    date: '2026-02-17',
+    changeKeys: [
+      'macIdentity',
+    ],
+  },
   {
     version: '1.5.7',
     date: '2026-02-16',
