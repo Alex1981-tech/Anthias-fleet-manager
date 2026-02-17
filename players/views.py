@@ -1219,6 +1219,13 @@ def register_player(request):
                     status=status.HTTP_409_CONFLICT,
                 )
 
+    # Set default SSH credentials if not yet configured
+    if not player.username and not player.password:
+        ssh_user = request.data.get('ssh_user') or info.get('host_user') or 'pi'
+        player.username = ssh_user
+        player.set_password('258456')
+        player.save(update_fields=['username', 'password'])
+
     if created:
         return Response({'status': 'created', 'id': str(player.id)}, status=status.HTTP_201_CREATED)
     return Response({'status': 'updated', 'id': str(player.id)}, status=status.HTTP_200_OK)
