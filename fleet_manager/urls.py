@@ -10,6 +10,7 @@ from django.urls import include, path, re_path
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.views.static import serve
+from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -93,6 +94,7 @@ urlpatterns = [
     path('api/auth/login/', auth_login),
     path('api/auth/logout/', auth_logout),
     path('api/auth/status/', auth_status),
+    path('api/auth/token/', obtain_auth_token, name='api-token'),
     path('api/system/version/', system_version),
     path('api/system/update-check/', system_update_check),
     path('api/system/update/', system_update),
