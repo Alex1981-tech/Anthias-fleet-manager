@@ -672,7 +672,14 @@
     "connecting": "Підключення",
     "connected": "Підключено",
     "disconnected": "Відключено",
-    "reconnect": "Перепідключити"
+    "reconnect": "Перепідключити",
+    "cheatsheet": "Шпаргалка",
+    "clickToRun": "натисніть для запуску",
+    "group_docker": "Docker",
+    "group_system": "Система",
+    "group_network": "Мережа",
+    "group_anthias": "Anthias API",
+    "group_files": "Конфіг-файли"
   },
   "bulkProvision": {
     "title": "Масова інсталяція",

@@ -672,7 +672,14 @@
     "connecting": "Connecting",
     "connected": "Connected",
     "disconnected": "Disconnected",
-    "reconnect": "Reconnect"
+    "reconnect": "Reconnect",
+    "cheatsheet": "Cheatsheet",
+    "clickToRun": "click to run",
+    "group_docker": "Docker",
+    "group_system": "System",
+    "group_network": "Network",
+    "group_anthias": "Anthias API",
+    "group_files": "Config Files"
   },
   "bulkProvision": {
     "title": "Bulk Provision",
