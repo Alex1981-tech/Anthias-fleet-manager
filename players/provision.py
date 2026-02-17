@@ -638,6 +638,8 @@ FLAG="$HOME/.screenly/.silent-boot-done"
 
 # Disable rainbow splash
 sudo bash -c 'grep -q "disable_splash" /boot/firmware/config.txt 2>/dev/null || echo "disable_splash=1" >> /boot/firmware/config.txt'
+# Force HDMI output even without monitor (creates /dev/fb0 always)
+sudo bash -c 'grep -q "hdmi_force_hotplug" /boot/firmware/config.txt 2>/dev/null || echo "hdmi_force_hotplug=1" >> /boot/firmware/config.txt'
 # Hide kernel text, redirect console to tty3
 sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then sed -i "s/console=tty1/console=tty3/" /boot/firmware/cmdline.txt; fi'
 sudo bash -c 'if [ -f /boot/firmware/cmdline.txt ]; then grep -q "quiet" /boot/firmware/cmdline.txt || sed -i "s/$/ quiet loglevel=0 logo.nologo vt.global_cursor_default=0 consoleblank=0/" /boot/firmware/cmdline.txt; fi'

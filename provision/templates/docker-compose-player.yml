@@ -16,7 +16,6 @@ services:
       - MAC_ADDRESS=$MAC_ADDRESS
     devices:
       - /dev/vchiq:/dev/vchiq
-      - /dev/fb0:/dev/fb0
     volumes:
       - resin-data:/data
       - /home/$PI_USER/.screenly:/data/.screenly
