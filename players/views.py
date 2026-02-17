@@ -254,6 +254,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
         try:
             if request.method == 'PATCH':
                 data = client.update_device_settings(request.data)
+                from deploy.audit import log_action
+                log_action(request, 'update', 'device_settings', target_id=player.id, target_name=player.name, details=request.data)
             else:
                 data = client.get_device_settings()
             return Response(data)
@@ -285,10 +287,12 @@ class PlayerViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def shutdown(self, request, pk=None):
         """Proxy to the player's /v2/shutdown endpoint."""
+        from deploy.audit import log_action
         player = self.get_object()
         client = self._get_client(player)
         try:
             client.shutdown()
+            log_action(request, 'shutdown', 'player', target_id=player.id, target_name=player.name)
             return Response({
                 'success': True,
                 'message': f'Shutdown command sent to {player.name}.',
@@ -411,6 +415,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
             update_fields['nocache'] = bool(_safe_int(val, 0, 'nocache')) if not isinstance(val, bool) else val
         try:
             data = client.update_asset(asset_id, update_fields)
+            from deploy.audit import log_action
+            log_action(request, 'update', 'asset', target_id=asset_id, target_name=player.name, details=update_fields)
             return Response({'success': True, 'asset': data})
         except PlayerConnectionError as exc:
             return Response(
@@ -437,6 +443,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
             )
         try:
             client.delete_asset(asset_id)
+            from deploy.audit import log_action
+            log_action(request, 'delete', 'asset', target_id=asset_id, target_name=player.name)
             return Response({'success': True})
         except PlayerConnectionError as exc:
             return Response(
@@ -461,6 +469,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
             asset_data['is_enabled'] = request.data['is_enabled']
         try:
             data = client.create_asset(asset_data)
+            from deploy.audit import log_action
+            log_action(request, 'create', 'asset', target_id=data.get('asset_id', ''), target_name=f"{player.name}: {asset_data.get('name', '')}")
             return Response({'success': True, 'asset': data})
         except PlayerConnectionError as exc:
             return Response(
@@ -559,6 +569,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
                 }
                 data = client.create_asset(asset_data)
 
+            from deploy.audit import log_action
+            log_action(request, 'deploy', 'asset', target_id=str(media_file.id), target_name=f"{player.name}: {name}")
             return Response({'success': True, 'asset': data})
         except PlayerConnectionError as exc:
             return Response(
@@ -605,6 +617,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
         client = self._get_client(player)
         try:
             data = client.create_schedule_slot(request.data)
+            from deploy.audit import log_action
+            log_action(request, 'create', 'schedule_slot', target_id=data.get('id', ''), target_name=f"{player.name}: {request.data.get('name', '')}")
             return Response({'success': True, 'slot': data}, status=status.HTTP_201_CREATED)
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -624,6 +638,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
         update_data = {k: v for k, v in request.data.items() if k != 'slot_id'}
         try:
             data = client.update_schedule_slot(slot_id, update_data)
+            from deploy.audit import log_action
+            log_action(request, 'update', 'schedule_slot', target_id=slot_id, target_name=player.name, details=update_data)
             return Response({'success': True, 'slot': data})
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -642,6 +658,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
             )
         try:
             client.delete_schedule_slot(slot_id)
+            from deploy.audit import log_action
+            log_action(request, 'delete', 'schedule_slot', target_id=slot_id, target_name=player.name)
             return Response({'success': True})
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -674,6 +692,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
                     pass  # non-fatal: slot item will still be added
 
             data = client.add_slot_item(slot_id, item_data)
+            from deploy.audit import log_action
+            log_action(request, 'add_item', 'schedule_slot', target_id=slot_id, target_name=player.name, details={'asset_id': item_data.get('asset_id', '')})
             return Response({'success': True, 'item': data}, status=status.HTTP_201_CREATED)
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -693,6 +713,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
             )
         try:
             client.delete_slot_item(slot_id, item_id)
+            from deploy.audit import log_action
+            log_action(request, 'remove_item', 'schedule_slot', target_id=slot_id, target_name=player.name, details={'item_id': item_id})
             return Response({'success': True})
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -716,6 +738,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
         }
         try:
             data = client.update_slot_item(slot_id, item_id, update_data)
+            from deploy.audit import log_action
+            log_action(request, 'update_item', 'schedule_slot', target_id=slot_id, target_name=player.name, details={'item_id': item_id, **update_data})
             return Response({'success': True, 'item': data})
         except PlayerConnectionError as exc:
             msg, code = _format_player_error(exc)
@@ -837,6 +861,8 @@ class PlayerViewSet(viewsets.ModelViewSet):
         client = self._get_client(player)
         try:
             result = client.trigger_update()
+            from deploy.audit import log_action
+            log_action(request, 'trigger_update', 'player', target_id=player.id, target_name=player.name)
             return Response(result)
         except PlayerConnectionError as exc:
             return Response(
@@ -866,7 +892,10 @@ class PlayerViewSet(viewsets.ModelViewSet):
         player = self.get_object()
         client = self._get_client(player)
         try:
-            return Response(client.cec_standby())
+            result = client.cec_standby()
+            from deploy.audit import log_action
+            log_action(request, 'cec_standby', 'player', target_id=player.id, target_name=player.name)
+            return Response(result)
         except PlayerConnectionError as exc:
             return Response(
                 {'error': str(exc)},
@@ -876,10 +905,13 @@ class PlayerViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='cec-wake')
     def cec_wake(self, request, pk=None):
         """Wake TV via HDMI-CEC."""
+        from deploy.audit import log_action
         player = self.get_object()
         client = self._get_client(player)
         try:
-            return Response(client.cec_wake())
+            result = client.cec_wake()
+            log_action(request, 'cec_wake', 'player', target_id=player.id, target_name=player.name)
+            return Response(result)
         except PlayerConnectionError as exc:
             return Response(
                 {'error': str(exc)},
@@ -959,6 +991,9 @@ class BulkActionView(APIView):
             )
 
         results = self._execute_bulk_action(action, player_ids)
+        from deploy.audit import log_action
+        success_count = sum(1 for r in results.values() if r.get('success'))
+        log_action(request, f'bulk_{action}', 'player', details={'count': len(player_ids), 'success': success_count})
         return Response({'results': results})
 
 

@@ -172,6 +172,9 @@ def system_update(request):
     # Clear update cache so the check refreshes after container restart
     cache.delete(UPDATE_CHECK_CACHE_KEY)
 
+    from deploy.audit import log_action
+    log_action(request, 'trigger_update', 'system')
+
     # Trigger in background so response reaches client before container restart
     threading.Thread(target=_trigger_compose_update, daemon=True).start()
     return Response({'success': True, 'message': 'Update triggered'})
@@ -187,6 +190,8 @@ def system_settings(request):
     auto_update = request.data.get('auto_update')
     if auto_update is not None:
         cache.set(AUTO_UPDATE_CACHE_KEY, bool(auto_update), None)
+        from deploy.audit import log_action
+        log_action(request, 'update', 'settings', target_name='auto_update', details={'auto_update': bool(auto_update)})
     return Response({'auto_update': cache.get(AUTO_UPDATE_CACHE_KEY, True)})
 
 
@@ -262,6 +267,9 @@ def tailscale_settings(request):
     fm_ip = request.data.get('fm_tailscale_ip')
     if fm_ip is not None:
         cache.set(TS_FM_IP_KEY, fm_ip, None)
+
+    from deploy.audit import log_action
+    log_action(request, 'update', 'settings', target_name='tailscale', details={k: v for k, v in request.data.items() if k != 'authkey'})
 
     detected_ip = _detect_tailscale_ip()
     return Response({

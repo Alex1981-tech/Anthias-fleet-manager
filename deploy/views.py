@@ -20,6 +20,21 @@ class MediaFolderViewSet(viewsets.ModelViewSet):
     serializer_class = MediaFolderSerializer
     permission_classes = [IsEditorOrReadOnly]
 
+    def perform_create(self, serializer):
+        from .audit import log_action
+        folder = serializer.save()
+        log_action(self.request, 'create', 'folder', target_id=folder.id, target_name=folder.name)
+
+    def perform_update(self, serializer):
+        from .audit import log_action
+        folder = serializer.save()
+        log_action(self.request, 'update', 'folder', target_id=folder.id, target_name=folder.name)
+
+    def perform_destroy(self, instance):
+        from .audit import log_action
+        log_action(self.request, 'delete', 'folder', target_id=instance.id, target_name=instance.name)
+        instance.delete()
+
 
 class MediaFileViewSet(viewsets.ModelViewSet):
     """ViewSet for managing uploaded media files."""
@@ -41,6 +56,8 @@ class MediaFileViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Delete MediaFile; if CCTV, stop stream and delete config first."""
+        from .audit import log_action
+        log_action(self.request, 'delete', 'media', target_id=instance.id, target_name=instance.name)
         if instance.file_type == 'cctv':
             try:
                 cctv_config = instance.cctv_config
@@ -53,6 +70,7 @@ class MediaFileViewSet(viewsets.ModelViewSet):
         instance.delete()
 
     def perform_create(self, serializer):
+        from .audit import log_action
         uploaded_file = self.request.FILES.get('file')
         source_url = self.request.data.get('source_url')
         if uploaded_file:
@@ -63,6 +81,7 @@ class MediaFileViewSet(viewsets.ModelViewSet):
                 file_type=file_type,
                 file_size=uploaded_file.size,
             )
+            log_action(self.request, 'upload', 'media', target_id=instance.id, target_name=name, details={'file_type': file_type, 'size': uploaded_file.size})
             if file_type == 'video':
                 instance.processing_status = 'processing'
                 instance.save(update_fields=['processing_status'])
@@ -82,6 +101,7 @@ class MediaFileViewSet(viewsets.ModelViewSet):
                 file_type='web',
                 file_size=0,
             )
+            log_action(self.request, 'create', 'media', target_id=instance.id, target_name=name, details={'source_url': source_url})
             # Fetch og:image asynchronously to avoid blocking the request
             fetch_og_image_task.delay(str(instance.id), source_url)
 
@@ -94,5 +114,8 @@ class DeployTaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Save the deploy task and kick off the Celery task."""
+        from .audit import log_action
         deploy_task = serializer.save()
+        player_names = ', '.join(p.name for p in deploy_task.target_players.all())
+        log_action(self.request, 'create', 'deploy', target_id=deploy_task.id, target_name=deploy_task.media_file.name if deploy_task.media_file else '', details={'players': player_names})
         execute_deploy.delay(str(deploy_task.id))

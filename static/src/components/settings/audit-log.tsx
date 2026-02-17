@@ -6,15 +6,28 @@ import type { AuditLogEntry } from '@/types'
 
 const ACTION_COLORS: Record<string, string> = {
   create: 'bg-success',
+  upload: 'bg-success',
   update: 'bg-primary',
+  update_item: 'bg-primary',
   delete: 'bg-danger',
   deactivate: 'bg-danger',
   login: 'bg-info',
   login_failed: 'bg-warning text-dark',
   logout: 'bg-secondary',
   reboot: 'bg-warning text-dark',
+  shutdown: 'bg-warning text-dark',
+  deploy: 'bg-info',
+  add_item: 'bg-success',
+  remove_item: 'bg-danger',
+  start: 'bg-success',
+  stop: 'bg-danger',
+  trigger_update: 'bg-info',
+  cec_standby: 'bg-secondary',
+  cec_wake: 'bg-info',
   provision: 'bg-purple',
   bulk_provision: 'bg-purple',
+  bulk_reboot: 'bg-warning text-dark',
+  bulk_shutdown: 'bg-warning text-dark',
 }
 
 const AuditLog: React.FC = () => {
@@ -71,7 +84,7 @@ const AuditLog: React.FC = () => {
               <label className="form-label mb-0" style={{ fontSize: '0.8rem' }}><FaFilter /> {t('audit.action')}</label>
               <select className="form-select form-select-sm" value={filterAction} onChange={(e) => { setFilterAction(e.target.value); setPage(1) }}>
                 <option value="">{t('common.all')}</option>
-                {['create', 'update', 'delete', 'deactivate', 'login', 'login_failed', 'logout', 'reboot', 'provision', 'bulk_provision'].map(a => (
+                {['create', 'upload', 'update', 'delete', 'deactivate', 'deploy', 'add_item', 'remove_item', 'start', 'stop', 'login', 'login_failed', 'logout', 'reboot', 'shutdown', 'trigger_update', 'cec_standby', 'cec_wake', 'provision', 'bulk_provision', 'bulk_reboot', 'bulk_shutdown'].map(a => (
                   <option key={a} value={a}>{a}</option>
                 ))}
               </select>
@@ -80,7 +93,7 @@ const AuditLog: React.FC = () => {
               <label className="form-label mb-0" style={{ fontSize: '0.8rem' }}>{t('audit.targetType')}</label>
               <select className="form-select form-select-sm" value={filterTargetType} onChange={(e) => { setFilterTargetType(e.target.value); setPage(1) }}>
                 <option value="">{t('common.all')}</option>
-                {['player', 'user', 'media', 'session', 'settings'].map(tt => (
+                {['player', 'user', 'media', 'folder', 'asset', 'schedule_slot', 'deploy', 'cctv', 'session', 'settings', 'device_settings', 'system'].map(tt => (
                   <option key={tt} value={tt}>{tt}</option>
                 ))}
               </select>

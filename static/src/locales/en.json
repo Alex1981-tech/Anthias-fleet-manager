@@ -486,7 +486,8 @@
       "auditLog": "Audit log — track all user actions with filters and pagination",
       "remoteTerminal": "Remote terminal — SSH access to players directly from the browser via WebSocket",
       "bulkProvisioning": "Bulk provisioning — scan network and install Anthias on multiple Raspberry Pi at once",
-      "terminalProtocolFix": "Fix remote terminal — send raw ANSI text instead of JSON for proper xterm.js rendering"
+      "terminalProtocolFix": "Fix remote terminal — send raw ANSI text instead of JSON for proper xterm.js rendering",
+      "fullAuditCoverage": "Full audit log coverage — track schedule, media, deploy, CCTV, settings, CEC, and all player actions"
     }
   },
   "updates": {

@@ -95,6 +95,8 @@ def cctv_list(request):
     serializer = CctvConfigWriteSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     config = serializer.save()
+    from .audit import log_action
+    log_action(request, 'create', 'cctv', target_id=config.id, target_name=config.name)
     return Response(
         CctvConfigSerializer(config).data,
         status=status.HTTP_201_CREATED,
@@ -112,6 +114,8 @@ def cctv_detail(request, config_id):
         return Response(CctvConfigSerializer(config).data)
 
     if request.method == 'DELETE':
+        from .audit import log_action
+        log_action(request, 'delete', 'cctv', target_id=config.id, target_name=config.name)
         if config.is_active:
             from .cctv_service import stop_stream
             stop_stream(str(config.id))
@@ -124,6 +128,8 @@ def cctv_detail(request, config_id):
     serializer = CctvConfigWriteSerializer(config, data=request.data)
     serializer.is_valid(raise_exception=True)
     config = serializer.save()
+    from .audit import log_action
+    log_action(request, 'update', 'cctv', target_id=config.id, target_name=config.name)
 
     # Stop running stream — it will restart with new config when needed
     # (preview modal open, player schedule, or manual start)
@@ -168,6 +174,8 @@ def cctv_start(request, config_id):
 
         threading.Thread(target=_delayed_thumbnail, daemon=True).start()
 
+        from .audit import log_action
+        log_action(request, 'start', 'cctv', target_id=config.id, target_name=config.name)
         return Response({'success': True, 'status': 'running'})
     except Exception as e:
         logger.exception('Failed to start CCTV stream %s', config_id)
@@ -188,6 +196,8 @@ def cctv_stop(request, config_id):
     stop_stream(str(config.id))
     config.is_active = False
     config.save(update_fields=['is_active'])
+    from .audit import log_action
+    log_action(request, 'stop', 'cctv', target_id=config.id, target_name=config.name)
     return Response({'success': True, 'status': 'stopped'})
 
 
