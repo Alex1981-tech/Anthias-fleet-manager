@@ -106,6 +106,17 @@ services:
       redis:
         condition: service_healthy
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - nginx
+    profiles:
+      - tunnel
+
   updater:
     image: docker:27-cli
     restart: unless-stopped

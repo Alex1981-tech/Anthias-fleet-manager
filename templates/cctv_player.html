@@ -27,8 +27,8 @@
     <div id="status">...</div>
 
     <script>
-        var CONFIG_ID = '{{ config_id }}';
-        var DISPLAY_MODE = '{{ display_mode }}';
+        var CONFIG_ID = '{{ config_id|escapejs }}';
+        var DISPLAY_MODE = '{{ display_mode|escapejs }}';
         var ROTATION_INTERVAL = {{ rotation_interval }};
         var CAMERA_COUNT = {{ camera_count }};
 

@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.views.static import serve
 from rest_framework.authtoken.views import obtain_auth_token
+from django_ratelimit.decorators import ratelimit
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -34,6 +35,7 @@ user_router = DefaultRouter()
 user_router.register('users', UserViewSet)
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def auth_login(request):
@@ -104,7 +106,7 @@ def cctv_player_view(request, config_id):
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('manage-d8f2a1/', admin.site.urls),
     path('api/auth/login/', auth_login),
     path('api/auth/logout/', auth_logout),
     path('api/auth/status/', auth_status),
