@@ -509,7 +509,8 @@
       "autoSshCreds": "Автоматичне встановлення SSH-даних при реєстрації плеєра через phone-home",
       "perAssetVolume": "Керування гучністю ТВ для кожного ассета — volume (0-100) та mute в розкладі через HDMI-CEC",
       "iconOnlyButtons": "Компактні кнопки-іконки на сторінці плеєра",
-      "irFallbackPower": "ІЧ резервне керування живленням ТВ — відправка ІЧ коду ввімкнення при недоступності HDMI-CEC після зникнення електрики (Samsung, LG, Sony, Panasonic, Philips + довільний протокол)"
+      "irFallbackPower": "ІЧ резервне керування живленням ТВ — відправка ІЧ коду ввімкнення при недоступності HDMI-CEC після зникнення електрики (Samsung, LG, Sony, Panasonic, Philips + довільний протокол)",
+      "pi5PlayerSupport": "Підтримка Raspberry Pi 5 — автовизначення моделі Pi при provisioning, окремі Docker образи та compose шаблон для Pi5"
     }
   },
   "updates": {

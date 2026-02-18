@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.8.1'
+export const APP_VERSION = '1.8.2'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.8.2',
+    date: '2026-02-18',
+    changeKeys: [
+      'pi5PlayerSupport',
+    ],
+  },
   {
     version: '1.8.1',
     date: '2026-02-18',
