@@ -1,0 +1,162 @@
+services:
+  redis-init:
+    image: ghcr.io/alex1981-tech/anthias-redis:latest-pi5-64
+    restart: "no"
+    depends_on:
+      - redis
+    entrypoint: >
+      sh -c "
+        sleep 2 &&
+        redis-cli -h redis SET host_agent_ready true &&
+        redis-cli -h redis SET ip_addresses_ready true &&
+        redis-cli -h redis SET ip_addresses '[\"$PI_IP\"]' &&
+        echo 'Redis keys initialized'
+      "
+
+  anthias-server:
+    image: ghcr.io/alex1981-tech/anthias-server:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - LISTEN=0.0.0.0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - MY_IP=$PI_IP
+      - HOST_USER=$PI_USER
+      - HOME=/data
+      - DEVICE_TYPE=pi5
+      - WATCHTOWER_TOKEN=$WATCHTOWER_TOKEN
+      - MAC_ADDRESS=$MAC_ADDRESS
+    devices:
+      - /dev/cec0:/dev/cec0
+      - /dev/cec1:/dev/cec1
+    volumes:
+      - resin-data:/data
+      - /home/$PI_USER/.screenly:/data/.screenly
+      - /home/$PI_USER/screenly_assets:/data/screenly_assets
+      - /home/$PI_USER/screenly/staticfiles:/data/screenly/staticfiles
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /sys/class/graphics:/sys/class/graphics:ro
+      - /sys/class/net:/sys/class/net:ro
+    depends_on:
+      redis-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+
+  anthias-nginx:
+    image: ghcr.io/alex1981-tech/anthias-nginx:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "80:80"
+    volumes:
+      - resin-data:/data:ro
+      - /home/$PI_USER/.screenly:/data/.screenly:ro
+      - /home/$PI_USER/screenly_assets:/data/screenly_assets:ro
+      - /home/$PI_USER/screenly/staticfiles:/data/screenly/staticfiles:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - anthias-server
+      - anthias-websocket
+
+  anthias-viewer:
+    image: ghcr.io/alex1981-tech/anthias-viewer:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    privileged: true
+    tty: true
+    stdin_open: true
+    shm_size: '2460166144'
+    environment:
+      - NOREFRESH=1
+      - LISTEN=anthias-nginx
+      - HOME=/data
+      - PORT=80
+      - LC_ALL=C.UTF-8
+      - DEBIAN_FRONTEND=noninteractive
+      - UDEV=off
+      - QT_QPA_PLATFORM=linuxfb
+      - DEVICE_TYPE=pi5
+    volumes:
+      - resin-data:/data
+      - /home/$PI_USER/.asoundrc:/etc/asound.conf:ro
+      - /home/$PI_USER/.screenly:/data/.screenly
+      - /home/$PI_USER/screenly_assets:/data/screenly_assets
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /home/$PI_USER/screenly/viewer/media_player.py:/usr/src/app/viewer/media_player.py:ro
+    depends_on:
+      - anthias-server
+      - anthias-websocket
+
+  anthias-celery:
+    image: ghcr.io/alex1981-tech/anthias-celery:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - HOME=/data
+    volumes:
+      - resin-data:/data
+      - /home/$PI_USER/.screenly:/data/.screenly
+      - /home/$PI_USER/screenly_assets:/data/screenly_assets
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - redis
+
+  anthias-websocket:
+    image: ghcr.io/alex1981-tech/anthias-websocket:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - HOME=/data
+    volumes:
+      - resin-data:/data
+      - /home/$PI_USER/.screenly:/data/.screenly
+      - /home/$PI_USER/screenly_assets:/data/screenly_assets
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: ghcr.io/alex1981-tech/anthias-redis:latest-pi5-64
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/var/lib/redis
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: always
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_ROLLING_RESTART=true
+      - DOCKER_API_VERSION=1.44
+      - WATCHTOWER_HTTP_API_UPDATE=true
+      - WATCHTOWER_HTTP_API_PERIODIC_POLLS=true
+      - WATCHTOWER_HTTP_API_TOKEN=$WATCHTOWER_TOKEN
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  resin-data:
+  redis-data:

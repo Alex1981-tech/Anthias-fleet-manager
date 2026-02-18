@@ -27,13 +27,15 @@ PLAYER_VERSION_CACHE_TTL = 300  # 5 minutes
 PLAYER_GHCR_REPO = 'alex1981-tech/anthias-server'
 
 
-def _get_latest_player_version():
+def _get_latest_player_version(device_type='pi4'):
     """Query GHCR OCI registry for the latest player SHA tag. Cached 5 min.
 
     Uses the anonymous token endpoint + tags/list API which works
     without authentication for public/org-visible packages.
     """
-    cached = cache.get(PLAYER_VERSION_CACHE_KEY)
+    tag_suffix = f'-{device_type}-64'
+    cache_key = f'{PLAYER_VERSION_CACHE_KEY}:{device_type}'
+    cached = cache.get(cache_key)
     if cached:
         return cached
 
@@ -62,9 +64,9 @@ def _get_latest_player_version():
         latest_sha = ''
         latest_version = ''
         for tag in tags:
-            if not tag.endswith('-pi4-64') or 'latest' in tag:
+            if not tag.endswith(tag_suffix) or 'latest' in tag:
                 continue
-            name = tag.replace('-pi4-64', '')
+            name = tag.replace(tag_suffix, '')
             if name.startswith('v') and '.' in name:
                 latest_version = name  # e.g. "v1.0.0" — last wins
             else:
@@ -72,7 +74,7 @@ def _get_latest_player_version():
 
         if latest_sha or latest_version:
             result = {'sha': latest_sha, 'version': latest_version}
-            cache.set(PLAYER_VERSION_CACHE_KEY, result, PLAYER_VERSION_CACHE_TTL)
+            cache.set(cache_key, result, PLAYER_VERSION_CACHE_TTL)
             return result
         return {'sha': '', 'version': '', 'error': 'No tags found'}
     except Exception as e:
@@ -833,7 +835,9 @@ class PlayerViewSet(viewsets.ModelViewSet):
         current_ver_label = parts[0] if len(parts) > 1 else ''
         current_sha = parts[-1] if '@' in current_version else ''
 
-        latest = _get_latest_player_version()
+        # Select tag suffix based on player device_type
+        dt = player.device_type if player.device_type in ('pi4', 'pi5') else 'pi4'
+        latest = _get_latest_player_version(device_type=dt)
         latest_sha = latest.get('sha', '')
         latest_version = latest.get('version', '')
 
@@ -1259,6 +1263,17 @@ def register_player(request):
                     {'error': 'Registration conflict, please retry'},
                     status=status.HTTP_409_CONFLICT,
                 )
+
+    # Auto-detect device_type from info payload
+    if isinstance(info, dict) and player.device_type in ('unknown', ''):
+        device_model = info.get('device_model', '')
+        device_type_env = info.get('device_type', '')
+        if 'Raspberry Pi 5' in device_model or 'Compute Module 5' in device_model or device_type_env == 'pi5':
+            player.device_type = 'pi5'
+            player.save(update_fields=['device_type'])
+        elif 'Raspberry Pi 4' in device_model or 'Compute Module 4' in device_model or device_type_env == 'pi4':
+            player.device_type = 'pi4'
+            player.save(update_fields=['device_type'])
 
     # Set default SSH credentials if not yet configured
     if not player.username and not player.password:

@@ -50,11 +50,12 @@ class PlayerSerializer(serializers.ModelSerializer):
             'last_seen',
             'last_status',
             'mac_address',
+            'device_type',
             'tailscale_ip',
             'tailscale_enabled',
             'created_at',
         ]
-        read_only_fields = ['id', 'is_online', 'last_seen', 'last_status', 'mac_address', 'created_at']
+        read_only_fields = ['id', 'is_online', 'last_seen', 'last_status', 'mac_address', 'device_type', 'created_at']
 
     def create(self, validated_data):
         raw_password = validated_data.pop('password', '')
@@ -99,6 +100,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
             'last_seen',
             'last_status',
             'mac_address',
+            'device_type',
             'tailscale_ip',
             'tailscale_enabled',
         ]

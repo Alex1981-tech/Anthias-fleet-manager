@@ -113,11 +113,15 @@ def _shell_quote(s):
     return "'" + s.replace("'", "'\\''") + "'"
 
 
-def _render_compose(ip_address, ssh_user, watchtower_token, mac_address=''):
+def _render_compose(ip_address, ssh_user, watchtower_token, mac_address='', device_type='pi4'):
     """Render docker-compose template with variables."""
     import os
+    template_name = (
+        'docker-compose-player-pi5.yml' if device_type == 'pi5'
+        else 'docker-compose-player.yml'
+    )
     template_path = os.path.join(
-        settings.BASE_DIR, 'provision', 'templates', 'docker-compose-player.yml'
+        settings.BASE_DIR, 'provision', 'templates', template_name,
     )
     with open(template_path) as f:
         template = Template(f.read())
@@ -240,7 +244,18 @@ try:
             _append_log(task, f'Connected. Architecture: {arch}')
             if arch not in ('aarch64', 'armv7l'):
                 raise RuntimeError(f'Unsupported architecture: {arch}. Expected aarch64 or armv7l.')
-            _update_step(task, 1, 'ssh_connect', 'success', f'Connected ({arch})')
+
+            # Detect Pi model (Pi4 vs Pi5)
+            model_out, _, _ = _ssh_run(ssh, 'cat /proc/device-tree/model 2>/dev/null || echo ""', timeout=5, check=False)
+            model_str = model_out.strip().rstrip('\x00')
+            if 'Raspberry Pi 5' in model_str or 'Compute Module 5' in model_str:
+                device_type = 'pi5'
+            elif 'Raspberry Pi 4' in model_str or 'Compute Module 4' in model_str:
+                device_type = 'pi4'
+            else:
+                device_type = 'pi4'  # fallback
+            _append_log(task, f'Device type: {device_type} ({model_str})')
+            _update_step(task, 1, 'ssh_connect', 'success', f'Connected ({arch}, {device_type})')
 
             # Step 2: Prerequisites check
             task = ProvisionTask.objects.get(id=task_id)
@@ -356,7 +371,7 @@ try:
                 timeout=5, check=False,
             )
             host_mac = host_mac.strip()
-            compose_content = _render_compose(task.ip_address, task.ssh_user, watchtower_token, host_mac)
+            compose_content = _render_compose(task.ip_address, task.ssh_user, watchtower_token, host_mac, device_type)
             sftp = ssh.open_sftp()
             compose_path = f'{home}/screenly/docker-compose.yml'
             with sftp.file(compose_path, 'w') as f:
@@ -428,14 +443,15 @@ try:
             _append_log(task, '[Step 7] Pulling Docker images (this may take a while)...')
 
             # Pull images one-by-one instead of `docker compose pull` which can hang
+            tag = f'latest-{device_type}-64'
             images = [
-                ('redis', 'ghcr.io/alex1981-tech/anthias-redis:latest-pi4-64'),
+                ('redis', f'ghcr.io/alex1981-tech/anthias-redis:{tag}'),
                 ('watchtower', 'containrrr/watchtower:latest'),
-                ('nginx', 'ghcr.io/alex1981-tech/anthias-nginx:latest-pi4-64'),
-                ('websocket', 'ghcr.io/alex1981-tech/anthias-websocket:latest-pi4-64'),
-                ('server', 'ghcr.io/alex1981-tech/anthias-server:latest-pi4-64'),
-                ('celery', 'ghcr.io/alex1981-tech/anthias-celery:latest-pi4-64'),
-                ('viewer', 'ghcr.io/alex1981-tech/anthias-viewer:latest-pi4-64'),
+                ('nginx', f'ghcr.io/alex1981-tech/anthias-nginx:{tag}'),
+                ('websocket', f'ghcr.io/alex1981-tech/anthias-websocket:{tag}'),
+                ('server', f'ghcr.io/alex1981-tech/anthias-server:{tag}'),
+                ('celery', f'ghcr.io/alex1981-tech/anthias-celery:{tag}'),
+                ('viewer', f'ghcr.io/alex1981-tech/anthias-viewer:{tag}'),
             ]
             for idx, (name, image) in enumerate(images, 1):
                 task = ProvisionTask.objects.get(id=task_id)
@@ -672,6 +688,7 @@ touch "$FLAG"
                 'name': player_name,
                 'is_online': True,
                 'last_seen': timezone.now(),
+                'device_type': device_type,
             }
             if tailscale_ip:
                 player_defaults['tailscale_ip'] = tailscale_ip
@@ -685,10 +702,12 @@ touch "$FLAG"
                 player.name = player_name
                 player.is_online = True
                 player.last_seen = timezone.now()
+                player.device_type = device_type
                 if tailscale_ip:
                     player.tailscale_ip = tailscale_ip
                     player.tailscale_enabled = True
                 player.save(update_fields=['name', 'is_online', 'last_seen',
+                                           'device_type',
                                            'tailscale_ip', 'tailscale_enabled'])
 
             task.player = player

@@ -30,6 +30,13 @@ class Group(models.Model):
         return self.name
 
 
+DEVICE_TYPE_CHOICES = [
+    ('pi4', 'Raspberry Pi 4'),
+    ('pi5', 'Raspberry Pi 5'),
+    ('unknown', 'Unknown'),
+]
+
+
 class Player(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
@@ -43,6 +50,10 @@ class Player(models.Model):
         blank=True,
         default='',
         help_text='Stored encrypted.',
+    )
+    device_type = models.CharField(
+        max_length=10, choices=DEVICE_TYPE_CHOICES, default='unknown', blank=True,
+        help_text='Detected hardware type (pi4, pi5).',
     )
     group = models.ForeignKey(
         Group,
