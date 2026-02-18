@@ -689,26 +689,40 @@ touch "$FLAG"
                 'is_online': True,
                 'last_seen': timezone.now(),
                 'device_type': device_type,
+                'mac_address': host_mac,
             }
             if tailscale_ip:
                 player_defaults['tailscale_ip'] = tailscale_ip
                 player_defaults['tailscale_enabled'] = True
+                player_defaults['url'] = f'http://{tailscale_ip}'
+            else:
+                player_defaults['url'] = player_url
 
-            player, created = Player.objects.get_or_create(
-                url=player_url,
-                defaults=player_defaults,
-            )
-            if not created:
+            # Match by MAC first (avoids duplicates when IP changes),
+            # then fall back to URL match, then create new.
+            player = None
+            created = False
+            if host_mac:
+                player = Player.objects.filter(mac_address=host_mac).first()
+            if not player:
+                player = Player.objects.filter(url=player_url).first()
+
+            if player:
                 player.name = player_name
+                player.url = player_defaults['url']
                 player.is_online = True
                 player.last_seen = timezone.now()
                 player.device_type = device_type
+                player.mac_address = host_mac
                 if tailscale_ip:
                     player.tailscale_ip = tailscale_ip
                     player.tailscale_enabled = True
-                player.save(update_fields=['name', 'is_online', 'last_seen',
-                                           'device_type',
+                player.save(update_fields=['name', 'url', 'is_online', 'last_seen',
+                                           'device_type', 'mac_address',
                                            'tailscale_ip', 'tailscale_enabled'])
+            else:
+                player = Player.objects.create(**player_defaults)
+                created = True
 
             task.player = player
             task.status = 'success'
