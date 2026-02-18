@@ -510,7 +510,9 @@
       "perAssetVolume": "Per-asset volume control — set TV volume (0-100) and mute per schedule slot item via HDMI-CEC",
       "iconOnlyButtons": "Compact icon-only action buttons on player detail page",
       "irFallbackPower": "IR fallback power control — send IR power-on code when HDMI-CEC is unavailable after power loss (Samsung, LG, Sony, Panasonic, Philips + custom)",
-      "pi5PlayerSupport": "Raspberry Pi 5 player support — auto-detect Pi model during provisioning, separate Docker images and compose template for Pi5"
+      "pi5PlayerSupport": "Raspberry Pi 5 player support — auto-detect Pi model during provisioning, separate Docker images and compose template for Pi5",
+      "cctvInternetBlock": "CCTV streams blocked from internet access (local/VPN only)",
+      "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates"
     }
   },
   "updates": {

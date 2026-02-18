@@ -446,7 +446,9 @@
       "forgetPlayerButton": "Schaltfläche «Player vergessen» auf der Detailseite — Player aus dem Manager entfernen",
       "testSuiteFix": "Testsuite behoben — alle 28 Tests bestehen (Auth, og:image Mock)",
       "cctvStreamLifecycle": "CCTV-Stream-Lebenszyklus — ffmpeg stoppt beim Speichern, startet bei Vorschau, stoppt beim Schließen; Streams laufen nur wenn nötig",
-      "provisionPlayer": "Remote-Provisioning — Anthias auf einem neuen Raspberry Pi direkt aus Fleet Manager per SSH installieren"
+      "provisionPlayer": "Remote-Provisioning — Anthias auf einem neuen Raspberry Pi direkt aus Fleet Manager per SSH installieren",
+      "cctvInternetBlock": "CCTV-Streams vom Internet blockiert (nur lokales Netzwerk/VPN)",
+      "provisionMacDedup": "Provisionierung identifiziert Player anhand der MAC-Adresse zur Vermeidung von Duplikaten"
     }
   },
   "updates": {

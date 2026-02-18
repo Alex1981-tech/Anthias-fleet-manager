@@ -446,7 +446,9 @@
       "forgetPlayerButton": "Przycisk «Zapomnij odtwarzacz» na stronie szczegółów — usunięcie odtwarzacza z menedżera",
       "testSuiteFix": "Naprawiono testy — wszystkie 28 przechodzą (auth, mock og:image)",
       "cctvStreamLifecycle": "Cykl życia strumieni CCTV — ffmpeg zatrzymuje się przy zapisie, uruchamia przy podglądzie, zatrzymuje przy zamknięciu; strumienie działają tylko gdy potrzebne",
-      "provisionPlayer": "Zdalne provisioning — instalacja Anthias na nowym Raspberry Pi bezpośrednio z Fleet Manager przez SSH"
+      "provisionPlayer": "Zdalne provisioning — instalacja Anthias na nowym Raspberry Pi bezpośrednio z Fleet Manager przez SSH",
+      "cctvInternetBlock": "Strumienie CCTV zablokowane z internetu (tylko sieć lokalna/VPN)",
+      "provisionMacDedup": "Provisioning identyfikuje odtwarzacze po adresie MAC, aby uniknąć duplikatów"
     }
   },
   "updates": {

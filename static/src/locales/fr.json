@@ -446,7 +446,9 @@
       "forgetPlayerButton": "Bouton « Oublier le lecteur » sur la page de détail — supprimer le lecteur du gestionnaire",
       "testSuiteFix": "Suite de tests corrigée — les 28 tests passent (auth, mock og:image)",
       "cctvStreamLifecycle": "Cycle de vie des flux CCTV — ffmpeg s'arrête à la sauvegarde, redémarre à l'ouverture de l'aperçu, s'arrête à la fermeture ; les flux ne fonctionnent que quand nécessaires",
-      "provisionPlayer": "Provisionnement à distance — installation d'Anthias sur un Raspberry Pi vierge directement depuis Fleet Manager via SSH"
+      "provisionPlayer": "Provisionnement à distance — installation d'Anthias sur un Raspberry Pi vierge directement depuis Fleet Manager via SSH",
+      "cctvInternetBlock": "Flux CCTV bloqués depuis Internet (réseau local/VPN uniquement)",
+      "provisionMacDedup": "Le provisionnement identifie les lecteurs par adresse MAC pour éviter les doublons"
     }
   },
   "updates": {
