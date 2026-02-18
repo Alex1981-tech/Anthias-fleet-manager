@@ -74,6 +74,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - /home/$PI_USER/screenly/viewer/media_player.py:/usr/src/app/viewer/media_player.py:ro
+      - /home/$PI_USER/screenly/viewer/__init__.py:/usr/src/app/viewer/__init__.py:ro
     depends_on:
       - anthias-server
       - anthias-websocket
