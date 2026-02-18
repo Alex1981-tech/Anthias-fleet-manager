@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.8.0'
+export const APP_VERSION = '1.8.1'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.8.1',
+    date: '2026-02-18',
+    changeKeys: [
+      'irFallbackPower',
+    ],
+  },
   {
     version: '1.8.0',
     date: '2026-02-18',

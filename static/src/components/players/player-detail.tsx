@@ -46,7 +46,7 @@ import {
 import Swal from 'sweetalert2'
 import { players as playersApi, media as mediaApi, folders as foldersApi, schedule as scheduleApi, cctv as cctvApi } from '@/services/api'
 import { translateApiError } from '@/utils/translateError'
-import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult, CecStatus } from '@/types'
+import type { Player, PlayerInfo, PlayerAsset, MediaFile, MediaFolder, ScheduleSlot, PlayerUpdateCheckResult, CecStatus, IrStatus } from '@/types'
 import { PlayerSchedule } from './player-schedule'
 import { ScheduleTimeline } from './schedule-timeline'
 import PlayerTerminal from './player-terminal'
@@ -84,6 +84,14 @@ const formatDuration = (val: number | string, t: (key: string) => string) => {
   return remSec > 0
     ? `${min} ${t('assets.minutes')} ${remSec} ${t('assets.seconds')}`
     : `${min} ${t('assets.minutes')}`
+}
+
+const IR_PRESETS: Record<string, { protocol: string; scancode: string }> = {
+  samsung: { protocol: 'samsung36', scancode: '0x0707E01F' },
+  lg: { protocol: 'nec', scancode: '0x20DF10EF' },
+  sony: { protocol: 'sony15', scancode: '0x0A90' },
+  panasonic: { protocol: 'panasonic', scancode: '0x400401BC' },
+  philips: { protocol: 'rc6_mce', scancode: '0x800F040C' },
 }
 
 const toDatePart = (iso: string) => {
@@ -250,6 +258,14 @@ const PlayerDetail: React.FC = () => {
     enabled: false,
     days: { '1': { on: '08:00', off: '22:00' }, '2': { on: '08:00', off: '22:00' }, '3': { on: '08:00', off: '22:00' }, '4': { on: '08:00', off: '22:00' }, '5': { on: '08:00', off: '22:00' }, '6': null, '7': null },
   })
+
+  // IR fallback state
+  const [irStatus, setIrStatus] = useState<IrStatus | null>(null)
+  const [irEnabled, setIrEnabled] = useState(false)
+  const [irPreset, setIrPreset] = useState('custom')
+  const [irProtocol, setIrProtocol] = useState('')
+  const [irScancode, setIrScancode] = useState('')
+  const [irTesting, setIrTesting] = useState(false)
 
   // Sorting
   const [sortField, setSortField] = useState<SortField | null>(null)
@@ -819,6 +835,20 @@ const PlayerDetail: React.FC = () => {
           },
         })
       }
+      // Load IR fallback settings
+      const irEn = !!data.ir_enabled
+      const irProto = String(data.ir_protocol || '')
+      const irScan = String(data.ir_power_scancode || '')
+      setIrEnabled(irEn)
+      setIrProtocol(irProto)
+      setIrScancode(irScan)
+      // Detect preset from protocol+scancode
+      const matchedPreset = Object.entries(IR_PRESETS).find(
+        ([, v]) => v.protocol === irProto && v.scancode === irScan
+      )
+      setIrPreset(matchedPreset ? matchedPreset[0] : 'custom')
+      // Fetch IR hardware status
+      playersApi.getIrStatus(id).then(setIrStatus).catch(() => setIrStatus(null))
     } catch {
       Swal.fire({ icon: 'error', title: t('common.error'), text: t('playerSettings.loadError') })
       setShowSettingsModal(false)
@@ -845,6 +875,9 @@ const PlayerDetail: React.FC = () => {
         use_24_hour_clock: settingsForm.use_24_hour_clock,
         debug_logging: settingsForm.debug_logging,
         display_power_schedule: displaySchedule,
+        ir_enabled: irEnabled,
+        ir_protocol: irProtocol,
+        ir_power_scancode: irScancode,
       }
       // Save to player device
       await playersApi.saveSettings(id, payload)
@@ -2416,6 +2449,111 @@ const PlayerDetail: React.FC = () => {
                               </div>
                             )
                           })}
+                        </>
+                      )}
+                    </div>
+
+                    {/* IR Fallback */}
+                    <div className="border rounded px-3 py-2 mt-2">
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <div>
+                          <span className="fw-semibold" style={{ fontSize: '0.85rem' }}>
+                            {t('playerSettings.irFallback')}
+                          </span>
+                          {irStatus && (
+                            <span className={`badge ms-2 ${irStatus.ir_available ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: '0.65rem' }}>
+                              {irStatus.ir_available ? t('playerSettings.irHardwareOk') : t('playerSettings.irHardwareNA')}
+                            </span>
+                          )}
+                          <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            {t('playerSettings.irFallbackDesc')}
+                          </div>
+                        </div>
+                        <div className="form-check form-switch mb-0">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="ir-enabled"
+                            checked={irEnabled}
+                            onChange={e => setIrEnabled(e.target.checked)}
+                          />
+                        </div>
+                      </div>
+
+                      {irEnabled && (
+                        <>
+                          <div className="mb-2">
+                            <label className="form-label mb-0" style={{ fontSize: '0.8rem' }}>{t('playerSettings.irPreset')}</label>
+                            <select
+                              className="form-select form-select-sm"
+                              value={irPreset}
+                              onChange={e => {
+                                const key = e.target.value
+                                setIrPreset(key)
+                                if (key !== 'custom' && IR_PRESETS[key]) {
+                                  setIrProtocol(IR_PRESETS[key].protocol)
+                                  setIrScancode(IR_PRESETS[key].scancode)
+                                }
+                              }}
+                            >
+                              <option value="samsung">Samsung</option>
+                              <option value="lg">LG</option>
+                              <option value="sony">Sony</option>
+                              <option value="panasonic">Panasonic</option>
+                              <option value="philips">Philips</option>
+                              <option value="custom">Custom</option>
+                            </select>
+                          </div>
+                          <div className="row g-2 mb-2">
+                            <div className="col-6">
+                              <label className="form-label mb-0" style={{ fontSize: '0.8rem' }}>{t('playerSettings.irProtocol')}</label>
+                              <input
+                                type="text"
+                                className="form-control form-control-sm"
+                                value={irProtocol}
+                                onChange={e => {
+                                  setIrProtocol(e.target.value)
+                                  setIrPreset('custom')
+                                }}
+                              />
+                            </div>
+                            <div className="col-6">
+                              <label className="form-label mb-0" style={{ fontSize: '0.8rem' }}>{t('playerSettings.irScancode')}</label>
+                              <input
+                                type="text"
+                                className="form-control form-control-sm"
+                                value={irScancode}
+                                onChange={e => {
+                                  setIrScancode(e.target.value)
+                                  setIrPreset('custom')
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary"
+                            disabled={irTesting || !irProtocol || !irScancode || !player?.is_online}
+                            onClick={async () => {
+                              if (!id) return
+                              setIrTesting(true)
+                              try {
+                                const result = await playersApi.irTest(id, irProtocol, irScancode)
+                                if (result.success) {
+                                  Swal.fire({ icon: 'success', title: t('playerSettings.irTestSent'), timer: 1500, showConfirmButton: false })
+                                } else {
+                                  Swal.fire({ icon: 'error', title: t('playerSettings.irTestFailed'), text: result.error || '' })
+                                }
+                              } catch {
+                                Swal.fire({ icon: 'error', title: t('playerSettings.irTestFailed') })
+                              } finally {
+                                setIrTesting(false)
+                              }
+                            }}
+                          >
+                            {irTesting ? <span className="spinner-border spinner-border-sm me-1" /> : null}
+                            {t('playerSettings.irTestButton')}
+                          </button>
                         </>
                       )}
                     </div>

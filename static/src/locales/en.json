@@ -415,7 +415,17 @@
     "screenOffAllDay": "Screen off all day",
     "applyToAll": "Apply to all",
     "applyWeekdays": "Weekdays",
-    "applyWeekend": "Weekend"
+    "applyWeekend": "Weekend",
+    "irFallback": "IR Fallback",
+    "irFallbackDesc": "Send IR power-on code when HDMI-CEC is unavailable (e.g. after power loss).",
+    "irPreset": "TV Brand",
+    "irProtocol": "Protocol",
+    "irScancode": "Scancode",
+    "irTestButton": "Test IR",
+    "irTestSent": "IR code sent successfully",
+    "irTestFailed": "IR test failed",
+    "irHardwareOk": "IR OK",
+    "irHardwareNA": "No IR"
   },
   "common": {
     "save": "Save",
@@ -498,7 +508,8 @@
       "terminalCheatsheet": "Terminal command cheatsheet — clickable sidebar with Docker, system, network, Anthias API, and config file commands",
       "autoSshCreds": "Auto-set default SSH credentials when players register via phone-home",
       "perAssetVolume": "Per-asset volume control — set TV volume (0-100) and mute per schedule slot item via HDMI-CEC",
-      "iconOnlyButtons": "Compact icon-only action buttons on player detail page"
+      "iconOnlyButtons": "Compact icon-only action buttons on player detail page",
+      "irFallbackPower": "IR fallback power control — send IR power-on code when HDMI-CEC is unavailable after power loss (Samsung, LG, Sony, Panasonic, Philips + custom)"
     }
   },
   "updates": {

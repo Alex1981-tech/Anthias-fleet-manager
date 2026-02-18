@@ -188,6 +188,11 @@ export interface CecStatus {
   tv_on: boolean
 }
 
+export interface IrStatus {
+  ir_available: boolean
+  ir_device: string | null
+}
+
 export interface DeployTask {
   id: string
   name: string

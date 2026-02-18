@@ -282,3 +282,18 @@ class AnthiasAPIClient:
         response = self._request('POST', '/api/v2/cec/wake')
         return response.json()
 
+    # ── IR remote control ──
+
+    def get_ir_status(self):
+        """GET /api/v2/ir/status - Get IR hardware availability."""
+        response = self._request('GET', '/api/v2/ir/status')
+        return response.json()
+
+    def ir_test(self, protocol, scancode):
+        """POST /api/v2/ir/test - Send a test IR power code."""
+        response = self._request('POST', '/api/v2/ir/test', json={
+            'protocol': protocol,
+            'scancode': scancode,
+        })
+        return response.json()
+

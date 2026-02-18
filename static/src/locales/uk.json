@@ -415,7 +415,17 @@
     "screenOffAllDay": "Екран вимкнений весь день",
     "applyToAll": "Для всіх",
     "applyWeekdays": "Будні",
-    "applyWeekend": "Вихідні"
+    "applyWeekend": "Вихідні",
+    "irFallback": "ІЧ резерв",
+    "irFallbackDesc": "Відправка ІЧ коду ввімкнення ТВ, коли HDMI-CEC недоступний (напр. після зникнення електрики).",
+    "irPreset": "Бренд ТВ",
+    "irProtocol": "Протокол",
+    "irScancode": "Сканкод",
+    "irTestButton": "Тест ІЧ",
+    "irTestSent": "ІЧ код відправлено успішно",
+    "irTestFailed": "Тест ІЧ не вдався",
+    "irHardwareOk": "ІЧ OK",
+    "irHardwareNA": "Немає ІЧ"
   },
   "common": {
     "save": "Зберегти",
@@ -498,7 +508,8 @@
       "terminalCheatsheet": "Шпаргалка команд для терміналу — бічна панель з командами Docker, системи, мережі, Anthias API та конфіг-файлів",
       "autoSshCreds": "Автоматичне встановлення SSH-даних при реєстрації плеєра через phone-home",
       "perAssetVolume": "Керування гучністю ТВ для кожного ассета — volume (0-100) та mute в розкладі через HDMI-CEC",
-      "iconOnlyButtons": "Компактні кнопки-іконки на сторінці плеєра"
+      "iconOnlyButtons": "Компактні кнопки-іконки на сторінці плеєра",
+      "irFallbackPower": "ІЧ резервне керування живленням ТВ — відправка ІЧ коду ввімкнення при недоступності HDMI-CEC після зникнення електрики (Samsung, LG, Sony, Panasonic, Philips + довільний протокол)"
     }
   },
   "updates": {

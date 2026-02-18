@@ -919,6 +919,47 @@ class PlayerViewSet(viewsets.ModelViewSet):
             )
 
 
+    # ── IR remote control ──
+
+    @action(detail=True, methods=['get'], url_path='ir-status')
+    def ir_status(self, request, pk=None):
+        """Get IR hardware availability from the player."""
+        player = self.get_object()
+        client = self._get_client(player)
+        try:
+            return Response(client.get_ir_status())
+        except PlayerConnectionError as exc:
+            return Response(
+                {'error': str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+    @action(detail=True, methods=['post'], url_path='ir-test')
+    def ir_test(self, request, pk=None):
+        """Send a test IR power code to the player."""
+        player = self.get_object()
+        client = self._get_client(player)
+        protocol = request.data.get('protocol', '')
+        scancode = request.data.get('scancode', '')
+        if not protocol or not scancode:
+            return Response(
+                {'error': 'protocol and scancode are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            result = client.ir_test(protocol, scancode)
+            from deploy.audit import log_action
+            log_action(
+                request, 'ir_test', 'player',
+                target_id=player.id, target_name=player.name,
+                details={'protocol': protocol, 'scancode': scancode},
+            )
+            return Response(result)
+        except PlayerConnectionError as exc:
+            msg, http_status = _format_player_error(exc)
+            return Response({'error': msg, 'success': False}, status=http_status)
+
+
 class BulkActionView(APIView):
     """
     Handle bulk actions across multiple players.

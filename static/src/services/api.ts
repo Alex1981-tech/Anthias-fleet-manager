@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings, User, AuditLogResponse, BulkProvisionTask } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, IrStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings, User, AuditLogResponse, BulkProvisionTask } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -172,6 +172,14 @@ export const players = {
 
   cecWake(id: string): Promise<CecStatus> {
     return apiRequest<CecStatus>('POST', `/players/${id}/cec-wake/`)
+  },
+
+  getIrStatus(id: string): Promise<IrStatus> {
+    return apiRequest<IrStatus>('GET', `/players/${id}/ir-status/`)
+  },
+
+  irTest(id: string, protocol: string, scancode: string): Promise<{ success: boolean; error?: string }> {
+    return apiRequest<{ success: boolean; error?: string }>('POST', `/players/${id}/ir-test/`, { protocol, scancode })
   },
 }
 
