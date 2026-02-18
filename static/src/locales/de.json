@@ -535,6 +535,7 @@
     "installNew": "Neuen installieren",
     "installNewDesc": "Frischer Raspberry Pi — wir installieren alles automatisch",
     "instructionsTitle": "Bereiten Sie Ihren Raspberry Pi vor",
+    "supportedBoards": "Unterstützte Boards",
     "instrFlash": "Raspberry Pi OS (64-bit) flashen",
     "instrFlashDesc": "Verwenden Sie Raspberry Pi Imager zum Schreiben des OS auf eine SD-Karte",
     "instrConnect": "Pi mit Netzwerk und Strom verbinden",

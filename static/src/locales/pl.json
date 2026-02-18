@@ -535,6 +535,7 @@
     "installNew": "Zainstaluj nowy",
     "installNewDesc": "Czysty Raspberry Pi — zainstalujemy wszystko automatycznie",
     "instructionsTitle": "Przygotuj Raspberry Pi",
+    "supportedBoards": "Obsługiwane płyty",
     "instrFlash": "Nagraj Raspberry Pi OS (64-bit)",
     "instrFlashDesc": "Użyj Raspberry Pi Imager do zapisania systemu na karcie SD",
     "instrConnect": "Podłącz Pi do sieci i zasilania",

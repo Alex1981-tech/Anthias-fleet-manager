@@ -599,6 +599,7 @@
     "installNew": "Install New",
     "installNewDesc": "Fresh Raspberry Pi — we'll install everything automatically",
     "instructionsTitle": "Prepare your Raspberry Pi",
+    "supportedBoards": "Supported boards",
     "instrFlash": "Flash Raspberry Pi OS (64-bit)",
     "instrFlashDesc": "Use Raspberry Pi Imager to write the OS to an SD card",
     "instrConnect": "Connect Pi to network and power",

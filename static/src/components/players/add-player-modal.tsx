@@ -218,6 +218,9 @@ const AddPlayerModal: React.FC<AddPlayerModalProps> = ({ editingPlayer, groups, 
   const renderInstructions = () => (
     <div className="modal-body">
       <h6 className="fw-bold mb-3">{t('provision.instructionsTitle')}</h6>
+      <div className="alert alert-info py-2 small mb-3">
+        <strong>{t('provision.supportedBoards')}:</strong> Raspberry Pi 4, Raspberry Pi 5
+      </div>
       <ol className="list-unstyled">
         <li className="mb-3 d-flex align-items-start gap-2">
           <span style={{ fontSize: '1.3rem' }}>1.</span>

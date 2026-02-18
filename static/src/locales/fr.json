@@ -535,6 +535,7 @@
     "installNew": "Installer nouveau",
     "installNewDesc": "Raspberry Pi vierge — nous installons tout automatiquement",
     "instructionsTitle": "Préparez votre Raspberry Pi",
+    "supportedBoards": "Cartes prises en charge",
     "instrFlash": "Flashez Raspberry Pi OS (64-bit)",
     "instrFlashDesc": "Utilisez Raspberry Pi Imager pour écrire l'OS sur une carte SD",
     "instrConnect": "Connectez le Pi au réseau et à l'alimentation",

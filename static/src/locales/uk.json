@@ -599,6 +599,7 @@
     "installNew": "Встановити новий",
     "installNewDesc": "Чиста Raspberry Pi — ми все встановимо автоматично",
     "instructionsTitle": "Підготуйте Raspberry Pi",
+    "supportedBoards": "Підтримувані плати",
     "instrFlash": "Запишіть Raspberry Pi OS (64-bit)",
     "instrFlashDesc": "Використайте Raspberry Pi Imager для запису ОС на SD-карту",
     "instrConnect": "Підключіть Pi до мережі та живлення",
