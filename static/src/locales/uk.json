@@ -512,6 +512,9 @@
       "irFallbackPower": "ІЧ резервне керування живленням ТВ — відправка ІЧ коду ввімкнення при недоступності HDMI-CEC після зникнення електрики (Samsung, LG, Sony, Panasonic, Philips + довільний протокол)",
       "pi5PlayerSupport": "Підтримка Raspberry Pi 5 — автовизначення моделі Pi при provisioning, окремі Docker образи та compose шаблон для Pi5",
       "cctvInternetBlock": "CCTV потоки заблоковано з інтернету (тільки локальна мережа/VPN)",
+      "cctvLoginRequired": "Сторінка CCTV тепер вимагає авторизації (замість блокування по IP)",
+      "cctvHlsPlayback": "Плеєри тепер транслюють CCTV через HLS відео (плавне відтворення замість JPEG знімків)",
+      "phonehomeMacFix": "Скрипт phone-home тепер надсилає MAC-адресу та інформацію про пристрій",
       "provisionMacDedup": "Провізіонінг ідентифікує плеєри за MAC-адресою для запобігання дублікатів"
     }
   },

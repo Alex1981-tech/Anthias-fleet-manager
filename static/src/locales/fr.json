@@ -448,6 +448,9 @@
       "cctvStreamLifecycle": "Cycle de vie des flux CCTV — ffmpeg s'arrête à la sauvegarde, redémarre à l'ouverture de l'aperçu, s'arrête à la fermeture ; les flux ne fonctionnent que quand nécessaires",
       "provisionPlayer": "Provisionnement à distance — installation d'Anthias sur un Raspberry Pi vierge directement depuis Fleet Manager via SSH",
       "cctvInternetBlock": "Flux CCTV bloqués depuis Internet (réseau local/VPN uniquement)",
+      "cctvLoginRequired": "La page CCTV nécessite maintenant une authentification (remplace le blocage IP nginx)",
+      "cctvHlsPlayback": "Les lecteurs diffusent maintenant le CCTV via vidéo HLS directe (lecture fluide au lieu de snapshots JPEG)",
+      "phonehomeMacFix": "Le script phone-home envoie maintenant l'adresse MAC et les informations de l'appareil",
       "provisionMacDedup": "Le provisionnement identifie les lecteurs par adresse MAC pour éviter les doublons"
     }
   },

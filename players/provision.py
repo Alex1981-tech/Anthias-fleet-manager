@@ -523,17 +523,40 @@ try:
                 # Get register token from settings
                 register_token = getattr(settings, 'PLAYER_REGISTER_TOKEN', '')
 
+                auth_header = ''
+                if register_token:
+                    auth_header = f'\n  -H "Authorization: Bearer {register_token}" \\'
+
                 phonehome_script = f'''#!/bin/bash
 # Anthias phone-home script
-FM_URL="{fm_server_url}"
-TOKEN="{register_token}"
-MY_IP=$(hostname -I | awk '{{print $1}}')
-HOSTNAME=$(hostname)
+SERVER="{fm_server_url}"
+URL="http://$(hostname -I | awk '{{print $1}}')"
+NAME="$(hostname)"
+INFO=$(curl -sf http://localhost/api/v2/info 2>/dev/null || echo '{{}}')
 
-curl -sf -X POST "$FM_URL/api/players/register/" \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer $TOKEN" \\
-  -d '{{"url": "http://'$MY_IP'", "name": "'$HOSTNAME'"}}'
+# Detect hardware MAC address (prefer wired, then wireless)
+MAC=""
+for iface in eth0 end0 wlan0; do
+  [ -f "/sys/class/net/$iface/address" ] && MAC=$(cat "/sys/class/net/$iface/address") && break
+done
+MAC_FIELD=""
+if [ -n "$MAC" ]; then
+  MAC_FIELD=",\\"mac_address\\":\\"$MAC\\""
+fi
+
+# Detect Tailscale IP if available
+TS_IP=""
+if command -v tailscale >/dev/null 2>&1; then
+  TS_IP=$(tailscale ip -4 2>/dev/null || true)
+fi
+TS_FIELD=""
+if [ -n "$TS_IP" ]; then
+  TS_FIELD=",\\"tailscale_ip\\":\\"$TS_IP\\""
+fi
+
+curl -sf -X POST "${{SERVER}}/api/players/register/" \\
+  -H "Content-Type: application/json" \\{auth_header}
+  -d "{{\\"url\\":\\"${{URL}}\\",\\"name\\":\\"${{NAME}}\\",\\"info\\":${{INFO}}$MAC_FIELD$TS_FIELD}}"
 '''
                 _ssh_run(ssh, f'sudo mkdir -p /usr/local/bin', sudo_password=ssh_password, timeout=10)
                 with sftp.file(f'{home}/anthias-phonehome.sh', 'w') as f:

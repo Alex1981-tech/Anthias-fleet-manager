@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import include, path, re_path
@@ -80,6 +81,7 @@ def auth_status(request):
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 
+@login_required(login_url='/')
 @xframe_options_sameorigin
 def cctv_player_view(request, config_id):
     from django.utils import timezone
