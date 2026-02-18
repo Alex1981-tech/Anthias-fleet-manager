@@ -18,6 +18,9 @@ import {
   FaSquare,
   FaFolder,
   FaFolderOpen,
+  FaVolumeUp,
+  FaVolumeMute,
+  FaVolumeOff,
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { schedule as scheduleApi, players as playersApi, media as mediaApi, folders as foldersApi } from '@/services/api'
@@ -61,6 +64,10 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
   // Inline duration editing
   const [editingDuration, setEditingDuration] = useState<{ slotId: string; itemId: string } | null>(null)
   const [editDurationValue, setEditDurationValue] = useState('')
+
+  // Inline volume editing
+  const [editingVolume, setEditingVolume] = useState<{ slotId: string; itemId: string } | null>(null)
+  const [editVolumeValue, setEditVolumeValue] = useState('')
 
   // Modals
   const [showSlotModal, setShowSlotModal] = useState(false)
@@ -226,6 +233,47 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
     setEditingDuration(null)
   }
 
+  const handleVolumeClick = (slot: ScheduleSlot, item: ScheduleSlotItem) => {
+    setEditingVolume({ slotId: slot.slot_id, itemId: item.item_id })
+    setEditVolumeValue(item.volume !== null && item.volume !== undefined ? String(item.volume) : '')
+  }
+
+  const updateItemInSlots = (slotId: string, itemId: string, patch: Partial<ScheduleSlotItem>) => {
+    setSlots(prev => prev.map(s =>
+      s.slot_id === slotId
+        ? { ...s, items: s.items.map(i => i.item_id === itemId ? { ...i, ...patch } : i) }
+        : s
+    ))
+  }
+
+  const handleVolumeSave = async (slot: ScheduleSlot, item: ScheduleSlotItem) => {
+    const raw = editVolumeValue.trim()
+    const newVolume = raw === '' ? null : parseInt(raw, 10)
+    if (newVolume !== null && (isNaN(newVolume) || newVolume < 0 || newVolume > 100)) {
+      setEditingVolume(null)
+      return
+    }
+    setEditingVolume(null)
+    updateItemInSlots(slot.slot_id, item.item_id, { volume: newVolume })
+    try {
+      await scheduleApi.updateItem(playerId, slot.slot_id, item.item_id, { volume: newVolume })
+    } catch {
+      updateItemInSlots(slot.slot_id, item.item_id, { volume: item.volume })
+      Swal.fire(t('common.error'), t('schedule.failed'), 'error')
+    }
+  }
+
+  const handleMuteToggle = async (slot: ScheduleSlot, item: ScheduleSlotItem) => {
+    const newMute = !item.mute
+    updateItemInSlots(slot.slot_id, item.item_id, { mute: newMute })
+    try {
+      await scheduleApi.updateItem(playerId, slot.slot_id, item.item_id, { mute: newMute })
+    } catch {
+      updateItemInSlots(slot.slot_id, item.item_id, { mute: item.mute })
+      Swal.fire(t('common.error'), t('schedule.failed'), 'error')
+    }
+  }
+
   // ── Thumbnail helper ──
 
   const renderItemThumbnail = (item: ScheduleSlotItem) => {
@@ -317,6 +365,7 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
                 <th>{t('assets.name')}</th>
                 <th style={{ width: '80px' }}>{t('schedule.type')}</th>
                 <th style={{ width: '100px' }}>{t('assets.duration')}</th>
+                <th style={{ width: '110px' }}>{t('schedule.volume')}</th>
                 <th style={{ width: '50px' }}></th>
               </tr>
             </thead>
@@ -383,6 +432,44 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
                           )}
                         </span>
                       )}
+                    </td>
+                    <td>
+                      <div className="d-flex align-items-center gap-1">
+                        <button
+                          className="btn btn-sm btn-link p-0"
+                          onClick={() => handleMuteToggle(slot, item)}
+                          title={item.mute ? t('schedule.unmute') : t('schedule.mute')}
+                          style={{ fontSize: '0.9rem', color: item.mute ? 'var(--bs-danger)' : item.volume !== null && item.volume !== undefined ? 'var(--bs-success)' : 'var(--bs-secondary)' }}
+                        >
+                          {item.mute ? <FaVolumeMute /> : item.volume !== null && item.volume !== undefined ? <FaVolumeUp /> : <FaVolumeOff />}
+                        </button>
+                        {editingVolume?.slotId === slot.slot_id && editingVolume?.itemId === item.item_id ? (
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            className="form-control form-control-sm"
+                            style={{ width: '60px' }}
+                            value={editVolumeValue}
+                            onChange={(e) => setEditVolumeValue(e.target.value)}
+                            onBlur={() => handleVolumeSave(slot, item)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleVolumeSave(slot, item)
+                              if (e.key === 'Escape') setEditingVolume(null)
+                            }}
+                            autoFocus
+                            placeholder="—"
+                          />
+                        ) : (
+                          <span
+                            style={{ cursor: 'pointer', borderBottom: '1px dashed var(--bs-gray-400)', opacity: item.mute ? 0.5 : 1 }}
+                            onClick={() => handleVolumeClick(slot, item)}
+                            title={t('schedule.clickToEditVolume')}
+                          >
+                            {item.volume !== null && item.volume !== undefined ? `${item.volume}%` : '—'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <button

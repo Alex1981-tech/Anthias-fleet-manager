@@ -322,6 +322,11 @@
     "durationOverridePlaceholder": "Leave empty for default",
     "durationOverrideHint": "Override duration for this slot only.",
     "clickToEditDuration": "Click to edit",
+    "volume": "Volume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "clickToEditVolume": "Click to set volume",
+    "volumeNotSet": "Not set",
     "overridden": "custom",
     "disabled": "Disabled",
     "type": "Type",
@@ -491,7 +496,9 @@
       "cheatsheetContainerFix": "Fix terminal cheatsheet — use docker compose service names instead of hardcoded container names",
       "nginxAutoUpdate": "Nginx config auto-update — WebSocket proxy config is now automatically synced on container restart",
       "terminalCheatsheet": "Terminal command cheatsheet — clickable sidebar with Docker, system, network, Anthias API, and config file commands",
-      "autoSshCreds": "Auto-set default SSH credentials when players register via phone-home"
+      "autoSshCreds": "Auto-set default SSH credentials when players register via phone-home",
+      "perAssetVolume": "Per-asset volume control — set TV volume (0-100) and mute per schedule slot item via HDMI-CEC",
+      "iconOnlyButtons": "Compact icon-only action buttons on player detail page"
     }
   },
   "updates": {

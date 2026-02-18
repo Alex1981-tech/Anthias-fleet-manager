@@ -204,7 +204,7 @@ export const schedule = {
     return apiRequest('POST', `/players/${playerId}/schedule-slot-item-remove/`, { slot_id: slotId, item_id: itemId })
   },
 
-  updateItem(playerId: string, slotId: string, itemId: string, data: { duration_override?: number | null }): Promise<{ success: boolean; item: ScheduleSlotItem }> {
+  updateItem(playerId: string, slotId: string, itemId: string, data: { duration_override?: number | null; volume?: number | null; mute?: boolean }): Promise<{ success: boolean; item: ScheduleSlotItem }> {
     return apiRequest('PUT', `/players/${playerId}/schedule-slot-item-update/`, { slot_id: slotId, item_id: itemId, ...data })
   },
 

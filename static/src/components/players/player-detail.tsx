@@ -1229,8 +1229,7 @@ const PlayerDetail: React.FC = () => {
               disabled={!player.is_online}
               title={t('playerSettings.title')}
             >
-              <FaCog className="me-1" />
-              {t('playerSettings.title')}
+              <FaCog />
             </button>
             <button
               className="fm-btn-accent fm-btn-sm"
@@ -1238,8 +1237,7 @@ const PlayerDetail: React.FC = () => {
               disabled={!player.is_online}
               title={t('players.reboot')}
             >
-              <FaSyncAlt className="me-1" />
-              {t('players.reboot')}
+              <FaSyncAlt />
             </button>
             {role === 'admin' && player.is_online && (
               <button
@@ -1247,8 +1245,7 @@ const PlayerDetail: React.FC = () => {
                 onClick={() => setShowTerminal(!showTerminal)}
                 title={t('terminal.title')}
               >
-                <FaTerminalIcon className="me-1" />
-                {t('terminal.title')}
+                <FaTerminalIcon />
               </button>
             )}
             <button
@@ -1257,8 +1254,7 @@ const PlayerDetail: React.FC = () => {
               onClick={handleForget}
               title={t('players.forget')}
             >
-              <FaTrash className="me-1" />
-              {t('players.forget')}
+              <FaTrash />
             </button>
           </div>
         </div>

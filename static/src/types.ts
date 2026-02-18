@@ -129,6 +129,8 @@ export interface ScheduleSlotItem {
   asset_id: string
   sort_order: number
   duration_override: number | null
+  volume: number | null
+  mute: boolean
   asset_name: string
   asset_uri: string
   asset_mimetype: string
