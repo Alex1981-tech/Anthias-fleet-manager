@@ -15,7 +15,16 @@
     "groups": "Grupy",
     "noPlayers": "Brak zarejestrowanych odtwarzaczy",
     "noPlayersDesc": "Dodaj pierwszy odtwarzacz Anthias, aby rozpocząć.",
-    "addPlayer": "Dodaj odtwarzacz"
+    "addPlayer": "Dodaj odtwarzacz",
+    "serverTelemetry": "Telemetria serwera",
+    "cpu": "CPU",
+    "memory": "Pamięć",
+    "disk": "Dysk",
+    "uptime": "Czas pracy",
+    "hostname": "Nazwa hosta",
+    "version": "Wersja",
+    "temp": "Temperatura",
+    "cores": "rdzeni"
   },
   "players": {
     "title": "Odtwarzacze",
@@ -407,7 +416,8 @@
     "confirm": "Potwierdź",
     "search": "Szukaj...",
     "noResults": "Nie znaleziono wyników",
-    "all": "Wszystko"
+    "all": "Wszystko",
+    "refresh": "Odśwież"
   },
   "changelog": {
     "title": "Dziennik zmian",

@@ -1,4 +1,4 @@
-import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, IrStatus, PlayerUpdateCheckResult, ProvisionTask, TailscaleSettings, User, AuditLogResponse, BulkProvisionTask } from '@/types'
+import type { Player, Group, PlayerInfo, PlayerAsset, DeployTask, MediaFile, MediaFolder, PlaybackLogResponse, PlaybackStatsResponse, ScheduleSlot, ScheduleSlotItem, ScheduleStatus, CctvConfig, CecStatus, IrStatus, PlayerUpdateCheckResult, ProvisionTask, ServerTelemetry, TailscaleSettings, User, AuditLogResponse, BulkProvisionTask } from '@/types'
 
 const BASE_URL = '/api'
 
@@ -469,6 +469,10 @@ export const system = {
 
   updateTailscale(data: Record<string, unknown>): Promise<TailscaleSettings> {
     return apiRequest<TailscaleSettings>('PATCH', '/system/tailscale/', data)
+  },
+
+  getTelemetry(): Promise<ServerTelemetry> {
+    return apiRequest<ServerTelemetry>('GET', '/system/telemetry/')
   },
 }
 

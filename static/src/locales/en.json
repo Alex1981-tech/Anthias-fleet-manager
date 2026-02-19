@@ -16,7 +16,16 @@
     "groups": "Groups",
     "noPlayers": "No players registered",
     "noPlayersDesc": "Add your first Anthias player to get started.",
-    "addPlayer": "Add Player"
+    "addPlayer": "Add Player",
+    "serverTelemetry": "Server Telemetry",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "disk": "Disk",
+    "uptime": "Uptime",
+    "hostname": "Hostname",
+    "version": "Version",
+    "temp": "Temperature",
+    "cores": "cores"
   },
   "players": {
     "title": "Players",
@@ -440,7 +449,8 @@
     "confirm": "Confirm",
     "search": "Search...",
     "noResults": "No results found",
-    "all": "All"
+    "all": "All",
+    "refresh": "Refresh"
   },
   "changelog": {
     "title": "Changelog",
@@ -517,6 +527,7 @@
       "cctvHlsPlayback": "Players now stream CCTV via direct HLS video (smooth playback instead of JPEG snapshots)",
       "phonehomeMacFix": "Phone-home script now sends MAC address and device info for reliable identity",
       "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates",
+      "serverTelemetry": "Server telemetry dashboard — live CPU, memory, disk usage with progress bars and auto-refresh",
       "infiniteDuration": "Infinite duration (∞) for slot items — content plays until schedule change, ideal for CCTV streams",
       "scheduleRecheck": "Periodic schedule re-check every 30s during playback — new time slots take effect without waiting for current asset to finish",
       "tailscaleHostname": "Tailscale provisioning now sets player name as hostname for easy identification",

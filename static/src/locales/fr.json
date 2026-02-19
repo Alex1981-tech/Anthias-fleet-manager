@@ -15,7 +15,16 @@
     "groups": "Groupes",
     "noPlayers": "Aucun lecteur enregistré",
     "noPlayersDesc": "Ajoutez votre premier lecteur Anthias pour commencer.",
-    "addPlayer": "Ajouter un lecteur"
+    "addPlayer": "Ajouter un lecteur",
+    "serverTelemetry": "Télémétrie du serveur",
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "disk": "Disque",
+    "uptime": "Temps de fonctionnement",
+    "hostname": "Nom d'hôte",
+    "version": "Version",
+    "temp": "Température",
+    "cores": "cœurs"
   },
   "players": {
     "title": "Lecteurs",
@@ -407,7 +416,8 @@
     "confirm": "Confirmer",
     "search": "Rechercher...",
     "noResults": "Aucun résultat trouvé",
-    "all": "Tout"
+    "all": "Tout",
+    "refresh": "Actualiser"
   },
   "changelog": {
     "title": "Journal des modifications",

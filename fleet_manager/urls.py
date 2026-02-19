@@ -24,6 +24,7 @@ from rest_framework.routers import DefaultRouter
 from fleet_manager.permissions import _user_role
 from fleet_manager.system_views import (
     system_settings,
+    system_telemetry,
     system_update,
     system_update_check,
     system_version,
@@ -116,6 +117,7 @@ urlpatterns = [
     path('api/system/update-check/', system_update_check),
     path('api/system/update/', system_update),
     path('api/system/settings/', system_settings),
+    path('api/system/telemetry/', system_telemetry),
     path('api/system/tailscale/', tailscale_settings),
     path('api/', include(user_router.urls)),
     path('api/audit/', audit_list),

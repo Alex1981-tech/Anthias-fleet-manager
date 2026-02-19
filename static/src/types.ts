@@ -264,6 +264,23 @@ export interface BulkProvisionTask {
   }>
 }
 
+export interface ServerTelemetry {
+  cpu_percent: number
+  cpu_count: number
+  cpu_freq_mhz: number | null
+  cpu_temp: number | null
+  memory_total_gb: number
+  memory_used_gb: number
+  memory_percent: number
+  disk_total_gb: number
+  disk_used_gb: number
+  disk_percent: number
+  uptime_seconds: number
+  version: string
+  build_date: string
+  hostname: string
+}
+
 export interface ProvisionTask {
   id: string
   ip_address: string

@@ -15,7 +15,16 @@
     "groups": "Gruppen",
     "noPlayers": "Keine Player registriert",
     "noPlayersDesc": "Registrieren Sie Ihren ersten Anthias Player, um zu beginnen.",
-    "addPlayer": "Player hinzufügen"
+    "addPlayer": "Player hinzufügen",
+    "serverTelemetry": "Server-Telemetrie",
+    "cpu": "CPU",
+    "memory": "Speicher",
+    "disk": "Festplatte",
+    "uptime": "Betriebszeit",
+    "hostname": "Hostname",
+    "version": "Version",
+    "temp": "Temperatur",
+    "cores": "Kerne"
   },
   "players": {
     "title": "Player",
@@ -407,7 +416,8 @@
     "confirm": "Bestätigen",
     "search": "Suchen...",
     "noResults": "Keine Ergebnisse gefunden",
-    "all": "Alle"
+    "all": "Alle",
+    "refresh": "Aktualisieren"
   },
   "changelog": {
     "title": "Änderungsprotokoll",

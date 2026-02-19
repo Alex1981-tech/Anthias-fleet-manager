@@ -1,8 +1,11 @@
 import logging
+import os
 import re
 import subprocess
 import threading
+import time
 
+import psutil
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -193,6 +196,67 @@ def system_settings(request):
         from deploy.audit import log_action
         log_action(request, 'update', 'settings', target_name='auto_update', details={'auto_update': bool(auto_update)})
     return Response({'auto_update': cache.get(AUTO_UPDATE_CACHE_KEY, True)})
+
+
+@api_view(['GET'])
+def system_telemetry(request):
+    """Return server telemetry: CPU, memory, disk, uptime, temperature."""
+    # CPU
+    cpu_percent = psutil.cpu_percent(interval=0.5)
+    cpu_count = psutil.cpu_count(logical=True)
+    cpu_freq = psutil.cpu_freq()
+    cpu_freq_mhz = round(cpu_freq.current) if cpu_freq else None
+
+    # CPU temperature
+    cpu_temp = None
+    try:
+        temps = psutil.sensors_temperatures()
+        if temps:
+            for name in ('coretemp', 'cpu_thermal', 'k10temp', 'zenpower'):
+                if name in temps and temps[name]:
+                    cpu_temp = temps[name][0].current
+                    break
+            if cpu_temp is None:
+                first = next(iter(temps.values()), [])
+                if first:
+                    cpu_temp = first[0].current
+    except (AttributeError, StopIteration):
+        pass
+
+    # Memory
+    mem = psutil.virtual_memory()
+
+    # Disk
+    disk = psutil.disk_usage('/')
+
+    # Uptime
+    uptime_seconds = int(time.time() - psutil.boot_time())
+
+    hostname = os.environ.get('FM_HOSTNAME', '')
+    if not hostname:
+        try:
+            with open('/etc/host_hostname', 'r') as f:
+                hostname = f.read().strip()
+        except FileNotFoundError:
+            import socket
+            hostname = socket.gethostname()
+
+    return Response({
+        'cpu_percent': cpu_percent,
+        'cpu_count': cpu_count,
+        'cpu_freq_mhz': cpu_freq_mhz,
+        'cpu_temp': round(cpu_temp, 1) if cpu_temp is not None else None,
+        'memory_total_gb': round(mem.total / (1024 ** 3), 1),
+        'memory_used_gb': round(mem.used / (1024 ** 3), 1),
+        'memory_percent': mem.percent,
+        'disk_total_gb': round(disk.total / (1024 ** 3), 1),
+        'disk_used_gb': round(disk.used / (1024 ** 3), 1),
+        'disk_percent': disk.percent,
+        'uptime_seconds': uptime_seconds,
+        'version': settings.APP_VERSION,
+        'build_date': settings.BUILD_DATE,
+        'hostname': hostname,
+    })
 
 
 def _get_fernet():

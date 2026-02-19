@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '@/store/index'
 import { fetchPlayers } from '@/store/playersSlice'
 import { fetchGroups } from '@/store/groupsSlice'
 import PlayerCard from './player-card'
+import ServerTelemetryCard from './server-telemetry'
 import AddPlayerModal from '../players/add-player-modal'
 
 const Dashboard: React.FC = () => {
@@ -103,18 +104,25 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="row g-3 mb-4">
-        {statCards.map((card, idx) => (
-          <div key={idx} className="col-6 col-lg-3">
-            <div className="fm-stat-card">
-              <div className={`stat-icon ${card.iconClass}`}>{card.icon}</div>
-              <div className="stat-content">
-                <div className="stat-value">{card.value}</div>
-                <div className="stat-label">{card.label}</div>
+      <div className="row g-3 mb-4 align-items-stretch">
+        <div className="col-lg-4 d-flex">
+          <div className="row g-3 flex-grow-1 align-content-stretch">
+            {statCards.map((card, idx) => (
+              <div key={idx} className="col-6 d-flex">
+                <div className="fm-stat-card flex-grow-1">
+                  <div className={`stat-icon ${card.iconClass}`}>{card.icon}</div>
+                  <div className="stat-content">
+                    <div className="stat-value">{card.value}</div>
+                    <div className="stat-label">{card.label}</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <div className="col-lg-8">
+          <ServerTelemetryCard />
+        </div>
       </div>
 
       <div className="fm-search-bar">
