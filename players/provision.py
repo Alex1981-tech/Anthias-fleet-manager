@@ -276,6 +276,34 @@ try:
                 _append_log(task, 'Internet: available (ping ok, curl to docker.com failed)')
             else:
                 _append_log(task, 'Internet: available')
+
+            # Sync system clock (fresh Pi has no RTC battery — clock may be wrong)
+            # Wrong time breaks apt GPG signature verification
+            _update_step(task, 2, 'prerequisites', 'running', 'Syncing system clock...')
+            out, _, _ = _ssh_run(ssh, 'date "+%Y-%m-%d %H:%M:%S %Z"', timeout=10)
+            _append_log(task, f'Clock before sync: {out.strip()}')
+            # Try timedatectl (systemd-timesyncd), fallback to manual date from FM
+            ntp_out, _, rc = _ssh_run(
+                ssh,
+                'sudo timedatectl set-ntp true 2>/dev/null; sleep 3; '
+                'timedatectl show --property=NTPSynchronized --value 2>/dev/null',
+                sudo_password=ssh_password, timeout=20, check=False,
+            )
+            if rc == 0 and 'yes' in (ntp_out or ''):
+                _append_log(task, 'Clock synced via systemd-timesyncd')
+            else:
+                # Fallback: set time from Fleet Manager server
+                from django.utils import timezone
+                now_utc = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                _append_log(task, f'NTP unavailable, setting time from FM server: {now_utc} UTC')
+                _ssh_run(
+                    ssh,
+                    f'sudo date -u -s "{now_utc}"',
+                    sudo_password=ssh_password, timeout=10, check=False,
+                )
+            out, _, _ = _ssh_run(ssh, 'date "+%Y-%m-%d %H:%M:%S %Z"', timeout=10)
+            _append_log(task, f'Clock after sync: {out.strip()}')
+
             _update_step(task, 2, 'prerequisites', 'success', 'Prerequisites OK')
 
             # Step 3: Install Docker
