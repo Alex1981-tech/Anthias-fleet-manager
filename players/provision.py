@@ -478,6 +478,14 @@ try:
 
             _update_step(task, 7, 'docker_pull', 'success', f'All {len(images)} images pulled')
 
+            # Extract bind-mounted files from viewer image (placeholders would break viewer)
+            viewer_image = f'ghcr.io/alex1981-tech/anthias-viewer:{tag}'
+            _ssh_run(ssh, (
+                f'docker run --rm {viewer_image} cat /usr/src/app/viewer/__init__.py'
+                f' > {home}/screenly/viewer/__init__.py'
+            ), timeout=30)
+            _append_log(task, 'Extracted viewer/__init__.py from image')
+
             # Step 8: Docker up
             task = ProvisionTask.objects.get(id=task_id)
             if task.status == 'failed':
