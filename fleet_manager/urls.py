@@ -81,7 +81,6 @@ def auth_status(request):
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 
-@login_required(login_url='/')
 @xframe_options_sameorigin
 def cctv_player_view(request, config_id):
     from django.utils import timezone

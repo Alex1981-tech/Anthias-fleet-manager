@@ -1,11 +1,11 @@
 services:
   redis-init:
     image: ghcr.io/alex1981-tech/anthias-redis:latest-pi5-64
-    restart: "no"
+    restart: always
     network_mode: host
     depends_on:
       - redis
-    entrypoint: ["sh", "-c", "sleep 3 && HOST_IP=$$$$(hostname -I | awk '{print $$$$1}') && redis-cli -h 127.0.0.1 SET host_agent_ready true && redis-cli -h 127.0.0.1 SET ip_addresses_ready true && redis-cli -h 127.0.0.1 SET ip_addresses \"[\\\"$$$$HOST_IP\\\"]\" && echo Redis init IP: $$$$HOST_IP"]
+    entrypoint: ["sh", "-c", "while true; do sleep 3 && HOST_IP=$$$$(hostname -I | awk '{print $$$$1}') && redis-cli -h 127.0.0.1 SET host_agent_ready true && redis-cli -h 127.0.0.1 SET ip_addresses_ready true && redis-cli -h 127.0.0.1 SET ip_addresses \"[\\\"$$$$HOST_IP\\\"]\" && echo Redis init IP: $$$$HOST_IP; sleep 27; done"]
 
   anthias-server:
     image: ghcr.io/alex1981-tech/anthias-server:latest-pi5-64
@@ -34,8 +34,6 @@ services:
       - /sys/class/graphics:/sys/class/graphics:ro
       - /sys/class/net:/sys/class/net:ro
     depends_on:
-      redis-init:
-        condition: service_completed_successfully
       redis:
         condition: service_started
 
@@ -126,8 +124,6 @@ services:
   redis:
     image: ghcr.io/alex1981-tech/anthias-redis:latest-pi5-64
     restart: always
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
