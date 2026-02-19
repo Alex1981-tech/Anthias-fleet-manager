@@ -322,6 +322,7 @@
     "durationOverridePlaceholder": "Leave empty for default",
     "durationOverrideHint": "Override duration for this slot only.",
     "clickToEditDuration": "Click to edit",
+    "infinite": "Infinite (until schedule change)",
     "volume": "Volume",
     "mute": "Mute",
     "unmute": "Unmute",
@@ -516,6 +517,9 @@
       "cctvHlsPlayback": "Players now stream CCTV via direct HLS video (smooth playback instead of JPEG snapshots)",
       "phonehomeMacFix": "Phone-home script now sends MAC address and device info for reliable identity",
       "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates",
+      "infiniteDuration": "Infinite duration (∞) for slot items — content plays until schedule change, ideal for CCTV streams",
+      "scheduleRecheck": "Periodic schedule re-check every 30s during playback — new time slots take effect without waiting for current asset to finish",
+      "tailscaleHostname": "Tailscale provisioning now sets player name as hostname for easy identification",
       "pi5ProvisionDynamicIp": "Pi5 provisioning: redis-init now detects IP dynamically instead of hardcoding, preventing stale IP after network changes",
       "fixPhonehomeAuth": "Fixed phone-home script: auth header line continuation bug prevented player registration"
     }

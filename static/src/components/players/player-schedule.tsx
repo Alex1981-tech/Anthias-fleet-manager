@@ -134,6 +134,7 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
       .join(', ')
 
   const formatDuration = (sec: number) => {
+    if (sec === 0) return '∞'
     if (sec < 60) return `${sec}s`
     const m = Math.floor(sec / 60)
     const s = sec % 60
@@ -220,7 +221,7 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
 
   const handleDurationSave = async (slot: ScheduleSlot, item: ScheduleSlotItem) => {
     const val = parseInt(editDurationValue, 10)
-    if (isNaN(val) || val < 1) {
+    if (isNaN(val) || val < 0) {
       setEditingDuration(null)
       return
     }
@@ -406,20 +407,28 @@ export const PlayerSchedule = ({ playerId, isOnline, onScheduleChange, onSlotsLo
                     </td>
                     <td>
                       {editingDuration?.slotId === slot.slot_id && editingDuration?.itemId === item.item_id ? (
-                        <input
-                          type="number"
-                          min="1"
-                          className="form-control form-control-sm"
-                          style={{ width: '80px' }}
-                          value={editDurationValue}
-                          onChange={(e) => setEditDurationValue(e.target.value)}
-                          onBlur={() => handleDurationSave(slot, item)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleDurationSave(slot, item)
-                            if (e.key === 'Escape') setEditingDuration(null)
-                          }}
-                          autoFocus
-                        />
+                        <div className="d-flex align-items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            className="form-control form-control-sm"
+                            style={{ width: '80px' }}
+                            value={editDurationValue}
+                            onChange={(e) => setEditDurationValue(e.target.value)}
+                            onBlur={() => handleDurationSave(slot, item)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleDurationSave(slot, item)
+                              if (e.key === 'Escape') setEditingDuration(null)
+                            }}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            title={t('schedule.infinite')}
+                            onMouseDown={(e) => { e.preventDefault(); setEditDurationValue('0') }}
+                          >∞</button>
+                        </div>
                       ) : (
                         <span
                           style={{ cursor: 'pointer', borderBottom: '1px dashed var(--bs-gray-400)' }}

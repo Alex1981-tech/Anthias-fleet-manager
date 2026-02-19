@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.8.6'
+export const APP_VERSION = '1.8.7'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.8.7',
+    date: '2026-02-19',
+    changeKeys: [
+      'infiniteDuration',
+      'scheduleRecheck',
+      'tailscaleHostname',
+    ],
+  },
   {
     version: '1.8.6',
     date: '2026-02-19',
