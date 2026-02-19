@@ -653,11 +653,15 @@ WantedBy=timers.target
                         else:
                             _append_log(task, 'Tailscale already installed.')
 
-                        # Authenticate
+                        # Authenticate with hostname and tag (tagged nodes never expire)
                         _append_log(task, 'Authenticating with Tailscale...')
+                        ts_hostname = (task.player_name or f'anthias-{task.ip_address}').lower()
+                        # Sanitize hostname: only alphanumeric and hyphens
+                        ts_hostname = ''.join(c if c.isalnum() or c == '-' else '-' for c in ts_hostname).strip('-')[:63]
                         _ssh_run(
                             ssh,
-                            f'sudo tailscale up --authkey={_shell_quote(ts_authkey)}',
+                            f'sudo tailscale up --authkey={_shell_quote(ts_authkey)}'
+                            f' --hostname={_shell_quote(ts_hostname)}',
                             sudo_password=ssh_password,
                             timeout=30,
                         )
