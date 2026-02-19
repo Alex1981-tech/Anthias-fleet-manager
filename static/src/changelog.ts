@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.8.5'
+export const APP_VERSION = '1.8.6'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.8.6',
+    date: '2026-02-19',
+    changeKeys: [
+      'pi5ProvisionDynamicIp',
+    ],
+  },
   {
     version: '1.8.5',
     date: '2026-02-19',

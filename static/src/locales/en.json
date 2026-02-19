@@ -516,6 +516,7 @@
       "cctvHlsPlayback": "Players now stream CCTV via direct HLS video (smooth playback instead of JPEG snapshots)",
       "phonehomeMacFix": "Phone-home script now sends MAC address and device info for reliable identity",
       "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates",
+      "pi5ProvisionDynamicIp": "Pi5 provisioning: redis-init now detects IP dynamically instead of hardcoding, preventing stale IP after network changes",
       "fixPhonehomeAuth": "Fixed phone-home script: auth header line continuation bug prevented player registration"
     }
   },

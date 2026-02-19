@@ -2,16 +2,10 @@ services:
   redis-init:
     image: ghcr.io/alex1981-tech/anthias-redis:latest-pi5-64
     restart: "no"
+    network_mode: host
     depends_on:
       - redis
-    entrypoint: >
-      sh -c "
-        sleep 2 &&
-        redis-cli -h redis SET host_agent_ready true &&
-        redis-cli -h redis SET ip_addresses_ready true &&
-        redis-cli -h redis SET ip_addresses '[\"$PI_IP\"]' &&
-        echo 'Redis keys initialized'
-      "
+    entrypoint: ["sh", "-c", "sleep 3 && HOST_IP=$$(hostname -I | awk '{print $$1}') && redis-cli -h 127.0.0.1 SET host_agent_ready true && redis-cli -h 127.0.0.1 SET ip_addresses_ready true && redis-cli -h 127.0.0.1 SET ip_addresses \"[\\\"$$HOST_IP\\\"]\" && echo Redis init IP: $$HOST_IP"]
 
   anthias-server:
     image: ghcr.io/alex1981-tech/anthias-server:latest-pi5-64
@@ -22,7 +16,6 @@ services:
       - LISTEN=0.0.0.0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - MY_IP=$PI_IP
       - HOST_USER=$PI_USER
       - HOME=/data
       - DEVICE_TYPE=pi5
