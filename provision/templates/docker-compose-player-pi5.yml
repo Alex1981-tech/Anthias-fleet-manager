@@ -5,7 +5,7 @@ services:
     network_mode: host
     depends_on:
       - redis
-    entrypoint: ["sh", "-c", "sleep 3 && HOST_IP=$$(hostname -I | awk '{print $$1}') && redis-cli -h 127.0.0.1 SET host_agent_ready true && redis-cli -h 127.0.0.1 SET ip_addresses_ready true && redis-cli -h 127.0.0.1 SET ip_addresses \"[\\\"$$HOST_IP\\\"]\" && echo Redis init IP: $$HOST_IP"]
+    entrypoint: ["sh", "-c", "sleep 3 && HOST_IP=$$$$(hostname -I | awk '{print $$$$1}') && redis-cli -h 127.0.0.1 SET host_agent_ready true && redis-cli -h 127.0.0.1 SET ip_addresses_ready true && redis-cli -h 127.0.0.1 SET ip_addresses \"[\\\"$$$$HOST_IP\\\"]\" && echo Redis init IP: $$$$HOST_IP"]
 
   anthias-server:
     image: ghcr.io/alex1981-tech/anthias-server:latest-pi5-64

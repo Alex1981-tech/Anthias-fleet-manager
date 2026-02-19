@@ -349,7 +349,9 @@ try:
             _append_log(task, '[Step 4] Creating directories...')
 
             home = f'/home/{task.ssh_user}'
-            _ssh_run(ssh, f'mkdir -p {home}/screenly/viewer {home}/.screenly {home}/screenly_assets', timeout=10)
+            _ssh_run(ssh, f'mkdir -p {home}/screenly/viewer {home}/screenly/staticfiles {home}/.screenly {home}/screenly_assets', timeout=10)
+            # Create placeholder files for bind mounts (docker compose fails if source files don't exist)
+            _ssh_run(ssh, f'touch {home}/screenly/viewer/__init__.py {home}/screenly/viewer/media_player.py', timeout=10)
             _append_log(task, 'Directories created.')
             _update_step(task, 4, 'create_dirs', 'success', 'Directories created')
 
