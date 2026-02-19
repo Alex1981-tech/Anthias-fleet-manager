@@ -1321,7 +1321,7 @@ def install_phonehome(request):
     token = getattr(settings, 'PLAYER_REGISTER_TOKEN', '')
     auth_header_line = ''
     if token:
-        auth_header_line = f'\n  -H "Authorization: Bearer {token}" \\\\'
+        auth_header_line = f'\n  -H "Authorization: Bearer {token}" \\'
 
     script = f'''#!/bin/bash
 set -e

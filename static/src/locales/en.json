@@ -515,7 +515,8 @@
       "cctvLoginRequired": "CCTV page now requires authentication (replaces nginx IP block)",
       "cctvHlsPlayback": "Players now stream CCTV via direct HLS video (smooth playback instead of JPEG snapshots)",
       "phonehomeMacFix": "Phone-home script now sends MAC address and device info for reliable identity",
-      "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates"
+      "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates",
+      "fixPhonehomeAuth": "Fixed phone-home script: auth header line continuation bug prevented player registration"
     }
   },
   "updates": {
