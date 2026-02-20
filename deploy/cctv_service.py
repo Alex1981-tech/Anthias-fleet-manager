@@ -124,7 +124,10 @@ def build_mosaic_command(config) -> list[str]:
 
 
 def build_grid_commands(config) -> list[list[str]]:
-    """Build per-camera HLS + snapshot commands for grid mode (mixed RTSP + web)."""
+    """Build per-camera HLS + snapshot commands for grid mode (mixed RTSP + web).
+
+    Each camera is scaled to CELL size (not full resolution) to reduce CPU load.
+    """
     cameras = list(config.cameras.all())
     rtsp_cameras = [(i, cam) for i, cam in enumerate(cameras) if cam.source_type == 'rtsp']
 
@@ -136,6 +139,10 @@ def build_grid_commands(config) -> list[list[str]]:
         width, height = int(width), int(height)
     except (ValueError, AttributeError):
         width, height = 1920, 1080
+
+    cols, rows = _calc_grid(len(cameras))
+    cell_w = width // cols
+    cell_h = height // rows
 
     output_dir = os.path.join(CCTV_MEDIA_DIR, str(config.id))
     os.makedirs(output_dir, exist_ok=True)
@@ -152,7 +159,7 @@ def build_grid_commands(config) -> list[list[str]]:
             '-timeout', '5000000',
             '-i', cam.rtsp_url,
             '-filter_complex',
-            f'[0:v]scale={width}:{height},setpts=PTS-STARTPTS,split=2[hls][snap]',
+            f'[0:v]scale={cell_w}:{cell_h},setpts=PTS-STARTPTS,split=2[hls][snap]',
             '-map', '[hls]',
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
