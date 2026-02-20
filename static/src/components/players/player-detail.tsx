@@ -92,6 +92,7 @@ const IR_PRESETS: Record<string, { protocol: string; scancode: string }> = {
   sony: { protocol: 'sony15', scancode: '0x0A90' },
   panasonic: { protocol: 'panasonic', scancode: '0x400401BC' },
   philips: { protocol: 'rc6_mce', scancode: '0x800F040C' },
+  sharp: { protocol: 'necx', scancode: '0x007F0A' },
 }
 
 const toDatePart = (iso: string) => {
@@ -403,7 +404,7 @@ const PlayerDetail: React.FC = () => {
     }
     loadInfo()
     loadAssets()
-    // Load display power schedule for timeline overlay
+    // Load display power schedule + IR settings on page init
     if (player.is_online) {
       playersApi.getSettings(id).then((data) => {
         const raw = data as Record<string, unknown>
@@ -418,7 +419,19 @@ const PlayerDetail: React.FC = () => {
             },
           })
         }
+        // IR settings for button visibility
+        const irEn = !!raw.ir_enabled
+        const irProto = String(raw.ir_protocol || '')
+        const irScan = String(raw.ir_power_scancode || '')
+        setIrEnabled(irEn)
+        setIrProtocol(irProto)
+        setIrScancode(irScan)
+        const matchedPreset = Object.entries(IR_PRESETS).find(
+          ([, v]) => v.protocol === irProto && v.scancode === irScan
+        )
+        setIrPreset(matchedPreset ? matchedPreset[0] : 'custom')
       }).catch(() => {})
+      playersApi.getIrStatus(id).then(setIrStatus).catch(() => setIrStatus(null))
     }
     // Load CEC status (silent fail if not supported)
     if (player.is_online) {
@@ -1691,6 +1704,27 @@ const PlayerDetail: React.FC = () => {
                       >
                         <FaDesktop size={10} /> {t('players.monitorOn')}
                       </button>
+                      {irStatus?.ir_available && irEnabled && irProtocol && irScancode && (
+                        <>
+                          <span className="text-muted mx-1">|</span>
+                          <button
+                            className="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1 py-0 px-2"
+                            disabled={!player.is_online || irTesting}
+                            onClick={async () => {
+                              setIrTesting(true)
+                              try {
+                                const result = await playersApi.irTest(id!, irProtocol, irScancode)
+                                if (result.success) {
+                                  Swal.fire({ icon: 'success', title: 'IR Power', timer: 1500, showConfirmButton: false })
+                                }
+                              } catch { /* silent */ } finally { setIrTesting(false) }
+                            }}
+                          >
+                            {irTesting ? <span className="spinner-border spinner-border-sm" style={{ width: 10, height: 10 }} /> : <FaPowerOff size={10} />}
+                            {' '}IR
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
