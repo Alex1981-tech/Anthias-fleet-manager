@@ -124,11 +124,20 @@
                 cell.className = 'grid-cell';
 
                 if (cam.source_type === 'web') {
-                    // Web source: iframe fills cell, no sandbox (Pi Qt WebEngine compat)
+                    // Web source: render at 1920x1080 then scale to cell (no sandbox — Pi Qt compat)
+                    var cellW = Math.floor(window.innerWidth / GRID_COLS);
+                    var cellH = Math.floor(window.innerHeight / GRID_ROWS);
+                    var scaleX = cellW / 1920;
+                    var scaleY = cellH / 1080;
+                    var scale = Math.min(scaleX, scaleY);
                     var iframe = document.createElement('iframe');
                     iframe.src = cam.url;
                     iframe.setAttribute('loading', 'lazy');
                     iframe.setAttribute('allow', 'autoplay; encrypted-media');
+                    iframe.style.width = '1920px';
+                    iframe.style.height = '1080px';
+                    iframe.style.transformOrigin = 'top left';
+                    iframe.style.transform = 'scale(' + scale + ')';
                     cell.appendChild(iframe);
 
                     setInterval(function() {
