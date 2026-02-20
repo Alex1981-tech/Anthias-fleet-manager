@@ -466,6 +466,8 @@
       "cctvGridHls": "CCTV-Raster: HLS-Livevideo für RTSP-Kameras mit automatischem Snapshot-Fallback für ältere Geräte",
       "cctvGridCpuFix": "CCTV-Raster: CPU-Optimierung — Kameras auf Zellgröße skaliert",
       "cctvStreamStatusFix": "CCTV-Stream-Neustart-Erkennung nach Container-Update behoben",
+      "cctvEditRestart": "CCTV-Stream startet automatisch nach Bearbeitung der Kamerakonfiguration neu",
+      "cctvWebUrlAutoDetect": "Automatische Erkennung von Web-URLs in CCTV-Konfiguration — verhindert ffmpeg-Absturz bei HTTP-URLs als RTSP",
       "cctvWebSources": "CCTV-Raster: Webseiten werden im iframe mit 1920×1080 gerendert und auf Zellengröße skaliert",
       "cctvMosaicSimplify": "Vereinfachter Mosaik-Editor — Drag-and-Drop zum Tauschen der Kamerapositionen"
     }

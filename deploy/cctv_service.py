@@ -38,11 +38,16 @@ def has_web_sources(config) -> bool:
 
 
 def build_mosaic_command(config) -> list[str]:
-    """Build ffmpeg command for mosaic mode (RTSP-only)."""
-    cameras = list(config.cameras.all())
+    """Build ffmpeg command for mosaic mode (RTSP-only).
+
+    Filters out any web-type cameras as a safety net — if web sources
+    are present, callers should use build_grid_commands() instead.
+    """
+    all_cameras = list(config.cameras.all())
+    cameras = [cam for cam in all_cameras if cam.source_type != 'web']
     n = len(cameras)
     if n == 0:
-        raise ValueError('No cameras configured')
+        raise ValueError('No RTSP cameras configured')
 
     try:
         width, height = config.resolution.split('x')
@@ -60,7 +65,7 @@ def build_mosaic_command(config) -> list[str]:
 
     cmd = ['ffmpeg', '-y']
 
-    # Input streams
+    # Input streams (RTSP only)
     for cam in cameras:
         cmd.extend([
             '-rtsp_transport', 'tcp',

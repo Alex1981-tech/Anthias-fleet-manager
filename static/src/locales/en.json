@@ -531,6 +531,8 @@
       "cctvGridHls": "CCTV grid mode: HLS live video for RTSP cameras with automatic snapshot fallback for legacy devices",
       "cctvGridCpuFix": "CCTV grid: optimized CPU — cameras scaled to cell size",
       "cctvStreamStatusFix": "Fixed CCTV stream restart detection after container update",
+      "cctvEditRestart": "CCTV stream auto-restarts after editing camera configuration",
+      "cctvWebUrlAutoDetect": "Auto-detect web URLs in CCTV config — prevents ffmpeg crash from HTTP URLs treated as RTSP",
       "cctvWebSources": "CCTV grid mode: web URL sources rendered at 1920x1080 in iframe, scaled to fit grid cells",
       "cctvMosaicSimplify": "Simplified mosaic editor — drag-to-swap camera positions, removed react-grid-layout dependency",
       "infiniteDuration": "Infinite duration (∞) for slot items — content plays until schedule change, ideal for CCTV streams",

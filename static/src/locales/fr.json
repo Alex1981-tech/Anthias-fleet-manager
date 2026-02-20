@@ -466,6 +466,8 @@
       "cctvGridHls": "Grille CCTV : vidéo HLS en direct pour caméras RTSP avec basculement automatique vers les captures pour appareils anciens",
       "cctvGridCpuFix": "Grille CCTV : optimisation CPU — caméras redimensionnées à la taille de cellule",
       "cctvStreamStatusFix": "Correction de la détection du redémarrage du flux CCTV après mise à jour",
+      "cctvEditRestart": "Le flux CCTV redémarre automatiquement après modification de la configuration des caméras",
+      "cctvWebUrlAutoDetect": "Détection automatique des URL web dans la configuration CCTV — évite le crash ffmpeg avec des URL HTTP traitées comme RTSP",
       "cctvWebSources": "Grille CCTV : pages web affichées en iframe 1920×1080, mises à l'échelle pour s'adapter aux cellules",
       "cctvMosaicSimplify": "Éditeur de mosaïque simplifié — glisser-déplacer pour échanger les positions des caméras"
     }

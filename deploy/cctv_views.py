@@ -44,11 +44,20 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
+    @staticmethod
+    def _fix_source_type(cam_data: dict) -> dict:
+        """Auto-detect web URLs even if source_type is set to 'rtsp'."""
+        url = (cam_data.get('rtsp_url') or '').strip().lower()
+        if url.startswith(('http://', 'https://')) and not url.startswith('rtsp'):
+            cam_data['source_type'] = 'web'
+        return cam_data
+
     def create(self, validated_data):
         cameras_data = validated_data.pop('cameras', [])
         config = CctvConfig.objects.create(**validated_data)
         for i, cam_data in enumerate(cameras_data):
             cam_data['sort_order'] = cam_data.get('sort_order', i)
+            self._fix_source_type(cam_data)
             CctvCamera.objects.create(config=config, **cam_data)
 
         # Auto-create linked MediaFile
@@ -75,6 +84,7 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
             for i, cam_data in enumerate(cameras_data):
                 cam_data.pop('id', None)
                 cam_data['sort_order'] = cam_data.get('sort_order', i)
+                self._fix_source_type(cam_data)
                 CctvCamera.objects.create(config=instance, **cam_data)
 
         # Sync name to MediaFile
@@ -131,15 +141,16 @@ def cctv_detail(request, config_id):
     from .audit import log_action
     log_action(request, 'update', 'cctv', target_id=config.id, target_name=config.name)
 
-    # Stop running stream — it will restart with new config when needed
-    # (preview modal open, player schedule, or manual start)
+    # Restart stream with new config if it was active
     if config.is_active:
-        from .cctv_service import get_stream_status, stop_stream
-        stream_status = get_stream_status(str(config.id))
-        if stream_status.get('status') == 'running':
-            stop_stream(str(config.id))
-        config.is_active = False
-        config.save(update_fields=['is_active'])
+        from .cctv_service import start_stream, stop_stream
+        stop_stream(str(config.id))
+        try:
+            start_stream(str(config.id))
+        except Exception:
+            logger.exception('Failed to restart CCTV stream %s after edit', config.id)
+            config.is_active = False
+            config.save(update_fields=['is_active'])
 
     return Response(CctvConfigSerializer(config).data)
 

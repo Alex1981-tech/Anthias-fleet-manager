@@ -466,6 +466,8 @@
       "cctvGridHls": "Siatka CCTV: wideo HLS na żywo dla kamer RTSP z automatycznym przełączaniem na zrzuty dla starszych urządzeń",
       "cctvGridCpuFix": "Siatka CCTV: optymalizacja CPU — kamery skalowane do rozmiaru komórki",
       "cctvStreamStatusFix": "Naprawiono wykrywanie restartu strumienia CCTV po aktualizacji kontenera",
+      "cctvEditRestart": "Strumień CCTV automatycznie restartuje się po edycji konfiguracji kamer",
+      "cctvWebUrlAutoDetect": "Automatyczne wykrywanie URL web w konfiguracji CCTV — zapobiega awarii ffmpeg przy URL HTTP traktowanych jako RTSP",
       "cctvWebSources": "Siatka CCTV: strony internetowe renderowane w iframe 1920×1080, skalowane do rozmiaru komórki",
       "cctvMosaicSimplify": "Uproszczony edytor mozaiki — przeciągnij i upuść aby zamienić pozycje kamer"
     }
