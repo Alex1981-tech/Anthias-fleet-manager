@@ -355,10 +355,6 @@ def get_stream_status(config_id: str) -> dict:
     """Get status of ffmpeg stream for a CCTV config."""
     pid_str = cache.get(_get_pid_key(config_id))
     if not pid_str:
-        # Check if it's an all-web config (no ffmpeg needed but still "running")
-        output_dir = os.path.join(CCTV_MEDIA_DIR, str(config_id))
-        if os.path.isdir(output_dir):
-            return {'status': 'running', 'pids': []}
         return {'status': 'stopped', 'pids': []}
 
     pids = [int(p) for p in str(pid_str).split(',') if p.strip()]
