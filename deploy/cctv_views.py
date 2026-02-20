@@ -157,7 +157,7 @@ def cctv_start(request, config_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    from .cctv_service import start_stream, update_thumbnail
+    from .cctv_service import start_stream, stitch_grid_snapshot, update_thumbnail
     try:
         start_stream(str(config.id))
         config.is_active = True
@@ -168,6 +168,7 @@ def cctv_start(request, config_id):
             import time
             time.sleep(5)
             try:
+                stitch_grid_snapshot(str(config.id))
                 update_thumbnail(str(config.id))
             except Exception:
                 logger.debug('Failed to update CCTV thumbnail for %s', config.id)
@@ -233,12 +234,13 @@ def cctv_request_start(request, config_id):
     config.last_requested_at = timezone.now()
     config.save(update_fields=['last_requested_at'])
 
-    from .cctv_service import get_stream_status, start_stream, update_thumbnail
+    from .cctv_service import get_stream_status, start_stream, stitch_grid_snapshot, update_thumbnail
     stream_status = get_stream_status(str(config.id))
 
     if stream_status['status'] == 'running':
-        # Update thumbnail from latest snapshot
+        # Refresh grid mosaic snapshot + thumbnail
         try:
+            stitch_grid_snapshot(str(config.id))
             update_thumbnail(str(config.id))
         except Exception:
             pass
@@ -254,6 +256,7 @@ def cctv_request_start(request, config_id):
             import time
             time.sleep(5)
             try:
+                stitch_grid_snapshot(str(config.id))
                 update_thumbnail(str(config.id))
             except Exception:
                 pass

@@ -380,6 +380,89 @@ def get_stream_status(config_id: str) -> dict:
     return {'status': 'stopped', 'pids': []}
 
 
+def stitch_grid_snapshot(config_id: str):
+    """Combine per-camera cam_N.jpg files into a single snapshot.jpg mosaic.
+
+    Used in grid mode where each RTSP camera produces its own snapshot.
+    The resulting snapshot.jpg is used for the live preview on the player page.
+    """
+    from .models import CctvConfig
+
+    output_dir = os.path.join(CCTV_MEDIA_DIR, config_id)
+    if not os.path.isdir(output_dir):
+        return False
+
+    try:
+        config = CctvConfig.objects.prefetch_related('cameras').get(pk=config_id)
+    except CctvConfig.DoesNotExist:
+        return False
+
+    cameras = list(config.cameras.all())
+    n = len(cameras)
+    if n <= 1:
+        return False
+
+    # Collect existing per-camera snapshots
+    cam_files = []
+    for i in range(n):
+        cam_path = os.path.join(output_dir, f'cam_{i}.jpg')
+        if os.path.isfile(cam_path):
+            cam_files.append((i, cam_path))
+
+    if not cam_files:
+        return False
+
+    try:
+        width, height = config.resolution.split('x')
+        width, height = int(width), int(height)
+    except (ValueError, AttributeError):
+        width, height = 1920, 1080
+
+    cols, rows = _calc_grid(n)
+    cell_w = width // cols
+    cell_h = height // rows
+
+    # Build ffmpeg command to create mosaic from JPEG files
+    cmd = ['ffmpeg', '-y']
+    for _, path in cam_files:
+        cmd.extend(['-i', path])
+
+    num_inputs = len(cam_files)
+    parts = []
+    for idx, (cam_idx, _) in enumerate(cam_files):
+        parts.append(f'[{idx}:v]scale={cell_w}:{cell_h}[s{idx}]')
+
+    parts.append(f'color=c=black:s={width}x{height}[bg]')
+
+    prev = 'bg'
+    for idx, (cam_idx, _) in enumerate(cam_files):
+        col = cam_idx % cols
+        row = cam_idx // cols
+        x = col * cell_w
+        y = row * cell_h
+        out_label = f'v{idx}' if idx < num_inputs - 1 else 'out'
+        parts.append(f'[{prev}][s{idx}]overlay={x}:{y}[{out_label}]')
+        prev = f'v{idx}'
+
+    filter_complex = ';'.join(parts)
+    snapshot_path = os.path.join(output_dir, 'snapshot.jpg')
+
+    cmd.extend([
+        '-filter_complex', filter_complex,
+        '-map', '[out]',
+        '-frames:v', '1',
+        '-q:v', '5',
+        snapshot_path,
+    ])
+
+    try:
+        subprocess.run(cmd, capture_output=True, timeout=10)
+        return True
+    except Exception:
+        logger.debug('Failed to stitch grid snapshot for %s', config_id)
+        return False
+
+
 def update_thumbnail(config_id: str):
     """Copy snapshot.jpg from ffmpeg output to MediaFile.thumbnail."""
     from .models import CctvConfig

@@ -479,7 +479,7 @@ def check_cctv_schedules(self):
     import requests
     from django.utils import timezone
 
-    from deploy.cctv_service import get_stream_status, start_stream, stop_stream, update_thumbnail
+    from deploy.cctv_service import get_stream_status, start_stream, stitch_grid_snapshot, stop_stream, update_thumbnail
     from deploy.models import CctvConfig
     from players.models import Player
 
@@ -503,7 +503,7 @@ def check_cctv_schedules(self):
         except Exception:
             logger.debug('Failed to check schedule for player %s', player.name)
 
-    # Start streams that are needed
+    # Start streams that are needed + refresh grid snapshots
     for config_id in needed_config_ids:
         try:
             config = CctvConfig.objects.get(pk=config_id)
@@ -522,11 +522,15 @@ def check_cctv_schedules(self):
                 def _thumb(cid):
                     time.sleep(5)
                     try:
+                        stitch_grid_snapshot(cid)
                         update_thumbnail(cid)
                     except Exception:
                         logger.warning('Failed to update CCTV thumbnail for %s', cid, exc_info=True)
 
                 threading.Thread(target=_thumb, args=(config_id,), daemon=True).start()
+            else:
+                # Running stream — refresh grid mosaic snapshot for live view
+                stitch_grid_snapshot(config_id)
         except CctvConfig.DoesNotExist:
             pass
         except Exception:

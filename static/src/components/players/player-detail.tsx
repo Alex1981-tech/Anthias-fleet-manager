@@ -499,14 +499,22 @@ const PlayerDetail: React.FC = () => {
     return () => clearInterval(intervalId)
   }, [id, player?.is_online, assets])
 
-  // CCTV snapshot auto-refresh (every 2s)
+  // CCTV snapshot auto-refresh (every 2s) — try snapshot.jpg, fallback to cam_0.jpg
   useEffect(() => {
     if (!cctvConfigId || !liveViewEnabled) {
       setLiveSnapshotUrl('')
       return
     }
+    const ts = () => Date.now()
+    const snapshotUrl = `/media/cctv/${cctvConfigId}/snapshot.jpg`
+    const cam0Url = `/media/cctv/${cctvConfigId}/cam_0.jpg`
+
     const updateSnapshot = () => {
-      setLiveSnapshotUrl(`/media/cctv/${cctvConfigId}/snapshot.jpg?t=${Date.now()}`)
+      // Try snapshot.jpg first (mosaic or stitched grid), fallback to cam_0.jpg
+      const img = new Image()
+      img.onload = () => setLiveSnapshotUrl(`${snapshotUrl}?t=${ts()}`)
+      img.onerror = () => setLiveSnapshotUrl(`${cam0Url}?t=${ts()}`)
+      img.src = `${snapshotUrl}?t=${ts()}`
     }
     updateSnapshot()
     const intervalId = setInterval(updateSnapshot, 2000)
