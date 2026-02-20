@@ -3,7 +3,7 @@ import threading
 
 from django.utils import timezone
 from rest_framework import serializers, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class CctvCameraSerializer(serializers.ModelSerializer):
     class Meta:
         model = CctvCamera
-        fields = ['id', 'name', 'rtsp_url', 'sort_order']
+        fields = ['id', 'name', 'rtsp_url', 'source_type', 'sort_order']
         read_only_fields = ['id']
 
 
@@ -27,7 +27,7 @@ class CctvConfigSerializer(serializers.ModelSerializer):
         model = CctvConfig
         fields = [
             'id', 'name', 'display_mode', 'rotation_interval',
-            'resolution', 'fps', 'is_active', 'cameras',
+            'resolution', 'fps', 'mosaic_layout', 'is_active', 'cameras',
             'media_file_id', 'created_at',
         ]
         read_only_fields = ['id', 'is_active', 'created_at']
@@ -40,7 +40,7 @@ class CctvConfigWriteSerializer(serializers.ModelSerializer):
         model = CctvConfig
         fields = [
             'id', 'name', 'display_mode', 'rotation_interval',
-            'resolution', 'fps', 'cameras',
+            'resolution', 'fps', 'mosaic_layout', 'cameras',
         ]
         read_only_fields = ['id']
 
@@ -214,6 +214,7 @@ def cctv_status(request, config_id):
 
 
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def cctv_request_start(request, config_id):
     """Public endpoint — player calls this before showing CCTV asset."""

@@ -461,7 +461,11 @@
       "cctvLoginRequired": "Strona CCTV wymaga teraz uwierzytelnienia (zastępuje blokadę IP nginx)",
       "cctvHlsPlayback": "Odtwarzacze teraz strumieniują CCTV przez bezpośrednie wideo HLS (płynne odtwarzanie zamiast zrzutów JPEG)",
       "phonehomeMacFix": "Skrypt phone-home wysyła teraz adres MAC i informacje o urządzeniu",
-      "provisionMacDedup": "Provisioning identyfikuje odtwarzacze po adresie MAC, aby uniknąć duplikatów"
+      "provisionMacDedup": "Provisioning identyfikuje odtwarzacze po adresie MAC, aby uniknąć duplikatów",
+      "serverTelemetry": "Panel telemetrii serwera — CPU, pamięć, dysk na żywo z paskami postępu i automatycznym odświeżaniem",
+      "cctvGridHls": "Siatka CCTV: wideo HLS na żywo dla kamer RTSP z automatycznym przełączaniem na zrzuty dla starszych urządzeń",
+      "cctvWebSources": "Siatka CCTV: strony internetowe renderowane w iframe 1920×1080, skalowane do rozmiaru komórki",
+      "cctvMosaicSimplify": "Uproszczony edytor mozaiki — przeciągnij i upuść aby zamienić pozycje kamer"
     }
   },
   "updates": {
@@ -519,7 +523,11 @@
     "noConfigsDesc": "Dodaj konfigurację, aby rozpocząć strumieniowanie kamer monitoringu.",
     "noCameras": "Dodaj co najmniej jedną kamerę",
     "configName": "Nazwa konfiguracji",
-    "configNamePlaceholder": "np. Kamery biurowe"
+    "configNamePlaceholder": "np. Kamery biurowe",
+    "mosaicLayout": "Układ mozaiki",
+    "autoGrid": "Auto-siatka",
+    "dragSwap": "Przeciągnij kamery, aby zamienić pozycje",
+    "camera": "Kamera"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

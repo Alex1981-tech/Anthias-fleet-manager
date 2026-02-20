@@ -88,7 +88,7 @@ def cctv_player_view(request, config_id):
 
     from deploy.cctv_service import get_stream_status, start_stream
     from deploy.models import CctvConfig
-    config = get_object_or_404(CctvConfig, pk=config_id)
+    config = get_object_or_404(CctvConfig.objects.prefetch_related('cameras'), pk=config_id)
     # Track that someone is watching — prevents Celery auto-stop
     CctvConfig.objects.filter(pk=config.pk).update(last_requested_at=timezone.now())
     # Auto-start stream when page is opened
@@ -98,12 +98,34 @@ def cctv_player_view(request, config_id):
             start_stream(str(config.id))
         except Exception:
             logger.warning('Failed to auto-start CCTV stream %s', config_id, exc_info=True)
+
+    from deploy.cctv_service import has_web_sources, _calc_grid
+    import json
+
+    grid_mode = config.display_mode == 'mosaic' and has_web_sources(config)
+    cameras = list(config.cameras.all())
+    cols, rows = _calc_grid(len(cameras))
+
+    cameras_json = json.dumps([
+        {
+            'index': i,
+            'name': cam.name or f'Camera {i + 1}',
+            'url': cam.rtsp_url,
+            'source_type': cam.source_type,
+        }
+        for i, cam in enumerate(cameras)
+    ])
+
     return render(request, 'cctv_player.html', {
         'config_id': str(config.id),
         'config_name': config.name,
         'display_mode': config.display_mode,
         'rotation_interval': config.rotation_interval,
-        'camera_count': config.cameras.count(),
+        'camera_count': len(cameras),
+        'grid_mode': grid_mode,
+        'grid_cols': cols,
+        'grid_rows': rows,
+        'cameras_json': cameras_json,
     })
 
 

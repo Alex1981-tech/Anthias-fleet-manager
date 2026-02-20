@@ -7,9 +7,9 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
-        video, #snapshot { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #video, #snapshot { width: 100%; height: 100%; object-fit: contain; display: none; }
         #snapshot.active { display: block; }
-        video.active { display: block; }
+        #video.active { display: block; }
         #status {
             position: absolute;
             bottom: 10px; left: 10px;
@@ -19,11 +19,49 @@
             z-index: 10;
         }
         #status.hidden { display: none; }
+
+        /* Grid mode styles */
+        #grid-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            gap: 2px;
+            background: #000;
+        }
+        #grid-container.active {
+            display: grid;
+        }
+        .grid-cell {
+            position: relative;
+            overflow: hidden;
+            background: #111;
+        }
+        .grid-cell video,
+        .grid-cell img,
+        .grid-cell iframe {
+            display: block;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            border: none;
+        }
+        .grid-cell-label {
+            position: absolute;
+            bottom: 4px; left: 6px;
+            color: rgba(255,255,255,0.7);
+            font-family: monospace;
+            font-size: 11px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <video id="video" autoplay muted playsinline></video>
     <img id="snapshot" alt="">
+    <div id="grid-container"></div>
     <div id="status">...</div>
 
     <script>
@@ -31,9 +69,14 @@
         var DISPLAY_MODE = '{{ display_mode|escapejs }}';
         var ROTATION_INTERVAL = {{ rotation_interval }};
         var CAMERA_COUNT = {{ camera_count }};
+        var GRID_MODE = {{ grid_mode|yesno:"true,false" }};
+        var GRID_COLS = {{ grid_cols }};
+        var GRID_ROWS = {{ grid_rows }};
+        var CAMERAS = {{ cameras_json|safe }};
 
         var video = document.getElementById('video');
         var snapshot = document.getElementById('snapshot');
+        var gridContainer = document.getElementById('grid-container');
         var statusDiv = document.getElementById('status');
         var hlsPlaying = false;
         var snapshotMode = false;
@@ -43,13 +86,7 @@
         function log(msg) { statusDiv.textContent = msg; }
         function hideStatus() { statusDiv.classList.add('hidden'); }
 
-        var hlsSrc = DISPLAY_MODE === 'mosaic'
-            ? '/media/cctv/' + CONFIG_ID + '/stream.m3u8'
-            : '/media/cctv/' + CONFIG_ID + '/cam_0/stream.m3u8';
-
-        var snapshotSrc = '/media/cctv/' + CONFIG_ID + '/snapshot.jpg';
-
-        // Keepalive: ping FM every 60s so Celery knows someone is watching
+        // Keepalive: ping FM every 60s
         (function keepalive() {
             var url = '/api/cctv/' + CONFIG_ID + '/request-start/';
             setInterval(function() {
@@ -57,13 +94,137 @@
             }, 60000);
         })();
 
-        // Strategy: try HLS first (for capable browsers), fallback to JPEG snapshot
-        tryHLS();
+        if (GRID_MODE) {
+            loadHlsLib(startGridMode);
+        } else {
+            var hlsSrc = DISPLAY_MODE === 'mosaic'
+                ? '/media/cctv/' + CONFIG_ID + '/stream.m3u8'
+                : '/media/cctv/' + CONFIG_ID + '/cam_0/stream.m3u8';
+            var snapshotSrc = '/media/cctv/' + CONFIG_ID + '/snapshot.jpg';
+            tryHLS();
+        }
+
+        var hlsLib = null; // will be set after loading
+        function loadHlsLib(cb) {
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1';
+            script.onload = function() { hlsLib = typeof Hls !== 'undefined' && Hls.isSupported() ? Hls : null; cb(); };
+            script.onerror = function() { hlsLib = null; cb(); };
+            document.head.appendChild(script);
+        }
+
+        function startGridMode() {
+            log('Grid mode');
+            gridContainer.style.gridTemplateColumns = 'repeat(' + GRID_COLS + ', 1fr)';
+            gridContainer.style.gridTemplateRows = 'repeat(' + GRID_ROWS + ', 1fr)';
+            gridContainer.classList.add('active');
+
+            CAMERAS.forEach(function(cam) {
+                var cell = document.createElement('div');
+                cell.className = 'grid-cell';
+
+                if (cam.source_type === 'web') {
+                    // Web source: iframe rendered at 1920x1080, scaled to fit cell
+                    var iframe = document.createElement('iframe');
+                    iframe.src = cam.url;
+                    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
+                    iframe.setAttribute('loading', 'lazy');
+                    iframe.style.width = '1920px';
+                    iframe.style.height = '1080px';
+                    iframe.style.transformOrigin = '0 0';
+                    var cellW = Math.floor(window.innerWidth / GRID_COLS);
+                    var cellH = Math.floor(window.innerHeight / GRID_ROWS);
+                    iframe.style.transform = 'scale(' + (cellW / 1920) + ',' + (cellH / 1080) + ')';
+                    cell.appendChild(iframe);
+
+                    setInterval(function() {
+                        try { iframe.contentWindow.location.reload(); } catch(e) {
+                            iframe.src = cam.url + (cam.url.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
+                        }
+                    }, 60000);
+                } else {
+                    // RTSP source: try HLS video, fallback to snapshot
+                    var camHlsSrc = '/media/cctv/' + CONFIG_ID + '/cam_' + cam.index + '/stream.m3u8';
+                    var camSnapshotSrc = '/media/cctv/' + CONFIG_ID + '/cam_' + cam.index + '.jpg';
+
+                    if (hlsLib) {
+                        var vid = document.createElement('video');
+                        vid.autoplay = true;
+                        vid.muted = true;
+                        vid.playsInline = true;
+                        cell.appendChild(vid);
+
+                        (function(v, hlsSrc, snapSrc, c) {
+                            var netRetries = 0;
+                            var hls = new Hls({
+                                liveDurationInfinity: true,
+                                liveBackBufferLength: 0,
+                                maxBufferLength: 5,
+                                maxMaxBufferLength: 10,
+                                enableWorker: false,
+                                lowLatencyMode: true,
+                                manifestLoadingMaxRetry: 6,
+                                manifestLoadingRetryDelay: 2000,
+                                levelLoadingMaxRetry: 6,
+                                levelLoadingRetryDelay: 2000,
+                                fragLoadingMaxRetry: 6,
+                            });
+                            hls.loadSource(hlsSrc);
+                            hls.attachMedia(v);
+                            hls.on(Hls.Events.MANIFEST_PARSED, function() { v.play().catch(function(){}); });
+                            hls.on(Hls.Events.ERROR, function(ev, data) {
+                                if (data.fatal) {
+                                    if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                                        hls.recoverMediaError();
+                                    } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && netRetries < 5) {
+                                        netRetries++;
+                                        setTimeout(function() { hls.startLoad(); }, 3000);
+                                    } else {
+                                        // HLS failed — switch to snapshot fallback
+                                        hls.destroy();
+                                        v.remove();
+                                        gridCellSnapshot(c, snapSrc);
+                                    }
+                                }
+                            });
+                        })(vid, camHlsSrc, camSnapshotSrc, cell);
+                    } else {
+                        // No HLS support — snapshot mode
+                        gridCellSnapshot(cell, camSnapshotSrc);
+                    }
+                }
+
+                // Label
+                var label = document.createElement('div');
+                label.className = 'grid-cell-label';
+                label.textContent = cam.name;
+                cell.appendChild(label);
+
+                gridContainer.appendChild(cell);
+            });
+
+            hideTimer = setTimeout(hideStatus, 3000);
+        }
+
+        function gridCellSnapshot(cell, src) {
+            var img = document.createElement('img');
+            img.alt = '';
+            function refresh() {
+                var tmp = new Image();
+                tmp.onload = function() { img.src = tmp.src; };
+                tmp.src = src + '?t=' + Date.now();
+            }
+            refresh();
+            setInterval(refresh, 2000);
+            // Insert before label
+            var label = cell.querySelector('.grid-cell-label');
+            if (label) cell.insertBefore(img, label);
+            else cell.appendChild(img);
+        }
 
         function tryHLS() {
             log('Trying HLS...');
 
-            // Load hls.js
             var script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1';
             script.onload = function() {
@@ -81,7 +242,6 @@
             };
             document.head.appendChild(script);
 
-            // If HLS doesn't start playing within 8 seconds, switch to snapshot mode
             setTimeout(function() {
                 if (!hlsPlaying && !snapshotMode) {
                     log('HLS timeout');
@@ -91,6 +251,7 @@
         }
 
         function initHLS(src) {
+            var netRetries = 0;
             var hls = new Hls({
                 liveDurationInfinity: true,
                 liveBackBufferLength: 0,
@@ -98,6 +259,11 @@
                 maxMaxBufferLength: 10,
                 enableWorker: true,
                 lowLatencyMode: true,
+                manifestLoadingMaxRetry: 6,
+                manifestLoadingRetryDelay: 2000,
+                levelLoadingMaxRetry: 6,
+                levelLoadingRetryDelay: 2000,
+                fragLoadingMaxRetry: 6,
             });
 
             hls.loadSource(src);
@@ -121,8 +287,11 @@
                 if (data.fatal) {
                     if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                         hls.recoverMediaError();
+                    } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && netRetries < 5) {
+                        netRetries++;
+                        log('HLS retry ' + netRetries + '/5...');
+                        setTimeout(function() { hls.startLoad(); }, 3000);
                     } else {
-                        // Fatal network or other error — fall back to snapshot
                         if (!snapshotMode) {
                             log('HLS error: ' + data.details);
                             startSnapshotMode();
@@ -147,7 +316,6 @@
             snapshot.classList.add('active');
             log('Snapshot mode');
 
-            // Load snapshot with cache-busting
             function loadSnapshot() {
                 var img = new Image();
                 img.onload = function() {
@@ -155,9 +323,6 @@
                     if (!hideTimer) {
                         hideTimer = setTimeout(hideStatus, 5000);
                     }
-                };
-                img.onerror = function() {
-                    // Snapshot not ready yet, retry
                 };
                 img.src = snapshotSrc + '?t=' + Date.now();
             }

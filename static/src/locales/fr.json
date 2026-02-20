@@ -461,7 +461,11 @@
       "cctvLoginRequired": "La page CCTV nécessite maintenant une authentification (remplace le blocage IP nginx)",
       "cctvHlsPlayback": "Les lecteurs diffusent maintenant le CCTV via vidéo HLS directe (lecture fluide au lieu de snapshots JPEG)",
       "phonehomeMacFix": "Le script phone-home envoie maintenant l'adresse MAC et les informations de l'appareil",
-      "provisionMacDedup": "Le provisionnement identifie les lecteurs par adresse MAC pour éviter les doublons"
+      "provisionMacDedup": "Le provisionnement identifie les lecteurs par adresse MAC pour éviter les doublons",
+      "serverTelemetry": "Tableau de bord de télémétrie serveur — CPU, mémoire, disque en temps réel avec barres de progression et actualisation automatique",
+      "cctvGridHls": "Grille CCTV : vidéo HLS en direct pour caméras RTSP avec basculement automatique vers les captures pour appareils anciens",
+      "cctvWebSources": "Grille CCTV : pages web affichées en iframe 1920×1080, mises à l'échelle pour s'adapter aux cellules",
+      "cctvMosaicSimplify": "Éditeur de mosaïque simplifié — glisser-déplacer pour échanger les positions des caméras"
     }
   },
   "updates": {
@@ -519,7 +523,11 @@
     "noConfigsDesc": "Ajoutez une configuration pour diffuser les caméras de surveillance.",
     "noCameras": "Ajoutez au moins une caméra",
     "configName": "Nom de la configuration",
-    "configNamePlaceholder": "ex. Caméras du bureau"
+    "configNamePlaceholder": "ex. Caméras du bureau",
+    "mosaicLayout": "Disposition mosaïque",
+    "autoGrid": "Grille auto",
+    "dragSwap": "Glissez les caméras pour échanger les positions",
+    "camera": "Caméra"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

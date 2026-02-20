@@ -528,6 +528,9 @@
       "phonehomeMacFix": "Phone-home script now sends MAC address and device info for reliable identity",
       "provisionMacDedup": "Provisioning identifies players by MAC address to prevent duplicates",
       "serverTelemetry": "Server telemetry dashboard — live CPU, memory, disk usage with progress bars and auto-refresh",
+      "cctvGridHls": "CCTV grid mode: HLS live video for RTSP cameras with automatic snapshot fallback for legacy devices",
+      "cctvWebSources": "CCTV grid mode: web URL sources rendered at 1920x1080 in iframe, scaled to fit grid cells",
+      "cctvMosaicSimplify": "Simplified mosaic editor — drag-to-swap camera positions, removed react-grid-layout dependency",
       "infiniteDuration": "Infinite duration (∞) for slot items — content plays until schedule change, ideal for CCTV streams",
       "scheduleRecheck": "Periodic schedule re-check every 30s during playback — new time slots take effect without waiting for current asset to finish",
       "tailscaleHostname": "Tailscale provisioning now sets player name as hostname for easy identification",
@@ -590,7 +593,11 @@
     "noConfigsDesc": "Add a configuration to start streaming surveillance cameras.",
     "noCameras": "Add at least one camera",
     "configName": "Configuration Name",
-    "configNamePlaceholder": "e.g. Office Cameras"
+    "configNamePlaceholder": "e.g. Office Cameras",
+    "mosaicLayout": "Mosaic Layout",
+    "autoGrid": "Auto Grid",
+    "dragSwap": "Drag cameras to swap positions",
+    "camera": "Camera"
   },
   "footer": {
     "copyright": "Anthias Fleet Manager"

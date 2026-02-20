@@ -150,6 +150,7 @@ export interface CctvCamera {
   id: string
   name: string
   rtsp_url: string
+  source_type: 'rtsp' | 'web'
   sort_order: number
 }
 
@@ -160,6 +161,7 @@ export interface CctvConfig {
   rotation_interval: number
   resolution: string
   fps: number
+  mosaic_layout?: unknown[] | null
   is_active: boolean
   cameras: CctvCamera[]
   media_file_id?: string | null

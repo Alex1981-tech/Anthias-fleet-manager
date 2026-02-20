@@ -32,8 +32,13 @@ def _calc_grid(n: int) -> tuple[int, int]:
     return cols, rows
 
 
+def has_web_sources(config) -> bool:
+    """Check if config has any web-type camera sources."""
+    return config.cameras.filter(source_type='web').exists()
+
+
 def build_mosaic_command(config) -> list[str]:
-    """Build ffmpeg command for mosaic mode."""
+    """Build ffmpeg command for mosaic mode (RTSP-only)."""
     cameras = list(config.cameras.all())
     n = len(cameras)
     if n == 0:
@@ -55,7 +60,7 @@ def build_mosaic_command(config) -> list[str]:
 
     cmd = ['ffmpeg', '-y']
 
-    # Input streams — credentials are embedded in RTSP URL directly
+    # Input streams
     for cam in cameras:
         cmd.extend([
             '-rtsp_transport', 'tcp',
@@ -64,23 +69,18 @@ def build_mosaic_command(config) -> list[str]:
         ])
 
     if n == 1:
-        # Single camera — just scale, then split for HLS + snapshot
         filter_complex = (
             f'[0:v]scale={width}:{height},setpts=PTS-STARTPTS,split=2[hls][snap]'
         )
     else:
-        # Build mosaic filter
         parts = []
-        # Scale each input
         for i in range(n):
             parts.append(f'[{i}:v]scale={cell_w}:{cell_h},setpts=PTS-STARTPTS[s{i}]')
 
-        # Create black background
         parts.append(
             f'color=c=black:s={width}x{height}:r={config.fps}[bg]'
         )
 
-        # Overlay each camera onto grid
         prev = 'bg'
         for i in range(n):
             col = i % cols
@@ -91,7 +91,6 @@ def build_mosaic_command(config) -> list[str]:
             parts.append(f'[{prev}][s{i}]overlay={x}:{y}:shortest=1[{out_label}]')
             prev = f'v{i}'
 
-        # Split mosaic output for HLS + snapshot
         parts.append('[mosaic]split=2[hls][snap]')
         filter_complex = ';'.join(parts)
 
@@ -99,7 +98,6 @@ def build_mosaic_command(config) -> list[str]:
 
     cmd.extend([
         '-filter_complex', filter_complex,
-        # Output 1: HLS stream
         '-map', '[hls]',
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
@@ -113,7 +111,6 @@ def build_mosaic_command(config) -> list[str]:
         '-hls_flags', 'delete_segments+append_list',
         '-hls_segment_filename', os.path.join(output_dir, 'seg_%03d.ts'),
         output_path,
-        # Output 2: JPEG snapshot (updated every 0.5 seconds)
         '-map', '[snap]',
         '-c:v', 'mjpeg',
         '-q:v', '5',
@@ -126,8 +123,64 @@ def build_mosaic_command(config) -> list[str]:
     return cmd
 
 
-def build_rotation_command(config) -> list[str]:
-    """Build ffmpeg command for rotation mode — one camera at a time, cycling via concat demuxer."""
+def build_grid_commands(config) -> list[list[str]]:
+    """Build per-camera HLS + snapshot commands for grid mode (mixed RTSP + web)."""
+    cameras = list(config.cameras.all())
+    rtsp_cameras = [(i, cam) for i, cam in enumerate(cameras) if cam.source_type == 'rtsp']
+
+    if not rtsp_cameras:
+        return []
+
+    try:
+        width, height = config.resolution.split('x')
+        width, height = int(width), int(height)
+    except (ValueError, AttributeError):
+        width, height = 1920, 1080
+
+    output_dir = os.path.join(CCTV_MEDIA_DIR, str(config.id))
+    os.makedirs(output_dir, exist_ok=True)
+
+    cmds = []
+    for cam_idx, cam in rtsp_cameras:
+        cam_dir = os.path.join(output_dir, f'cam_{cam_idx}')
+        os.makedirs(cam_dir, exist_ok=True)
+        cam_output = os.path.join(cam_dir, 'stream.m3u8')
+        snapshot_path = os.path.join(output_dir, f'cam_{cam_idx}.jpg')
+        cmd = [
+            'ffmpeg', '-y',
+            '-rtsp_transport', 'tcp',
+            '-timeout', '5000000',
+            '-i', cam.rtsp_url,
+            '-filter_complex',
+            f'[0:v]scale={width}:{height},setpts=PTS-STARTPTS,split=2[hls][snap]',
+            '-map', '[hls]',
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-tune', 'zerolatency',
+            '-r', str(config.fps),
+            '-g', str(config.fps * 2),
+            '-an',
+            '-f', 'hls',
+            '-hls_time', '2',
+            '-hls_list_size', '5',
+            '-hls_flags', 'delete_segments+append_list',
+            '-hls_segment_filename', os.path.join(cam_dir, 'seg_%03d.ts'),
+            cam_output,
+            '-map', '[snap]',
+            '-c:v', 'mjpeg',
+            '-q:v', '5',
+            '-r', '0.5',
+            '-update', '1',
+            '-f', 'image2',
+            snapshot_path,
+        ]
+        cmds.append(cmd)
+
+    return cmds
+
+
+def build_rotation_command(config) -> list[list[str]]:
+    """Build ffmpeg command for rotation mode — per-camera HLS streams."""
     cameras = list(config.cameras.all())
     n = len(cameras)
     if n == 0:
@@ -141,14 +194,11 @@ def build_rotation_command(config) -> list[str]:
 
     output_dir = os.path.join(CCTV_MEDIA_DIR, str(config.id))
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, 'stream.m3u8')
 
-    # For rotation mode, we use the first camera and let the JS player handle rotation
-    # by generating separate HLS streams per camera
-    # Alternatively, we just output the first camera fullscreen and use JS rotation
-    # Using per-camera approach with JS rotation on the player page
     per_camera_cmds = []
     for i, cam in enumerate(cameras):
+        if cam.source_type == 'web':
+            continue  # Web cameras don't need ffmpeg in rotation mode
         cam_dir = os.path.join(output_dir, f'cam_{i}')
         os.makedirs(cam_dir, exist_ok=True)
         cam_output = os.path.join(cam_dir, 'stream.m3u8')
@@ -173,7 +223,6 @@ def build_rotation_command(config) -> list[str]:
         ]
         per_camera_cmds.append(cmd)
 
-    # Return the first command — we'll start all of them in start_stream
     return per_camera_cmds
 
 
@@ -200,8 +249,36 @@ def start_stream(config_id: str):
     # Stop any existing stream first
     stop_stream(config_id)
 
-    if config.display_mode == 'rotation':
+    output_dir = os.path.join(CCTV_MEDIA_DIR, str(config_id))
+    os.makedirs(output_dir, exist_ok=True)
+
+    if config.display_mode == 'mosaic' and has_web_sources(config):
+        # Grid mode: per-camera HLS + snapshot for RTSP cameras
+        cmds = build_grid_commands(config)
+        if not cmds:
+            # All web, no ffmpeg needed — create placeholder snapshot
+            _create_placeholder_snapshot(config_id)
+            logger.info('Grid mode (all web): no ffmpeg for config %s', config_id)
+            return
+        pids = []
+        for i, cmd in enumerate(cmds):
+            logger.info('Starting ffmpeg grid HLS: %s', ' '.join(cmd[:6]) + '...')
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid,
+            )
+            _log_ffmpeg_stderr(proc, config_id, f'grid{i}')
+            pids.append(proc.pid)
+        cache.set(_get_pid_key(config_id), ','.join(str(p) for p in pids), timeout=None)
+        logger.info('Started %d grid HLS streams for config %s', len(pids), config_id)
+
+    elif config.display_mode == 'rotation':
         cmds = build_rotation_command(config)
+        if not cmds:
+            logger.info('Rotation mode: no RTSP cameras for config %s', config_id)
+            return
         pids = []
         for i, cmd in enumerate(cmds):
             logger.info('Starting ffmpeg rotation stream: %s', ' '.join(cmd[:6]) + '...')
@@ -213,10 +290,10 @@ def start_stream(config_id: str):
             )
             _log_ffmpeg_stderr(proc, config_id, f'cam{i}')
             pids.append(proc.pid)
-        # Store all PIDs as comma-separated
         cache.set(_get_pid_key(config_id), ','.join(str(p) for p in pids), timeout=None)
         logger.info('Started %d rotation streams for config %s, PIDs: %s', len(pids), config_id, pids)
     else:
+        # Pure RTSP mosaic
         cmd = build_mosaic_command(config)
         logger.info('Starting ffmpeg mosaic stream: %s', ' '.join(cmd[:6]) + '...')
         proc = subprocess.Popen(
@@ -228,6 +305,25 @@ def start_stream(config_id: str):
         _log_ffmpeg_stderr(proc, config_id, 'mosaic')
         cache.set(_get_pid_key(config_id), str(proc.pid), timeout=None)
         logger.info('Started mosaic stream for config %s, PID: %d', config_id, proc.pid)
+
+
+def _create_placeholder_snapshot(config_id: str):
+    """Create a small black placeholder snapshot.jpg for health-check."""
+    output_dir = os.path.join(CCTV_MEDIA_DIR, str(config_id))
+    os.makedirs(output_dir, exist_ok=True)
+    snapshot_path = os.path.join(output_dir, 'snapshot.jpg')
+    # 1x1 black JPEG
+    try:
+        subprocess.run(
+            ['ffmpeg', '-y', '-f', 'lavfi', '-i',
+             'color=c=black:s=320x180:d=0.1',
+             '-frames:v', '1', snapshot_path],
+            capture_output=True, timeout=5,
+        )
+    except Exception:
+        # Fallback: write minimal bytes
+        with open(snapshot_path, 'wb') as f:
+            f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xd9')
 
 
 def stop_stream(config_id: str):
@@ -259,13 +355,17 @@ def get_stream_status(config_id: str) -> dict:
     """Get status of ffmpeg stream for a CCTV config."""
     pid_str = cache.get(_get_pid_key(config_id))
     if not pid_str:
+        # Check if it's an all-web config (no ffmpeg needed but still "running")
+        output_dir = os.path.join(CCTV_MEDIA_DIR, str(config_id))
+        if os.path.isdir(output_dir):
+            return {'status': 'running', 'pids': []}
         return {'status': 'stopped', 'pids': []}
 
     pids = [int(p) for p in str(pid_str).split(',') if p.strip()]
     alive_pids = []
     for pid in pids:
         try:
-            os.kill(pid, 0)  # Check if process exists
+            os.kill(pid, 0)
             alive_pids.append(pid)
         except ProcessLookupError:
             pass
@@ -273,7 +373,6 @@ def get_stream_status(config_id: str) -> dict:
     if alive_pids:
         return {'status': 'running', 'pids': alive_pids}
 
-    # All processes died — clean up
     cache.delete(_get_pid_key(config_id))
     return {'status': 'stopped', 'pids': []}
 
@@ -282,9 +381,18 @@ def update_thumbnail(config_id: str):
     """Copy snapshot.jpg from ffmpeg output to MediaFile.thumbnail."""
     from .models import CctvConfig
 
-    snapshot_path = os.path.join(CCTV_MEDIA_DIR, config_id, 'snapshot.jpg')
+    # Try main snapshot first, then first per-camera snapshot
+    output_dir = os.path.join(CCTV_MEDIA_DIR, config_id)
+    snapshot_path = os.path.join(output_dir, 'snapshot.jpg')
     if not os.path.isfile(snapshot_path):
-        return
+        # Try first per-camera snapshot
+        for i in range(20):
+            cam_path = os.path.join(output_dir, f'cam_{i}.jpg')
+            if os.path.isfile(cam_path):
+                snapshot_path = cam_path
+                break
+        else:
+            return
 
     try:
         config = CctvConfig.objects.select_related('media_file').get(pk=config_id)
@@ -297,7 +405,6 @@ def update_thumbnail(config_id: str):
     with open(snapshot_path, 'rb') as f:
         content = f.read()
 
-    # Save snapshot as thumbnail on the MediaFile
     filename = f'cctv_{config_id[:8]}.jpg'
     if config.media_file.thumbnail:
         config.media_file.thumbnail.delete(save=False)

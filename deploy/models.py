@@ -122,6 +122,7 @@ class CctvConfig(models.Model):
     media_file = models.OneToOneField(
         MediaFile, null=True, blank=True, on_delete=models.SET_NULL, related_name='cctv_config',
     )
+    mosaic_layout = models.JSONField(null=True, blank=True, default=None)
     is_active = models.BooleanField(default=False)
     last_requested_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,10 +155,13 @@ class AuditLog(models.Model):
 
 
 class CctvCamera(models.Model):
+    SOURCE_TYPES = [('rtsp', 'RTSP'), ('web', 'Web Page')]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     config = models.ForeignKey(CctvConfig, on_delete=models.CASCADE, related_name='cameras')
     name = models.CharField(max_length=255, blank=True, default='')
     rtsp_url = models.TextField()
+    source_type = models.CharField(max_length=10, choices=SOURCE_TYPES, default='rtsp')
     sort_order = models.IntegerField(default=0)
 
     class Meta:
