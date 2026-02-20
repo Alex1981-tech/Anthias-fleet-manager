@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.9.2'
+export const APP_VERSION = '1.9.3'
 
 export interface ChangelogEntry {
   version: string
@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  {
+    version: '1.9.3',
+    date: '2026-02-20',
+    changeKeys: [
+      'cctvGridCpuFix',
+      'cctvStreamStatusFix',
+    ],
+  },
   {
     version: '1.9.1',
     date: '2026-02-20',

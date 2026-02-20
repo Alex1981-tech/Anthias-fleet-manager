@@ -464,6 +464,8 @@
       "provisionMacDedup": "Le provisionnement identifie les lecteurs par adresse MAC pour éviter les doublons",
       "serverTelemetry": "Tableau de bord de télémétrie serveur — CPU, mémoire, disque en temps réel avec barres de progression et actualisation automatique",
       "cctvGridHls": "Grille CCTV : vidéo HLS en direct pour caméras RTSP avec basculement automatique vers les captures pour appareils anciens",
+      "cctvGridCpuFix": "Grille CCTV : optimisation CPU — caméras redimensionnées à la taille de cellule",
+      "cctvStreamStatusFix": "Correction de la détection du redémarrage du flux CCTV après mise à jour",
       "cctvWebSources": "Grille CCTV : pages web affichées en iframe 1920×1080, mises à l'échelle pour s'adapter aux cellules",
       "cctvMosaicSimplify": "Éditeur de mosaïque simplifié — glisser-déplacer pour échanger les positions des caméras"
     }

@@ -464,6 +464,8 @@
       "provisionMacDedup": "Provisioning identyfikuje odtwarzacze po adresie MAC, aby uniknąć duplikatów",
       "serverTelemetry": "Panel telemetrii serwera — CPU, pamięć, dysk na żywo z paskami postępu i automatycznym odświeżaniem",
       "cctvGridHls": "Siatka CCTV: wideo HLS na żywo dla kamer RTSP z automatycznym przełączaniem na zrzuty dla starszych urządzeń",
+      "cctvGridCpuFix": "Siatka CCTV: optymalizacja CPU — kamery skalowane do rozmiaru komórki",
+      "cctvStreamStatusFix": "Naprawiono wykrywanie restartu strumienia CCTV po aktualizacji kontenera",
       "cctvWebSources": "Siatka CCTV: strony internetowe renderowane w iframe 1920×1080, skalowane do rozmiaru komórki",
       "cctvMosaicSimplify": "Uproszczony edytor mozaiki — przeciągnij i upuść aby zamienić pozycje kamer"
     }

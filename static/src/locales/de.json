@@ -464,6 +464,8 @@
       "provisionMacDedup": "Provisionierung identifiziert Player anhand der MAC-Adresse zur Vermeidung von Duplikaten",
       "serverTelemetry": "Server-Telemetrie-Dashboard — Live-CPU, Arbeitsspeicher, Festplattennutzung mit Fortschrittsbalken und automatischer Aktualisierung",
       "cctvGridHls": "CCTV-Raster: HLS-Livevideo für RTSP-Kameras mit automatischem Snapshot-Fallback für ältere Geräte",
+      "cctvGridCpuFix": "CCTV-Raster: CPU-Optimierung — Kameras auf Zellgröße skaliert",
+      "cctvStreamStatusFix": "CCTV-Stream-Neustart-Erkennung nach Container-Update behoben",
       "cctvWebSources": "CCTV-Raster: Webseiten werden im iframe mit 1920×1080 gerendert und auf Zellengröße skaliert",
       "cctvMosaicSimplify": "Vereinfachter Mosaik-Editor — Drag-and-Drop zum Tauschen der Kamerapositionen"
     }
